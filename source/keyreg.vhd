@@ -13,7 +13,7 @@ USE IEEE.std_logic_arith.ALL;
 USE IEEE.std_logic_unsigned.ALL;
 
 ENTITY keyreg IS
-  PORT(CLK, RST, SBE, OE, RBUFF_FULL: IN STD_LOGIC;
+  PORT(CLK, RST, SBE, OE, RBUF_FULL: IN STD_LOGIC;
     RCV_DATA: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     PLAINKEY: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
     KEY_ERROR, PROG_ERROR, SIG_TRUNCATED, CLR_RBUFF: OUT STD_LOGIC);
@@ -22,50 +22,52 @@ END keyreg;
 ARCHITECTURE keyb OF keyreg IS
   TYPE keyState IS (IDLE, FILL, RECEIVE, ERROR, GOOD, TRUNCATED);
   SIGNAL state, nextState: keyState;
-  SIGNAL keyCount: STD_LOGIC_VECTOR(3 DOWNTO 0);
+  SIGNAL keyCount, nextKeyCount: STD_LOGIC_VECTOR(3 DOWNTO 0);
 BEGIN
   keyp: PROCESS(CLK, RST, nextState)
   BEGIN
-    IF (CLK = '1') THEN
-      KEY_ERROR <= '1';
-      CLR_RBUFF <= '0';
-      PROG_ERROR <= '0';
+    IF (RST = '1') THEN
       state <= IDLE;
-      keyCount <= "0000";
     ELSIF (RISING_EDGE(CLK)) THEN
       state <= nextState;
+      keyCount <= nextKeyCount;
     END IF;
   END PROCESS keyp;
   
-  NSL: PROCESS(state, OE, SBE, RBUFF_FULL)
+  NSL: PROCESS(state, OE, SBE, RBUF_FULL, keyCount, RCV_DATA)
   BEGIN
+  nextState <= state;
   CASE STATE IS
     WHEN IDLE =>
-      IF RBUFF_FULL = '1' THEN nextState <= FILL;
+      IF RBUF_FULL = '1' THEN nextState <= FILL;
       ELSE nextState <= IDLE;
       END IF;
     WHEN FILL =>
-      IF keyCount = 8 THEN
+      IF keyCount = 7 THEN
         nextState <= GOOD;
       ELSE
         nextState <= RECEIVE;
       END IF;
     WHEN RECEIVE =>
       IF SBE = '1' OR OE ='1' THEN nextState <= ERROR;
-      ELSIF keyCount < 8 AND RBUFF_FULL = '1' THEN nextState <= FILL;
+      ELSIF keyCount < 8 AND RBUF_FULL = '1' THEN nextState <= FILL;
       END IF;
     WHEN GOOD =>
-      IF RBUFF_FULL = '1' THEN nextState <= TRUNCATED;
+      IF RBUF_FULL = '1' THEN nextState <= TRUNCATED;
       ELSE nextState <= GOOD;
       END IF;
     WHEN OTHERS =>
-      nextState <= state;
     END CASE;
   END PROCESS NSL;
     
   OL: PROCESS(state, keyCount)
     VARIABLE address: INTEGER;
   BEGIN
+    nextKeyCount <= keyCount;
+    key_Error <= '1';
+    prog_Error <= '0';
+    clr_rbuff <= '0';
+    sig_truncated <= '0';
     CASE STATE IS
       WHEN ERROR => PROG_ERROR <= '1';
       WHEN TRUNCATED => SIG_TRUNCATED <= '1';
@@ -88,7 +90,7 @@ BEGIN
           WHEN "0101" => address := 40;
           WHEN "0110" => address := 48;
           WHEN "0111" => address := 56;
-          WHEN OTHERS => address := 64;
+          WHEN OTHERS => address := 0;
         END CASE;
           
         PLAINKEY(address) <= RCV_DATA(0);   
@@ -99,11 +101,17 @@ BEGIN
         PLAINKEY(address + 5) <= RCV_DATA(5);  
         PLAINKEY(address + 6) <= RCV_DATA(6);  
         PLAINKEY(address + 7) <= RCV_DATA(7);             
-        keyCount <= keyCount + 1;
+        nextKeyCount <= keyCount + 1;
         CLR_RBUFF <= '1';
       WHEN RECEIVE =>
         CLR_RBUFF <= '0';
-      WHEN OTHERS =>
+      WHEN IDLE =>
+        nextKeyCount <= "0000";
+        key_Error <= '1';
+        prog_Error <= '0';
+        clr_rbuff <= '0';
+        sig_truncated <= '0';
+        PLAINKEY <= x"0000000000000000";
     END CASE;
   END PROCESS OL;
 END keyb;

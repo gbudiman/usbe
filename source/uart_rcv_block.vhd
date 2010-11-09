@@ -63,6 +63,7 @@ ARCHITECTURE struct1 OF uart_rcv_block IS
    SIGNAL STOP_DATA     : std_logic_vector(1 DOWNTO 0);
    SIGNAL STOP_RCVING   : STD_LOGIC;
    SIGNAL TIMER_TRIG    : STD_LOGIC;
+   SIGNAL CLR_RBUF      : STD_LOGIC;
    --SIGNAL KEY_ERROR     : std_logic;
    --SIGNAL PROG_ERROR    : std_logic;
    --SIGNAL SIG_TRUNCATED : std_logic;
@@ -168,7 +169,8 @@ ARCHITECTURE struct1 OF uart_rcv_block IS
       PLAINKEY      : OUT   STD_LOGIC_VECTOR (63 DOWNTO 0);
       KEY_ERROR     : OUT   STD_LOGIC;
       PROG_ERROR    : OUT   STD_LOGIC;
-      SIG_TRUNCATED : OUT   STD_LOGIC
+      SIG_TRUNCATED : OUT   STD_LOGIC;
+      CLR_RBUFF     : OUT   STD_LOGIC
     );
     END COMPONENT;
 
@@ -263,7 +265,8 @@ BEGIN
          PLAINKEY      => PLAINKEY,
          KEY_ERROR     => KEY_ERROR,
          PROG_ERROR    => PROG_ERROR,
-         SIG_TRUNCATED => SIG_TRUNCATED
+         SIG_TRUNCATED => SIG_TRUNCATED,
+         CLR_RBUFF     => CLR_RBUF
       );
    U_7 : uart_timer
       PORT MAP (
