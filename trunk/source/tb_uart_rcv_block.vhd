@@ -58,7 +58,7 @@ architecture TEST of tb_uart_rcv_block is
   signal SERIAL_IN : std_logic;
   --signal OE : std_logic;
   signal RBUF_FULL : std_logic;
-  signal RCV_DATA : std_logic_vector (7 DOWNTO 0);
+  --signal RCV_DATA : std_logic_vector (7 DOWNTO 0);
   --signal SBE : std_logic;
   signal KEY_ERROR: std_logic;
   signal PROG_ERROR: std_logic;
@@ -71,15 +71,15 @@ procedure sendUART(
   signal serial_in: OUT STD_LOGIC) is
 begin
   serial_in <= '0';
-  wait for dataperiod;
-  for i in 7 downto 0 loop
+  wait for 10 * period;
+  for i in 0 to 7 loop
     serial_in <= data_in(i);
     wait for 10 * period;
   end loop;
   serial_in <= '0';
-  wait for dataperiod;
+  wait for 10 * period;
   serial_in <= '1';
-  wait for 3 * dataperiod;
+  wait for 30 * period;
 end sendUART;
 
 begin
@@ -123,12 +123,14 @@ process
     wait for 5 ns;
     rst <= '0';
     wait for dataperiod;
-    sendUART("01010111", serial_in);
-    --wait until rbuf_full = '1';
-    --wait for 2 * period;
-    --clr_rbuf <= '1';
-    --wait for 2 * period;
-    --clr_rbuf <= '0';
+    sendUART(x"21", serial_in); -- !
+    sendUART(x"21", serial_in); -- !
+    sendUART(x"54", serial_in); -- T
+    sendUART(x"45", serial_in); -- E
+    sendUART(x"52", serial_in); -- R
+    sendUART(x"43", serial_in); -- C
+    sendUART(x"45", serial_in); -- E
+    sendUART(x"53", serial_in); -- S
     wait;
   end process;
 end TEST;
