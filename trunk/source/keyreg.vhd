@@ -60,7 +60,7 @@ BEGIN
     END CASE;
   END PROCESS NSL;
     
-  OL: PROCESS(state, keyCount)
+  OL: PROCESS(state, keyCount, RCV_DATA)
     VARIABLE address: INTEGER;
   BEGIN
     nextKeyCount <= keyCount;
