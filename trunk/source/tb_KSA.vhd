@@ -38,30 +38,36 @@ architecture TEST of tb_KSA is
          KEY : IN STD_LOGIC_VECTOR(63 DOWNTO 0);
          CLK : IN STD_LOGIC;
          RST : IN STD_LOGIC;
+         BYTE: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+         BYTE_READY: IN STD_LOGIC;
          KEY_ERROR : IN STD_LOGIC;
-         TABLE_READY : OUT STD_LOGIC;
-         OUT_TABLE : OUT STD_LOGIC_VECTOR(2047 DOWNTO 0)
+         PDATA_READY : OUT STD_LOGIC;
+         PROCESSED_DATA : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
   end component;
 
 -- Insert signals Declarations here
   signal KEY : STD_LOGIC_VECTOR(63 DOWNTO 0);
+  signal BYTE : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  signal BYTE_READY : STD_LOGIC;
   signal CLK : STD_LOGIC;
   signal RST : STD_LOGIC;
   signal KEY_ERROR : STD_LOGIC;
-  signal TABLE_READY : STD_LOGIC;
-  signal OUT_TABLE : STD_LOGIC_VECTOR(2047 DOWNTO 0);
+  signal PDATA_READY : STD_LOGIC;
+  signal PROCESSED_DATA : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
 -- signal <name> : <type>;
 
 begin
   DUT: KSA port map(
                 KEY => KEY,
+                BYTE => BYTE,
+                BYTE_READY => BYTE_READY,
                 CLK => CLK,
                 RST => RST,
                 KEY_ERROR => KEY_ERROR,
-                TABLE_READY => TABLE_READY,
-                OUT_TABLE => OUT_TABLE
+                PDATA_READY => PDATA_READY,
+                PROCESSED_DATA => PROCESSED_DATA
                 );
 
 --   GOLD: <GOLD_NAME> port map(<put mappings here>);
@@ -81,9 +87,47 @@ process
 
   KEY <= x"5345435245542121";
   KEY_ERROR <= '0';
+  BYTE_READY <= '0';
   RST <= '1';
   wait for 20 ns;
   RST <= '0';
+  
+  wait for 12 us;
+--  BYTE <= x"47";
+--  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+--  
+--  BYTE <= x"4C"; 
+--  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+--  
+--  BYTE <= x"4F";
+--  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+--  
+--  BYTE <= x"52";
+--  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+--  
+--  BYTE <= x"49";
+--  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+--  
+--  BYTE <= x"41";
+--  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+
+  BYTE <= x"E9";
+  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+
+  BYTE <= x"6E"; 
+  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+
+  BYTE <= x"B2";
+  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+
+  BYTE <= x"C7";
+  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+
+  BYTE <= x"38";
+  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+
+  BYTE <= x"03";
+  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
   
   wait;
     --KEY <= 
