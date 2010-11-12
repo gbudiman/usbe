@@ -55,6 +55,7 @@ ARCHITECTURE bksa OF KSA IS
   SIGNAL keyi: STD_LOGIC_VECTOR(2 DOWNTO 0);
   SIGNAL temp: STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL xordata: STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL delaydata: STD_LOGIC_VECTOR(7 DOWNTO 0);
 BEGIN
   TLB: PROCESS(CLK, RST, nextState, nextsi, nextsj, nextinti, nextintj)
   BEGIN
@@ -125,7 +126,7 @@ BEGIN
     END CASE;
   END PROCESS NSL;
   
-  OL: PROCESS(state, keyTable, permuteTable, si, sj, key, keyi, nextsi, temp, inti, intj)
+  OL: PROCESS(state, keyTable, permuteTable, si, sj, key, keyi, nextsi, temp, inti, intj, xordata, delaydata, BYTE)
   BEGIN         
     nextsi <= si; 
     nextinti <= inti;
@@ -193,6 +194,7 @@ BEGIN
         nextinti <= inti + 1;
         nextintj <= intj + permuteTable(CONV_INTEGER(inti + 1));
         temp <= permuteTable(CONV_INTEGER(inti + 1));
+        delaydata <= BYTE;
       WHEN PSTEPB1 =>
         permuteTable(CONV_INTEGER(inti)) <= permuteTable(CONV_INTEGER(intj));
       WHEN PSTEPB2 =>
@@ -202,7 +204,7 @@ BEGIN
       WHEN PSTEPD =>
         xordata <= permuteTable(CONV_INTEGER(temp));
       WHEN PWAIT =>
-        PROCESSED_DATA <= xordata XOR BYTE;
+        PROCESSED_DATA <= xordata XOR delaydata;
         PDATA_READY <= '1';
     END CASE;
   END PROCESS OL;
