@@ -57,6 +57,14 @@ architecture TEST of tb_KSA is
   signal PROCESSED_DATA : STD_LOGIC_VECTOR(7 DOWNTO 0);
 
 -- signal <name> : <type>;
+PROCEDURE sendUSB (
+  constant ASCII: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+  signal BYTE: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+  signal BYTE_READY: OUT STD_LOGIC ) IS
+BEGIN
+  BYTE <= ASCII;
+  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 8 * period;
+END sendUSB;
 
 begin
   DUT: KSA port map(
@@ -93,10 +101,41 @@ process
   RST <= '0';
   
   wait for 12 us;
---  BYTE <= x"47";
+  sendUSB(x"54", BYTE, BYTE_READY); --T
+  sendUSB(x"68", BYTE, BYTE_READY); --h
+  sendUSB(x"69", BYTE, BYTE_READY); --i
+  sendUSB(x"73", BYTE, BYTE_READY); --s
+  sendUSB(x"20", BYTE, BYTE_READY); --
+  sendUSB(x"69", BYTE, BYTE_READY); -- i
+  sendUSB(x"73", BYTE, BYTE_READY); -- s
+  sendUSB(x"20", BYTE, BYTE_READY); --
+  sendUSB(x"61", BYTE, BYTE_READY); -- a
+  sendUSB(x"77", BYTE, BYTE_READY); -- w
+  sendUSB(x"65", BYTE, BYTE_READY); -- e
+  sendUSB(x"73", BYTE, BYTE_READY); -- s
+  sendUSB(x"6f", BYTE, BYTE_READY); -- o
+  sendUSB(x"6d", BYTE, BYTE_READY); -- m
+  sendUSB(x"65", BYTE, BYTE_READY); -- e
+  
+--  sendUSB(x"FA", BYTE, BYTE_READY); --T
+--  sendUSB(x"4A", BYTE, BYTE_READY); --h
+--  sendUSB(x"94", BYTE, BYTE_READY); --i
+--  sendUSB(x"E6", BYTE, BYTE_READY); --s
+--  sendUSB(x"51", BYTE, BYTE_READY); --
+--  sendUSB(x"2B", BYTE, BYTE_READY); -- i
+--  sendUSB(x"CE", BYTE, BYTE_READY); -- s
+--  sendUSB(x"B3", BYTE, BYTE_READY); --
+--  sendUSB(x"88", BYTE, BYTE_READY); -- a
+--  sendUSB(x"56", BYTE, BYTE_READY); -- w
+--  sendUSB(x"17", BYTE, BYTE_READY); -- e
+--  sendUSB(x"E4", BYTE, BYTE_READY); -- s
+--  sendUSB(x"F3", BYTE, BYTE_READY); -- o
+--  sendUSB(x"0E", BYTE, BYTE_READY); -- m
+--  sendUSB(x"31", BYTE, BYTE_READY); -- e
+--  BYTE <= "T";
 --  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
 --  
---  BYTE <= x"4C"; 
+--  BYTE <= ; 
 --  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
 --  
 --  BYTE <= x"4F";
@@ -111,23 +150,23 @@ process
 --  BYTE <= x"41";
 --  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
 
-  BYTE <= x"E9";
-  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
-
-  BYTE <= x"6E"; 
-  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
-
-  BYTE <= x"B2";
-  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
-
-  BYTE <= x"C7";
-  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
-
-  BYTE <= x"38";
-  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
-
-  BYTE <= x"03";
-  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+  --BYTE <= x"E9";
+--  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+--
+--  BYTE <= x"6E"; 
+--  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+--
+--  BYTE <= x"B2";
+--  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+--
+--  BYTE <= x"C7";
+--  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+--
+--  BYTE <= x"38";
+--  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
+--
+--  BYTE <= x"03";
+--  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 7 * period;
   
   wait;
     --KEY <= 
