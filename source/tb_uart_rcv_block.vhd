@@ -46,7 +46,6 @@ architecture TEST of tb_uart_rcv_block is
          --SBE : OUT std_logic;
          KEY_ERROR: OUT std_logic;
          PROG_ERROR: OUT std_logic;
-         SIG_TRUNCATED: OUT std_logic;
          PLAINKEY: OUT std_logic_vector (63 DOWNTO 0)
     );
   end component;
@@ -62,7 +61,6 @@ architecture TEST of tb_uart_rcv_block is
   --signal SBE : std_logic;
   signal KEY_ERROR: std_logic;
   signal PROG_ERROR: std_logic;
-  signal SIG_TRUNCATED: std_logic;
   signal PLAINKEY: std_logic_vector (63 DOWNTO 0);
 
 -- signal <name> : <type>;
@@ -94,7 +92,6 @@ begin
                 --SBE => SBE
                 KEY_ERROR => KEY_ERROR,
                 PROG_ERROR => PROG_ERROR,
-                SIG_TRUNCATED => SIG_TRUNCATED,
                 PLAINKEY => PLAINKEY
                 );
 
@@ -124,13 +121,21 @@ process
     rst <= '0';
     wait for dataperiod;
     sendUART(x"21", serial_in); -- !
-    sendUART(x"21", serial_in); -- !
+    sendUART(x"22", serial_in); -- !
     sendUART(x"54", serial_in); -- T
     sendUART(x"45", serial_in); -- E
     sendUART(x"52", serial_in); -- R
     sendUART(x"43", serial_in); -- C
     sendUART(x"45", serial_in); -- E
     sendUART(x"53", serial_in); -- S
+    sendUART(x"26", serial_in); -- &
+    sendUART(x"26", serial_in); -- &
+    sendUART(x"64", serial_in); -- d
+    sendUART(x"45", serial_in); -- E
+    sendUART(x"6e", serial_in); -- n
+    sendUART(x"77", serial_in); -- w
+    sendUART(x"61", serial_in); -- a
+    sendUART(x"70", serial_in); -- p
     wait;
   end process;
 end TEST;

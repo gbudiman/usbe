@@ -16,21 +16,26 @@ ENTITY keyreg IS
   PORT(CLK, RST, SBE, OE, RBUF_FULL: IN STD_LOGIC;
     RCV_DATA: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     PLAINKEY: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
-    KEY_ERROR, PROG_ERROR, SIG_TRUNCATED, CLR_RBUFF: OUT STD_LOGIC);
+    KEY_ERROR, PROG_ERROR, CLR_RBUFF: OUT STD_LOGIC);
 END keyreg;
 
 ARCHITECTURE keyb OF keyreg IS
-  TYPE keyState IS (IDLE, FILL, RECEIVE, ERROR, GOOD, TRUNCATED);
+  TYPE keyState IS (IDLE, PREFILL, FILL, RECEIVE, ERROR, GOOD);
   SIGNAL state, nextState: keyState;
   SIGNAL keyCount, nextKeyCount: STD_LOGIC_VECTOR(3 DOWNTO 0);
+  SIGNAL address, nextAddress: STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL currentPlainKey, nextPlainKey: STD_LOGIC_VECTOR(63 DOWNTO 0);
 BEGIN
-  keyp: PROCESS(CLK, RST, nextState)
+  keyp: PROCESS(CLK, RST, nextState, nextAddress, nextPlainKey, currentPlainKey)
   BEGIN
     IF (RST = '1') THEN
       state <= IDLE;
     ELSIF (RISING_EDGE(CLK)) THEN
       state <= nextState;
       keyCount <= nextKeyCount;
+      address <= nextAddress;
+      currentPlainKey <= nextPlainKey;
+      PLAINKEY <= currentPlainKey;
     END IF;
   END PROCESS keyp;
   
@@ -39,9 +44,10 @@ BEGIN
   nextState <= state;
   CASE STATE IS
     WHEN IDLE =>
-      IF RBUF_FULL = '1' THEN nextState <= FILL;
+      IF RBUF_FULL = '1' THEN nextState <= PREFILL;
       ELSE nextState <= IDLE;
       END IF;
+    WHEN PREFILL => nextState <= FILL;
     WHEN FILL =>
       IF keyCount = 7 THEN
         nextState <= GOOD;
@@ -50,57 +56,50 @@ BEGIN
       END IF;
     WHEN RECEIVE =>
       IF SBE = '1' OR OE ='1' THEN nextState <= ERROR;
-      ELSIF keyCount < 8 AND RBUF_FULL = '1' THEN nextState <= FILL;
+      ELSIF keyCount < 8 AND RBUF_FULL = '1' THEN nextState <= PREFILL;
       END IF;
     WHEN GOOD =>
-      IF RBUF_FULL = '1' THEN nextState <= TRUNCATED;
+      IF RBUF_FULL = '1' THEN nextState <= PREFILL;
       ELSE nextState <= GOOD;
       END IF;
     WHEN OTHERS =>
     END CASE;
   END PROCESS NSL;
     
-  OL: PROCESS(state, keyCount, RCV_DATA)
-    VARIABLE address: INTEGER;
+  OL: PROCESS(state, keyCount, RCV_DATA, address, currentPlainKey)
   BEGIN
     nextKeyCount <= keyCount;
     key_Error <= '1';
     prog_Error <= '0';
     clr_rbuff <= '0';
-    sig_truncated <= '0';
+    nextAddress <= address;
+    nextPlainKey <= currentPlainKey;
     CASE STATE IS
       WHEN ERROR => PROG_ERROR <= '1';
-      WHEN TRUNCATED => SIG_TRUNCATED <= '1';
-      WHEN GOOD => KEY_ERROR <= '0';
-      WHEN FILL =>
+      WHEN GOOD => 
+        KEY_ERROR <= '0';
+        nextKeyCount <= "0000";
+      WHEN PREFILL =>
         CASE keyCount IS
-          --WHEN "0000" => address <= x"00";
---          WHEN "0001" => address <= x"08";
---          WHEN "0010" => address <= x"10";
---          WHEN "0011" => address <= x"18";
---          WHEN "0100" => address <= x"20";
---          WHEN "0101" => address <= x"28";
---          WHEN "0110" => address <= x"30";
---          WHEN "0111" => address <= x"38";
-          WHEN "0000" => address := 0;
-          WHEN "0001" => address := 8;
-          WHEN "0010" => address := 16;
-          WHEN "0011" => address := 24;
-          WHEN "0100" => address := 32;
-          WHEN "0101" => address := 40;
-          WHEN "0110" => address := 48;
-          WHEN "0111" => address := 56;
-          WHEN OTHERS => address := 0;
+          WHEN "0000" => nextaddress <= x"00";
+          WHEN "0001" => nextaddress <= x"08";
+          WHEN "0010" => nextaddress <= x"10";
+          WHEN "0011" => nextaddress <= x"18";
+          WHEN "0100" => nextaddress <= x"20";
+          WHEN "0101" => nextaddress <= x"28";
+          WHEN "0110" => nextaddress <= x"30";
+          WHEN "0111" => nextaddress <= x"38";
+          WHEN OTHERS => nextaddress <= x"FF";
         END CASE;
-          
-        PLAINKEY(address) <= RCV_DATA(0);   
-        PLAINKEY(address + 1) <= RCV_DATA(1);  
-        PLAINKEY(address + 2) <= RCV_DATA(2);  
-        PLAINKEY(address + 3) <= RCV_DATA(3);  
-        PLAINKEY(address + 4) <= RCV_DATA(4);  
-        PLAINKEY(address + 5) <= RCV_DATA(5);  
-        PLAINKEY(address + 6) <= RCV_DATA(6);  
-        PLAINKEY(address + 7) <= RCV_DATA(7);             
+      WHEN FILL =>
+        nextPlainKey(CONV_INTEGER(address)) <= RCV_DATA(0);   
+        nextPlainKey(CONV_INTEGER(address + 1)) <= RCV_DATA(1);  
+        nextPlainKey(CONV_INTEGER(address + 2)) <= RCV_DATA(2);  
+        nextPlainKey(CONV_INTEGER(address + 3)) <= RCV_DATA(3);  
+        nextPlainKey(CONV_INTEGER(address + 4)) <= RCV_DATA(4);  
+        nextPlainKey(CONV_INTEGER(address + 5)) <= RCV_DATA(5);  
+        nextPlainKey(CONV_INTEGER(address + 6)) <= RCV_DATA(6);  
+        nextPlainKey(CONV_INTEGER(address + 7)) <= RCV_DATA(7);             
         nextKeyCount <= keyCount + 1;
         CLR_RBUFF <= '1';
       WHEN RECEIVE =>
@@ -110,8 +109,7 @@ BEGIN
         key_Error <= '1';
         prog_Error <= '0';
         clr_rbuff <= '0';
-        sig_truncated <= '0';
-        PLAINKEY <= x"0000000000000000";
+        nextPlainKey <= x"0000000000000000";
     END CASE;
   END PROCESS OL;
 END keyb;
