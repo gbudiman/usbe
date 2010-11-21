@@ -27,7 +27,7 @@ ARCHITECTURE dataflow OF rx_shift_reg IS
 BEGIN
    REG: process (CLK, RST)
    begin  -- process
-    if RST = '0' then
+    if RST = '1' then
       present_val <= "00000000";
     elsif rising_edge(CLK) then
       present_val <= next_val;
