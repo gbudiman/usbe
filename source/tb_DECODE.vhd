@@ -33,7 +33,7 @@ architecture TEST of tb_DECODE is
     return res;
   end;
 
-  component h2s_decode
+  component rx_decode
     PORT(
          CLK : in std_logic;
          RST : in std_logic;
@@ -57,7 +57,7 @@ architecture TEST of tb_DECODE is
 -- signal <name> : <type>;
 
 begin
-  DUT: h2s_decode port map(
+  DUT: rx_decode port map(
                 CLK => CLK,
                 RST => RST,
                 DP1_RX => DP1_RX,

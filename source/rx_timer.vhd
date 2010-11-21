@@ -29,7 +29,7 @@ architecture moore of rx_timer is
     begin
     StateReg : process(CLK, RST)
       begin
-        if (RST = '0') then
+        if (RST = '1') then
           count <= "0000";
           state <= IDLE;
         elsif(CLK'event and CLK = '1') then
