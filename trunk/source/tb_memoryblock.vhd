@@ -1,5 +1,5 @@
 -- $Id: $
--- File name:   tb_rfifo.vhd
+-- File name:   tb_memoryblock.vhd
 -- Created:     11/27/2010
 -- Author:      Gloria Budiman
 -- Lab Section: 337-02
@@ -10,11 +10,11 @@ library ieee;
 use ieee.std_logic_1164.all;
 --use gold_lib.all;   --UNCOMMENT if you're using a GOLD model
 
-entity tb_rfifo is
+entity tb_memoryblock is
   generic (Period : Time :=  10.4167 ns);
-end tb_rfifo;
+end tb_memoryblock;
 
-architecture TEST of tb_rfifo is
+architecture TEST of tb_memoryblock is
 
   function INT_TO_STD_LOGIC( X: INTEGER; NumBits: INTEGER )
      return STD_LOGIC_VECTOR is
@@ -33,37 +33,36 @@ architecture TEST of tb_rfifo is
     return res;
   end;
 
-  component rfifo
+  component memoryblock
     PORT(
          CLK : IN STD_LOGIC;
+         NEXT_BYTE : IN STD_LOGIC;
+         RCV_DATA : IN STD_LOGIC_VECTOR (7 DOWNTO 0);
+         RCV_OPCODE : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
          RST : IN STD_LOGIC;
          W_ENABLE : IN STD_LOGIC;
-         R_ENABLE : IN STD_LOGIC;
-         RCV_DATA : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-         RCV_OPCODE : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-         DATA : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-         OUT_OPCODE: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-         BYTE_COUNT : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
          EMPTY : OUT STD_LOGIC;
-         FULL : OUT STD_LOGIC
+         FULL : OUT STD_LOGIC;
+         B_READY: OUT STD_LOGIC;
+         PRGA_IN : OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
+         PRGA_OPCODE : OUT STD_LOGIC_VECTOR (1 DOWNTO 0)
     );
   end component;
 
 -- Insert signals Declarations here
   signal CLK : STD_LOGIC;
+  signal NEXT_BYTE : STD_LOGIC;
+  signal RCV_DATA : STD_LOGIC_VECTOR (7 DOWNTO 0);
+  signal RCV_OPCODE : STD_LOGIC_VECTOR (1 DOWNTO 0);
   signal RST : STD_LOGIC;
   signal W_ENABLE : STD_LOGIC;
-  signal R_ENABLE : STD_LOGIC;
-  signal RCV_DATA : STD_LOGIC_VECTOR(7 DOWNTO 0);
-  signal RCV_OPCODE : STD_LOGIC_VECTOR(1 DOWNTO 0);
-  signal DATA : STD_LOGIC_VECTOR(7 DOWNTO 0);
-  signal OUT_OPCODE: STD_LOGIC_VECTOR(1 DOWNTO 0);
-  signal BYTE_COUNT : STD_LOGIC_VECTOR(4 DOWNTO 0);
   signal EMPTY : STD_LOGIC;
   signal FULL : STD_LOGIC;
+  signal B_READY : STD_LOGIC;
+  signal PRGA_IN : STD_LOGIC_VECTOR (7 DOWNTO 0);
+  signal PRGA_OPCODE : STD_LOGIC_VECTOR (1 DOWNTO 0);
 
 -- signal <name> : <type>;
-
 PROCEDURE sendFIFO(
   CONSTANT RDATA: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
   CONSTANT ROPCODE: IN STD_LOGIC_VECTOR (1 DOWNTO 0);
@@ -79,28 +78,29 @@ BEGIN
   wait for 7 * period;
 END sendFIFO;
 
-PROCEDURE readFIFO(
-  SIGNAL R_ENABLE: OUT STD_LOGIC) IS
+PROCEDURE cycleNB(
+  SIGNAL NEXT_BYTE: OUT STD_LOGIC) IS
 BEGIN
-  R_ENABLE <= '1';
-  wait for period;
-  R_ENABLE <= '0';
+  NEXT_BYTE <= '0';
   wait for 7 * period;
-END readFIFO;
+  NEXT_BYTE <= '1';
+  wait for 3 * period;
+  NEXT_BYTE <= '0';
+END cycleNB;
 
 begin
-  DUT: rfifo port map(
+  DUT: memoryblock port map(
                 CLK => CLK,
-                RST => RST,
-                W_ENABLE => W_ENABLE,
-                R_ENABLE => R_ENABLE,
+                NEXT_BYTE => NEXT_BYTE,
                 RCV_DATA => RCV_DATA,
                 RCV_OPCODE => RCV_OPCODE,
-                DATA => DATA,
-                OUT_OPCODE => OUT_OPCODE,
-                BYTE_COUNT => BYTE_COUNT,
+                RST => RST,
+                W_ENABLE => W_ENABLE,
                 EMPTY => EMPTY,
-                FULL => FULL
+                FULL => FULL,
+                B_READY => B_READY,
+                PRGA_IN => PRGA_IN,
+                PRGA_OPCODE => PRGA_OPCODE
                 );
 
 --   GOLD: <GOLD_NAME> port map(<put mappings here>);
@@ -111,18 +111,18 @@ autoClock: process
     clk <= '1';
     wait for period/2;
   END process autoClock;
-  
+
 process
 
   begin
 
 -- Insert TEST BENCH Code Here
   RST <= '1';
-  wait for 5 ns;
-  RST <= '0';
-  wait for 5 ns;
+  NEXT_BYTE <= '1';
   W_ENABLE <= '0';
-  R_ENABLE <= '0';
+  wait for period;
+  RST <= '0';
+  wait for period;
   
   sendFIFO(x"01", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
   sendFIFO(x"02", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
@@ -139,44 +139,33 @@ process
   sendFIFO(x"43", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
   sendFIFO(x"53", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
   sendFIFO(x"63", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  cycleNB(NEXT_BYTE);
   sendFIFO(x"73", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  cycleNB(NEXT_BYTE);
   sendFIFO(x"83", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  cycleNB(NEXT_BYTE);
   sendFIFO(x"93", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  cycleNB(NEXT_BYTE);
   sendFIFO(x"A3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  cycleNB(NEXT_BYTE);
   sendFIFO(x"B3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  cycleNB(NEXT_BYTE);
   sendFIFO(x"C3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  cycleNB(NEXT_BYTE);
   sendFIFO(x"D3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  cycleNB(NEXT_BYTE);
   sendFIFO(x"E3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  cycleNB(NEXT_BYTE);
   sendFIFO(x"F3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"0A", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"0B", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"0C", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"0D", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"0E", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"0F", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"00", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  for i in 0 to 5 loop
-    readFIFO(R_ENABLE);
-  end loop;
-  sendFIFO(x"80", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"81", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"82", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"83", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"84", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  for i in 0 to 31 loop
-    readFIFO(R_ENABLE);
-  end loop;
-  sendFIFO(x"FA", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"FB", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  readFIFO(R_ENABLE);
-  readFIFO(R_ENABLE);
+  cycleNB(NEXT_BYTE);
+  sendFIFO(x"F3", "11", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  wait;
     --CLK <= 
---    RST <= 
---    W_ENABLE <= 
---    R_ENABLE <= 
+--    NEXT_BYTE <= 
 --    RCV_DATA <= 
 --    RCV_OPCODE <= 
+--    RST <= 
+--    W_ENABLE <= 
 
-  wait;
   end process;
 end TEST;
