@@ -25,7 +25,7 @@ ENTITY RFIFO IS
 END RFIFO;
 
 ARCHITECTURE BRFIFO OF RFIFO IS
-  TYPE fState IS (IDLE, D_WRITE, D_READ);
+  TYPE fState IS (OUT_OF_RESET, IDLE, D_WRITE, D_READ);
   TYPE ma IS ARRAY (0 TO 31) OF STD_LOGIC_VECTOR (7 DOWNTO 0);
   TYPE mo IS ARRAY (0 TO 31) OF STD_LOGIC_VECTOR (1 DOWNTO 0);
   SIGNAL state, nextState: fState;
@@ -34,11 +34,12 @@ ARCHITECTURE BRFIFO OF RFIFO IS
   SIGNAL readptr, nextreadptr, writeptr, nextwriteptr: STD_LOGIC_VECTOR (4 DOWNTO 0);
   SIGNAL nextData: STD_LOGIC_VECTOR (7 DOWNTO 0);
   SIGNAL nextout_opcode: STD_LOGIC_VECTOR (1 DOWNTO 0);
+  SIGNAL nextFull, nextEmpty: STD_LOGIC;
 BEGIN
-  TLA: PROCESS(CLK, RST, nextState, nextWritePtr, nextReadPtr, nextMemory, nextData, nextout_opcode, nextOpCode)
+  TLA: PROCESS(CLK, RST, nextState, nextWritePtr, nextReadPtr, nextMemory, nextData, nextout_opcode, nextOpCode, nextFull, nextEmpty)
   BEGIN
     IF (RST = '1') THEN
-      state <= IDLE;
+      state <= OUT_OF_RESET;
       readptr <= "00000";
       writeptr <= "00000";
     ELSIF (RISING_EDGE(clk)) THEN
@@ -50,6 +51,8 @@ BEGIN
       DATA <= nextData;
       OUT_OPCODE <= nextout_opcode;
       BYTE_COUNT <= writePtr - readPtr;
+      FULL <= nextFull;
+      EMPTY <= nextEmpty;
     END IF;
   END PROCESS TLA;
   
@@ -57,6 +60,8 @@ BEGIN
   BEGIN
     nextState <= state;
     CASE state IS
+      WHEN OUT_OF_RESET =>
+        nextState <= IDLE;
       WHEN IDLE =>
         IF (W_ENABLE = '1') THEN
           nextState <= D_WRITE;
@@ -72,32 +77,49 @@ BEGIN
   
   RPL: PROCESS(state, readptr, writeptr, RCV_DATA, RCV_OPCODE, memory, opcode)
   BEGIN
-    EMPTY <= '0';
-    FULL <= '0';
     nextReadPtr <= readPtr;
     nextWritePtr <= writePtr;
     nextMemory <= memory;
     CASE state IS
+      WHEN OUT_OF_RESET =>
+        nextReadPtr <= "00000";
+        nextWritePtr <= "00000";
+        nextEmpty <= '1';
+        nextFull <= '0';
       WHEN IDLE =>
       WHEN D_READ =>
         IF (readptr = writeptr) THEN
           nextReadPtr <= readPtr;
-          EMPTY <= '1';
+          nextEmpty <= '1';
         ELSE
           nextData <= memory(CONV_INTEGER(readptr));
           nextout_opcode <= opcode(CONV_INTEGER(readptr));
           nextReadPtr <= readPtr + 1;
-          EMPTY <= '0';
+          nextEmpty <= '0';
+        END IF;
+        
+        IF ((writeptr + 1) = readptr) THEN
+          nextWritePtr <= writePtr;
+          nextFull <= '1';
+        ELSE
+          nextFull <= '0';
         END IF;
       WHEN D_WRITE =>
         IF ((writeptr + 1) = readptr) THEN
           nextWritePtr <= writePtr;
-          FULL <= '1';
+          nextFull <= '1';
         ELSE
           nextMemory(CONV_INTEGER(writeptr)) <= RCV_DATA;
           nextOpCode(CONV_INTEGER(writeptr)) <= RCV_OPCODE;
           nextWritePtr <= writePtr + 1;
-          FULL <= '0';
+          nextFull <= '0';
+        END IF;
+        
+        IF (readptr = writeptr) THEN
+          nextReadPtr <= readPtr;
+          nextEmpty <= '1';
+        ELSE
+          nextEmpty <= '0';
         END IF;
     END CASE;
   END PROCESS RPL;
