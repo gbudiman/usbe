@@ -87,6 +87,18 @@ BEGIN
         nextEmpty <= '1';
         nextFull <= '0';
       WHEN IDLE =>
+        IF ((writeptr + 1) = readptr) THEN
+          nextFull <= '1';
+        ELSE
+          nextFull <= '0';
+        END IF;
+        
+        IF (readptr = writeptr) THEN
+          nextEmpty <= '1';
+        ELSE
+          nextEmpty <= '0';
+        END IF;
+        
       WHEN D_READ =>
         IF (readptr = writeptr) THEN
           nextReadPtr <= readPtr;
