@@ -40,7 +40,8 @@ entity tx_shiftreg is
             present_val <= p_data(7 downto 0);
           else
             present_val <= next_val;
-        end if;           
+          end if;           
+        end if;
       end process;
       
       dp1_tx <= present_val(0);
