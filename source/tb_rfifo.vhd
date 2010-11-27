@@ -155,7 +155,15 @@ process
   sendFIFO(x"0E", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
   sendFIFO(x"0F", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
   sendFIFO(x"00", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"FF", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"FF", "11", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  for i in 0 to 5 loop
+    readFIFO(R_ENABLE);
+  end loop;
+  sendFIFO(x"80", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"81", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"82", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"83", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"84", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
   for i in 0 to 31 loop
     readFIFO(R_ENABLE);
   end loop;
