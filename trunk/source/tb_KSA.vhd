@@ -39,6 +39,7 @@ architecture TEST of tb_KSA is
          CLK : IN STD_LOGIC;
          RST : IN STD_LOGIC;
          BYTE: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+         OPCODE: IN STD_LOGIC_VECTOR(1 DOWNTO 0);
          BYTE_READY: IN STD_LOGIC;
          KEY_ERROR : IN STD_LOGIC;
          PDATA_READY : OUT STD_LOGIC;
@@ -48,6 +49,7 @@ architecture TEST of tb_KSA is
 
 -- Insert signals Declarations here
   signal KEY : STD_LOGIC_VECTOR(63 DOWNTO 0);
+  signal OPCODE: STD_LOGIC_VECTOR(1 DOWNTO 0);
   signal BYTE : STD_LOGIC_VECTOR(7 DOWNTO 0);
   signal BYTE_READY : STD_LOGIC;
   signal CLK : STD_LOGIC;
@@ -59,16 +61,20 @@ architecture TEST of tb_KSA is
 -- signal <name> : <type>;
 PROCEDURE sendUSB (
   constant ASCII: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+  constant OC: IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+  signal OPCODE: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
   signal BYTE: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
   signal BYTE_READY: OUT STD_LOGIC ) IS
 BEGIN
   BYTE <= ASCII;
+  OPCODE <= OC;
   BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 8 * period;
 END sendUSB;
 
 begin
   DUT: KSA port map(
                 KEY => KEY,
+                OPCODE => OPCODE,
                 BYTE => BYTE,
                 BYTE_READY => BYTE_READY,
                 CLK => CLK,
@@ -101,22 +107,39 @@ process
   RST <= '0';
   
   wait for 12 us;
-  sendUSB(x"54", BYTE, BYTE_READY); --T
-  sendUSB(x"68", BYTE, BYTE_READY); --h
-  sendUSB(x"69", BYTE, BYTE_READY); --i
-  sendUSB(x"73", BYTE, BYTE_READY); --s
-  sendUSB(x"20", BYTE, BYTE_READY); --
-  sendUSB(x"69", BYTE, BYTE_READY); -- i
-  sendUSB(x"73", BYTE, BYTE_READY); -- s
-  sendUSB(x"20", BYTE, BYTE_READY); --
-  sendUSB(x"61", BYTE, BYTE_READY); -- a
-  sendUSB(x"77", BYTE, BYTE_READY); -- w
-  sendUSB(x"65", BYTE, BYTE_READY); -- e
-  sendUSB(x"73", BYTE, BYTE_READY); -- s
-  sendUSB(x"6f", BYTE, BYTE_READY); -- o
-  sendUSB(x"6d", BYTE, BYTE_READY); -- m
-  sendUSB(x"65", BYTE, BYTE_READY); -- e
-  
+  sendUSB(x"FF", "00", OPCODE, BYTE, BYTE_READY); --PID?
+  sendUSB(x"54", "01", OPCODE, BYTE, BYTE_READY); --T
+  sendUSB(x"68", "01", OPCODE, BYTE, BYTE_READY); --h
+  sendUSB(x"69", "01", OPCODE, BYTE, BYTE_READY); --i
+  sendUSB(x"73", "01", OPCODE, BYTE, BYTE_READY); --s
+  sendUSB(x"20", "01", OPCODE, BYTE, BYTE_READY); --
+  sendUSB(x"69", "01", OPCODE, BYTE, BYTE_READY); -- i
+  sendUSB(x"73", "01", OPCODE, BYTE, BYTE_READY); -- s
+  sendUSB(x"20", "01", OPCODE, BYTE, BYTE_READY); --
+  sendUSB(x"61", "01", OPCODE, BYTE, BYTE_READY); -- a
+  sendUSB(x"77", "01", OPCODE, BYTE, BYTE_READY); -- w
+  sendUSB(x"65", "01", OPCODE, BYTE, BYTE_READY); -- e
+  sendUSB(x"73", "01", OPCODE, BYTE, BYTE_READY); -- s
+  sendUSB(x"6f", "01", OPCODE, BYTE, BYTE_READY); -- o
+  sendUSB(x"6d", "01", OPCODE, BYTE, BYTE_READY); -- m
+  sendUSB(x"65", "01", OPCODE, BYTE, BYTE_READY); -- e
+  report "Next cycle" severity note;
+  sendUSB(x"FF", "11", OPCODE, BYTE, BYTE_READY);
+  sendUSB(x"54", "01", OPCODE, BYTE, BYTE_READY); --T
+  sendUSB(x"68", "01", OPCODE, BYTE, BYTE_READY); --h
+  sendUSB(x"69", "01", OPCODE, BYTE, BYTE_READY); --i
+  sendUSB(x"73", "01", OPCODE, BYTE, BYTE_READY); --s
+  sendUSB(x"20", "01", OPCODE, BYTE, BYTE_READY); --
+  sendUSB(x"69", "01", OPCODE, BYTE, BYTE_READY); -- i
+  sendUSB(x"73", "01", OPCODE, BYTE, BYTE_READY); -- s
+  sendUSB(x"20", "01", OPCODE, BYTE, BYTE_READY); --
+  sendUSB(x"61", "01", OPCODE, BYTE, BYTE_READY); -- a
+  sendUSB(x"77", "01", OPCODE, BYTE, BYTE_READY); -- w
+  sendUSB(x"65", "01", OPCODE, BYTE, BYTE_READY); -- e
+  sendUSB(x"73", "01", OPCODE, BYTE, BYTE_READY); -- s
+  sendUSB(x"6f", "01", OPCODE, BYTE, BYTE_READY); -- o
+  sendUSB(x"6d", "01", OPCODE, BYTE, BYTE_READY); -- m
+  sendUSB(x"65", "01", OPCODE, BYTE, BYTE_READY); -- e  
 --  sendUSB(x"FA", BYTE, BYTE_READY); --T
 --  sendUSB(x"4A", BYTE, BYTE_READY); --h
 --  sendUSB(x"94", BYTE, BYTE_READY); --i

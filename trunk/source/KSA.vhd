@@ -18,6 +18,7 @@ ENTITY KSA IS
     CLK, RST, KEY_ERROR: IN STD_LOGIC;
     BYTE_READY: IN STD_LOGIC;
     BYTE: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+    OPCODE: IN STD_LOGIC_VECTOR(1 DOWNTO 0);
     --TABLE_READY: OUT STD_LOGIC;
     --OUT_TABLE: OUT STD_LOGIC_VECTOR(2047 DOWNTO 0));
     PROCESSED_DATA: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -42,7 +43,7 @@ ARCHITECTURE bksa OF KSA IS
 --  return res;
 --end;
 
-  TYPE myState IS (IDLE, PREFILL, D_SWAP, D_SWAP_J, D_SWAP_X, D_SWAP_Y, DONE, PSTEPA, PSTEPB1, PSTEPB2, PSTEPC, PSTEPD, PWAIT);
+  TYPE myState IS (IDLE, PREFILL, D_SWAP, D_SWAP_J, D_SWAP_X, D_SWAP_Y, DONE, PSTEPA, PSTEPB1, PSTEPB2, PSTEPC, PSTEPD, PWAIT, PASSTHROUGH, PTOUT, PACKETRESET);
   TYPE pArray IS ARRAY(0 TO 255) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL permuteTable, nextPermuteTable: pArray;
   TYPE kArray IS ARRAY(0 TO 7) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -76,7 +77,7 @@ BEGIN
     END IF;
   END PROCESS TLB;
   
-  NSL: PROCESS(KEY_ERROR, state, permuteComplete, prefillComplete, BYTE_READY)
+  NSL: PROCESS(KEY_ERROR, state, permuteComplete, prefillComplete, BYTE_READY, OPCODE)
   BEGIN
     nextState <= state;
     CASE state IS
@@ -106,7 +107,13 @@ BEGIN
         IF (KEY_ERROR = '1') THEN
           nextState <= IDLE;
         ELSIF (BYTE_READY = '1') THEN
-          nextState <= PSTEPA;
+          IF (OPCODE = "01") THEN
+            nextState <= PSTEPA;
+          ELSIF (OPCODE = "00") THEN
+            nextState <= PASSTHROUGH;
+          ELSIF (OPCODE = "11") THEN
+            nextState <= PACKETRESET;
+          END IF;
         ELSE 
           nextState <= DONE;
         END IF;
@@ -122,9 +129,41 @@ BEGIN
         nextState <= PWAIT;
       WHEN PWAIT =>
         IF (BYTE_READY = '1') THEN
-          nextState <= PSTEPA;
+          IF (OPCODE = "01") THEN
+            nextState <= PSTEPA;
+          ELSIF (OPCODE = "00") THEN
+            nextState <= PASSTHROUGH;
+          ELSIF (OPCODE = "11") THEN
+            nextState <= PACKETRESET;
+          END IF;
         ELSE
           nextState <= PWAIT;
+        END IF;
+      WHEN PASSTHROUGH =>
+        nextState <= PTOUT;
+      WHEN PTOUT =>
+        IF (BYTE_READY = '1') THEN
+          IF (OPCODE = "01") THEN
+            nextState <= PSTEPA;
+          ELSIF (OPCODE = "00") THEN
+            nextState <= PASSTHROUGH;
+          ELSIF (OPCODE = "11") THEN
+            nextState <= PACKETRESET;
+          END IF;
+        ELSE
+          nextState <= PTOUT;
+        END IF;
+      WHEN PACKETRESET =>
+        IF (BYTE_READY = '1') THEN
+          IF (OPCODE = "01") THEN
+            nextState <= PSTEPA;
+          ELSIF (OPCODE = "00") THEN
+            nextState <= PASSTHROUGH;
+          ELSIF (OPCODE = "11") THEN
+            nextState <= PACKETRESET;
+          END IF;
+        ELSE
+          nextState <= PACKETRESET;
         END IF;
       WHEN OTHERS =>
         nextState <= IDLE;
@@ -221,6 +260,13 @@ BEGIN
       WHEN PWAIT =>
         PROCESSED_DATA <= xordata XOR delaydata;
         PDATA_READY <= '1';
+      WHEN PASSTHROUGH =>
+        delaydata <= BYTE;
+      WHEN PTOUT =>
+        PROCESSED_DATA <= delaydata; 
+      WHEN PACKETRESET =>
+        nextinti <= x"00";
+        nextintj <= x"00";
     END CASE;
   END PROCESS OL;
 END bksa;
