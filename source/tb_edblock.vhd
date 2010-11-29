@@ -126,7 +126,8 @@ process
   rst <= '1';
   wait for 5 ns;
   rst <= '0';
-  wait for 50 ns;
+  wait for 37 ns;
+  BYTE_READY <= '0';
   
   sendUART(x"21", serial_in); -- !
   sendUART(x"21", serial_in); -- !
