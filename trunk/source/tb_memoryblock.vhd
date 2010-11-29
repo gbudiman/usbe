@@ -40,6 +40,7 @@ architecture TEST of tb_memoryblock is
          RCV_DATA : IN STD_LOGIC_VECTOR (7 DOWNTO 0);
          RCV_OPCODE : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
          RST : IN STD_LOGIC;
+         EOP : IN STD_LOGIC;
          W_ENABLE : IN STD_LOGIC;
          EMPTY : OUT STD_LOGIC;
          FULL : OUT STD_LOGIC;
@@ -55,6 +56,7 @@ architecture TEST of tb_memoryblock is
   signal RCV_DATA : STD_LOGIC_VECTOR (7 DOWNTO 0);
   signal RCV_OPCODE : STD_LOGIC_VECTOR (1 DOWNTO 0);
   signal RST : STD_LOGIC;
+  signal EOP : STD_LOGIC;
   signal W_ENABLE : STD_LOGIC;
   signal EMPTY : STD_LOGIC;
   signal FULL : STD_LOGIC;
@@ -82,9 +84,9 @@ PROCEDURE cycleNB(
   SIGNAL NEXT_BYTE: OUT STD_LOGIC) IS
 BEGIN
   NEXT_BYTE <= '0';
-  wait for 7 * period;
+  wait for 1 * period;
   NEXT_BYTE <= '1';
-  wait for 3 * period;
+  wait for 7 * period;
   NEXT_BYTE <= '0';
 END cycleNB;
 
@@ -96,6 +98,7 @@ begin
                 RCV_OPCODE => RCV_OPCODE,
                 RST => RST,
                 W_ENABLE => W_ENABLE,
+                EOP => EOP,
                 EMPTY => EMPTY,
                 FULL => FULL,
                 B_READY => B_READY,
@@ -123,6 +126,7 @@ process
   wait for period;
   RST <= '0';
   wait for period;
+  EOP <= '0';
   
   sendFIFO(x"01", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
   sendFIFO(x"02", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
@@ -158,7 +162,25 @@ process
   cycleNB(NEXT_BYTE);
   sendFIFO(x"F3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
   cycleNB(NEXT_BYTE);
+  sendFIFO(x"FF", "11", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  for i in 0 to 16 loop
+    cycleNB(NEXT_BYTE);
+  end loop;
+  sendFIFO(x"20", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"21", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"22", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"23", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  EOP <= '1';
+  cycleNB(NEXT_BYTE);
+  EOP <= '0';
+  sendFIFO(x"24", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  cycleNB(NEXT_BYTE);
+  sendFIFO(x"25", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
   sendFIFO(x"F3", "11", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  cycleNB(NEXT_BYTE);
+  cycleNB(NEXT_BYTE);
+  cycleNB(NEXT_BYTE);
+  cycleNB(NEXT_BYTE);
   wait;
     --CLK <= 
 --    NEXT_BYTE <= 

@@ -25,7 +25,7 @@ ENTITY RFIFO IS
 END RFIFO;
 
 ARCHITECTURE BRFIFO OF RFIFO IS
-  TYPE fState IS (OUT_OF_RESET, IDLE, D_WRITE, D_READ);
+  TYPE fState IS (OUT_OF_RESET, IDLE, D_WRITE, D_READ, D_BOTH);
   TYPE ma IS ARRAY (0 TO 31) OF STD_LOGIC_VECTOR (7 DOWNTO 0);
   TYPE mo IS ARRAY (0 TO 31) OF STD_LOGIC_VECTOR (1 DOWNTO 0);
   SIGNAL state, nextState: fState;
@@ -42,6 +42,7 @@ BEGIN
       state <= OUT_OF_RESET;
       readptr <= "00000";
       writeptr <= "00000";
+      BYTE_COUNT <= "00000";
     ELSIF (RISING_EDGE(clk)) THEN
       state <= nextState;
       readptr <= nextReadPtr;
@@ -63,14 +64,30 @@ BEGIN
       WHEN OUT_OF_RESET =>
         nextState <= IDLE;
       WHEN IDLE =>
-        IF (W_ENABLE = '1') THEN
+        IF (W_ENABLE = '1' AND R_ENABLE = '1') THEN
+          nextState <= D_BOTH;
+        ELSIF (W_ENABLE = '1') THEN
           nextState <= D_WRITE;
         ELSIF (R_ENABLE = '1') THEN
           nextState <= D_READ;
         END IF;
       WHEN D_WRITE =>
-        nextState <= IDLE;
+        IF (R_ENABLE = '1') THEN
+          nextState <= D_READ;
+        ELSIF (W_ENABLE = '1') THEN
+          nextState <= D_WRITE;
+        ELSE
+          nextState <= IDLE;
+        END IF;
       WHEN D_READ =>
+        IF (R_ENABLE = '1') THEN
+          nextState <= D_READ;
+        ELSIF (W_ENABLE = '1') THEN
+          nextState <= D_WRITE;
+        ELSE
+          nextState <= IDLE;
+        END IF;
+      WHEN D_BOTH =>
         nextState <= IDLE;
     END CASE;
   END PROCESS NSL;
@@ -133,6 +150,15 @@ BEGIN
         ELSE
           nextEmpty <= '0';
         END IF;
+      WHEN D_BOTH =>
+        -- Write first
+        nextMemory(CONV_INTEGER(writeptr)) <= RCV_DATA;
+        nextOpCode(CONV_INTEGER(writeptr)) <= RCV_OPCODE;
+        nextWritePtr <= writePtr + 1;
+        -- Then read
+        nextData <= memory(CONV_INTEGER(readptr));
+        nextout_opcode <= opcode(CONV_INTEGER(readptr));
+        nextReadPtr <= readPtr + 1;
     END CASE;
   END PROCESS RPL;
 END BRFIFO;

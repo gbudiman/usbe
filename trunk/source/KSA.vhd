@@ -113,6 +113,8 @@ BEGIN
             nextState <= PASSTHROUGH;
           ELSIF (OPCODE = "11") THEN
             nextState <= PACKETRESET;
+          ELSE
+            nextState <= DONE;
           END IF;
         ELSE 
           nextState <= DONE;
@@ -135,6 +137,8 @@ BEGIN
             nextState <= PASSTHROUGH;
           ELSIF (OPCODE = "11") THEN
             nextState <= PACKETRESET;
+          ELSE
+            nextState <= PWAIT;
           END IF;
         ELSE
           nextState <= PWAIT;
@@ -149,6 +153,8 @@ BEGIN
             nextState <= PASSTHROUGH;
           ELSIF (OPCODE = "11") THEN
             nextState <= PACKETRESET;
+          ELSE
+            nextState <= PTOUT;
           END IF;
         ELSE
           nextState <= PTOUT;
@@ -160,6 +166,8 @@ BEGIN
           ELSIF (OPCODE = "00") THEN
             nextState <= PASSTHROUGH;
           ELSIF (OPCODE = "11") THEN
+            nextState <= PACKETRESET;
+          ELSE
             nextState <= PACKETRESET;
           END IF;
         ELSE

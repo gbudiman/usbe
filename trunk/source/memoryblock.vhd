@@ -18,6 +18,7 @@ ENTITY memoryblock IS
       RCV_OPCODE  : IN     STD_LOGIC_VECTOR (1 DOWNTO 0);
       RST         : IN     STD_LOGIC;
       W_ENABLE    : IN     STD_LOGIC;
+      EOP         : IN     STD_LOGIC;
       EMPTY       : OUT    STD_LOGIC;
       FULL        : OUT    STD_LOGIC;
       B_READY     : OUT    STD_LOGIC;
@@ -65,6 +66,7 @@ ARCHITECTURE struct OF memoryblock IS
       NEXT_BYTE   : IN     STD_LOGIC;
       OPCODE      : IN     STD_LOGIC_VECTOR (1 DOWNTO 0);
       RST         : IN     STD_LOGIC;
+      EOP         : IN     STD_LOGIC;
       B_READY     : OUT    STD_LOGIC;
       PRGA_IN     : OUT    STD_LOGIC_VECTOR (7 DOWNTO 0);
       PRGA_OPCODE : OUT    STD_LOGIC_VECTOR (1 DOWNTO 0);
@@ -104,6 +106,7 @@ BEGIN
          NEXT_BYTE   => NEXT_BYTE,
          DATA        => DATA,
          OPCODE      => OUT_OPCODE,
+         EOP         => EOP,
          BYTE_COUNT  => BYTE_COUNT,
          B_READY     => B_READY,
          R_ENABLE    => R_ENABLE,

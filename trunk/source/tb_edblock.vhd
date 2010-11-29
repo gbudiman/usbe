@@ -127,7 +127,8 @@ process
   wait for 5 ns;
   rst <= '0';
   wait for 37 ns;
-  BYTE_READY <= '0';
+  BYTE_READY <= '1';
+  OPCODE <= "10";
   
   sendUART(x"21", serial_in); -- !
   sendUART(x"21", serial_in); -- !
@@ -154,6 +155,7 @@ process
   sendUSB(x"6f", "01", OPCODE, BYTE, BYTE_READY); -- o
   sendUSB(x"6d", "01", OPCODE, BYTE, BYTE_READY); -- m
   sendUSB(x"65", "01", OPCODE, BYTE, BYTE_READY); -- e
+  sendUSB(x"FF", "11", OPCODE, BYTE, BYTE_READY);
   wait;
     --BYTE <= 
 --    BYTE_READY <= 
