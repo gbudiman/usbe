@@ -96,7 +96,7 @@ end rx_CRC_CALC;
 architecture moore of rx_CRC_CALC is
 signal current_crc, current_rcv_data
 begin
-  NEWCRC:process(
+  NEWCRC:process(CLK, RST)
     begin
       if (RST = '1') then
       elsif(CLK'event and CLK = '1') then
