@@ -26,7 +26,10 @@
 --        http://www.easics.com
 --------------------------------------------------------------------------------
 library ieee;
-use ieee.std_logic_1164.all;
+USE ieee.std_logic_1164.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+
 
 package PCK_CRC16_D8 is
   -- polynomial: (0 2 15 16)
@@ -77,3 +80,29 @@ package body PCK_CRC16_D8 is
   end nextCRC16_D8;
 
 end PCK_CRC16_D8;
+
+
+Entity rx_CRC_CALC is
+  port(
+    CLK:in std_logic;
+    RST:in std_logic;
+    W_ENABLE: in std_logic;
+    OPCODE: in std_logic_vector(1 downto 0);
+    RCV_DATA: in std_logic_vector(7 downto 0);
+    RX_CRC: out std_logic_vector(15 downto 0)
+  );
+end rx_CRC_CALC;
+
+architecture moore of rx_CRC_CALC is
+signal current_crc, current_rcv_data
+begin
+  NEWCRC:process(
+    begin
+      if (RST = '1') then
+      elsif(CLK'event and CLK = '1') then
+        if (W_ENABLE = '1' AND OPCODE = "00") then
+          current_crc <= nextCRC16_D8(RCV_DATA, current_crc);
+        end if;
+      end if;
+    end process StateReg;
+end moore;
