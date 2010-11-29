@@ -17,6 +17,7 @@ ENTITY RBUFFER IS
     DATA: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
     OPCODE: IN STD_LOGIC_VECTOR (1 DOWNTO 0);
     BYTE_COUNT: IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+    EOP: IN STD_LOGIC;
     B_READY, R_ENABLE: OUT STD_LOGIC;
     PRGA_IN: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
     PRGA_OPCODE: OUT STD_LOGIC_VECTOR (1 DOWNTO 0));
@@ -50,7 +51,7 @@ BEGIN
     CASE STATE IS
       WHEN IDLE =>
         nextState <= IDLE;
-        IF (BYTE_COUNT > 15 AND NEXT_BYTE = '1') THEN
+        IF ((BYTE_COUNT > 15 AND NEXT_BYTE = '1') OR EOP = '1') THEN
           nextState <= PASS;
         ELSE
           nextState <= IDLE;
@@ -62,7 +63,7 @@ BEGIN
       WHEN GET =>
         nextState <= PROCESSING;
       WHEN PROCESSING =>
-        IF (OPCODE = "11") THEN nextState <= IDLE;
+        IF (OPCODE = "10" OR OPCODE = "11") THEN nextState <= IDLE;
         ELSIF (NEXT_BYTE = '1') THEN nextState <= PASS;
         ELSE nextState <= PROCESSING;
         END IF;
