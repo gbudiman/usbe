@@ -42,10 +42,11 @@ architecture TEST of tb_RX_RCU is
          SHIFT_ENABLE : in std_logic;
          BITSTUFF : in std_logic;
          RCV_DATA : in std_logic_vector(7 downto 0);
-         RX_CRC : in std_logic_vector(7 downto 0);
+         RX_CRC : in std_logic_vector(15 downto 0);
          RCVING : out std_logic;
          W_ENABLE : out std_logic;
-         R_ERROR : out std_logic
+         R_ERROR : out std_logic;
+         OPCODE : out std_logic_vector(1 downto 0)
     );
   end component;
 
@@ -56,11 +57,12 @@ architecture TEST of tb_RX_RCU is
   signal D_EDGE : std_logic;
   signal EOP : std_logic;
   signal SHIFT_ENABLE : std_logic;
-  signal RX_CRC : std_logic_vector(7 downto 0);
+  signal RX_CRC : std_logic_vector(15 downto 0);
   signal RCV_DATA : std_logic_vector(7 downto 0);
   signal RCVING : std_logic;
   signal W_ENABLE : std_logic;
   signal R_ERROR : std_logic;
+  signal OPCODE : std_logic_vector(1 downto 0);
 
 -- signal <name> : <type>;
 
@@ -76,7 +78,8 @@ begin
                 RX_CRC => RX_CRC,
                 RCVING => RCVING,
                 W_ENABLE => W_ENABLE,
-                R_ERROR => R_ERROR
+                R_ERROR => R_ERROR,
+                OPCODE => OPCODE
                 );
 
 --   GOLD: <GOLD_NAME> port map(<put mappings here>);
@@ -100,7 +103,7 @@ process
     EOP <= '0';
     SHIFT_ENABLE <= '0';
     RCV_DATA <= "00000000";
-    RX_CRC <= "11001100";
+    RX_CRC <= "1100110011001100";
     BITSTUFF<='0';
     wait for 50 ns;
     RST <= '0';

@@ -24,6 +24,7 @@ Entity rcu is
     W_ENABLE:out std_logic;
     R_ERROR:out std_logic;
     CRC_ERROR:out std_logic
+    OPCODE: out std_logic_vector(1 downto 0);
   );
 end rcu;
 
@@ -52,6 +53,7 @@ architecture moore of rcu is
             case state is
             when IDLE =>
                           RCVING <= '0';
+                          OPCODE <= "10";
                           nxtR_ERROR <= '0';
                           W_ENABLE <= '0';
                           nextcount <= "0000";
@@ -62,6 +64,7 @@ architecture moore of rcu is
                           end if;
             when PREIDLE =>
                           RCVING <= '0';
+                          OPCODE <= "10";
                           nxtR_ERROR <= '0';
                           W_ENABLE <= '0';
                           nextcount <= "0000";
@@ -72,6 +75,7 @@ architecture moore of rcu is
                           end if;
             when RECEIVING =>
                           nextcount <= count;
+                          OPCODE <= "10";
                           RCVING <= '1';
                           nxtR_ERROR <= '0';
                           W_ENABLE <= '0';
@@ -90,19 +94,50 @@ architecture moore of rcu is
             when CHECK_SYNC =>
                           RCVING <= '1';
                           nxtR_ERROR <= '0';
-                          W_ENABLE <= '0';
                           nextcount <= "0000";
                           if ( RCV_DATA = "10000000") then
-                            nextstate <= POST_SYNC;
+                            nextstate <= RCV_PID;
+                            W_ENABLE <= '1';
+                            OPCODE <= "00";
                           else
                             nextstate <= NO_SYNC;
                             nxtR_ERROR <= '1';
+                            W_ENABLE <= '0';
+                            OPCODE <= "10";
+                          end if;
+            when RCV_PID =>
+                        OPCODE <= "10";
+                        nextcount <= count;
+                        RCVING <= '1';
+                        nxtR_ERROR <= '0';
+                        W_ENABLE <= '0';
+                        if ( EOP = '1') then
+                          nextstate <= ERROR;
+                          nxtR_ERROR <= '1';
+                        elsif (count = "1000") then
+                          nextstate <= PASS_PID;
+                          nextcount <= "0000";
+                        elsif (SHIFT_ENABLE = '1') then
+                          nextstate <= RCV_PID;
+                          nextcount <= count + 1;
+                        else
+                          nextstate <= RCV_PID;
+                        end if;
+            when PASS_PID =>
+                          RCVING <= '1';
+                          nxtR_ERROR <= '0';
+                          nextcount <= "0000";
+                          nextstate <= POST_SYNC;
+                          nxtR_ERROR <= '1';
+                          W_ENABLE <= '0';
+                          OPCODE <= "00";
                           end if;
             when NO_SYNC =>
                           RCVING <= '1';
                           nxtR_ERROR <= '1';
                           W_ENABLE <= '0';
                           nextcount <= "0000";
+                          OPCODE <= "10";
                           if ( EOP = '1') then
                             nextstate <= NO_SYNC2;
                           else
@@ -112,12 +147,14 @@ architecture moore of rcu is
                           RCVING<= '0';
                           nxtR_ERROR <= '1';
                           W_ENABLE <= '0';
+                          OPCODE <= "10";
                           nextcount <= "0000";
                           nextstate <= ERROR;  
             when ERROR =>
                           RCVING <= '0';
                           nxtR_ERROR <= '1';
                           W_ENABLE <= '0';
+                          OPCODE <= "10";
                           nextcount <= "0000";
                           if ( D_EDGE = '1') then
                             nextstate <= ERROR2;
@@ -129,6 +166,7 @@ architecture moore of rcu is
                           RCVING <= '0';
                           nxtR_ERROR <= '1';
                           W_ENABLE <= '0';
+                          OPCODE <= "10";
                           nextcount <= "0000";
                           if ( D_EDGE = '1') then
                             nextstate <= RECEIVING;
@@ -137,6 +175,7 @@ architecture moore of rcu is
                             nextstate <= ERROR2;
                           end if;                          
             when POST_SYNC =>
+                        OPCODE <= "10";
                         nextcount <= count;
                         RCVING <= '1';
                         nxtR_ERROR <= '0';
@@ -154,6 +193,7 @@ architecture moore of rcu is
                         end if;                                                 
             when WRITE_BYTE =>
                           RCVING <= '1';
+                          OPCODE <= "01";
                           nxtR_ERROR <= '0';
                           W_ENABLE <= '1';
                           nextcount <= "0000";
