@@ -1,5 +1,5 @@
 -- $Id: $
--- File name:   h2s_tcu.vhd
+-- File name:   tcu.vhd
 -- Created:     11/2/2010
 -- Author:      Michael Kelton
 -- Lab Section: 337-01
@@ -9,55 +9,99 @@
 
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 
-entity h2s_tcu is
+entity tcu is
   port( clk   :in std_logic;
         rst   :in std_logic;
         p_ready :in std_logic;
-        p_data  :in std_logic_vector(7 downto 0);
-        empty   :in std_logic;
-        --crc_data:in std_logic_vector(7 downto 0);
-        dp1_tx  :out  std_logic;
-        dm1_tx  :out  std_logic
+        t_bitstuff  :in std_logic;
+        PRGA_OUT  :in std_logic_vector(7 downto 0);
+        --t_crc   :in std_logic_vector(15 downto 0);
+        sending  :out  std_logic;
+        EOP       :out  std_logic;
+        next_byte  :out  std_logic;
+        send_data   :out std_logic_vector(7 downto 0)
         );
-  end h2s_tcu;
+  end tcu;
   
-  architecture behavioral of h2s_tcu is
+  architecture behavioral of tcu is
     
-    signal present_val : std_logic_vector(7 downto 0); --signals for shiftreg
-    signal next_val : std_logic_vector(7 downto 0);
+    type state_type is (IDLE, SEND);
+    signal state, nextstate : state_type;
+    signal count, nextcount : STD_LOGIC_VECTOR(6 downto 0);  
     
-
     begin
       
+    holdReg : process(CLK, RST)
+    BEGIN       
+      if (RST = '1') then
+        state <= IDLE;
+        count <= "0000000";
+      elsif(CLK'event and CLK = '1') then
+          state <= nextstate;
+          count <= nextcount;
+          
+          
+        end if;
+      end process holdReg;
       
-     SHIFTREG: process (clk, rst)
       
-      begin  -- process
-        if rst = '0' then
-           present_val <= "00000000";
-        elsif rising_edge(CLK) then
-          present_val <= next_val;
-        end if;           
-      end process;
-      
-      dp1_tx <= present_val(0);
-      
-      dm1_tx <= not present_val(0);
-         
-      next_val <= '0' & present_val(7 downto 1);
-         
-      present_val <= p_data(7 downto 0) when p_ready = '1';
-                                                  
-      -- are we assuming that p_ready will only be pulsed when it needs to? because if it pulses, it will overwrite
-      -- my present value.
+    Next_State:process(state, p_ready, count, t_bitstuff)
+    Begin
+      case state is
+                  when IDLE =>
+                    
+                    nextstate <= IDLE;
+                    nextcount <= "0000000";
+                    sending <= '0';
+                    EOP <= '0';
+                    next_byte <= '0';
+                    
+                    if p_ready = '1' then
+                      send_data <= PRGA_OUT;
+                      nextstate <= SEND;
+                    end if;
+                    
 
-         --timer
-         
-         --SEPERATE BLOCKS: shifter register (above), timer, EOP send, Encoder
+                  when SEND =>
+                  
+                    nextstate <= SEND;
+                    nextcount <= count + 1;
+                    sending <= '1';
+                    
+                    if t_bitstuff = '1' then
+                      nextcount <= count;
+                    end if;
+                    
+                    if count = "1000000" then  --64
+                      next_byte <= '1';
+                        
+                      if p_ready = '0' then
+                        nextstate <= IDLE;
+                        EOP <= '1';  
+                      end if;
+    
+                      nextcount <= "0000000";
+                      send_data <= PRGA_OUT;
+                    end if;
+                    
+                    
 
-  
-         --state machine for tcu
+                when others =>
+                  
+                  nextcount <= "0000000";
+                  nextstate <= IDLE;
+                  sending <= '0';
+                  EOP <= '0';
+                  next_byte <= '0';
+                
+              end case;
+            end process Next_state;
+             
+      
+      
 
 end behavioral;    
