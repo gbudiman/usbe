@@ -168,9 +168,8 @@ process
     sendByteFast("01000110", DP1_RX, DM1_RX);
     sendByteFast("00111000", DP1_RX, DM1_RX);
     sendByteFast("10110010", DP1_RX, DM1_RX);
-    sendByteFast("10111010", DP1_RX, DM1_RX);
-    sendByteFast("10111111", DP1_RX, DM1_RX);
-    sendByteIncomplete("00000000", 7, DP1_RX, DM1_RX);
+    sendByteFast("11111101", DP1_RX, DM1_RX);
+    sendByteIncomplete("10000000", 7, DP1_RX, DM1_RX);
     sendByteFast("01010100", DP1_RX, DM1_RX);
     
     sendEOP(0, DP1_RX, DM1_RX);

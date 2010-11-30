@@ -1,5 +1,5 @@
 -- $Id: $
--- File name:   rcu.vhd
+-- File name:   rx_rcu.vhd
 -- Created:     11/11/2010
 -- Author:      Brent O'Brien
 -- Lab Section: 337-01
@@ -11,7 +11,7 @@ USE IEEE.std_logic_1164.ALL;
 USE IEEE.STD_LOGIC_ARITH.ALL;
 USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 
-Entity rcu is
+Entity rx_rcu is
   port(
     CLK:in std_logic;
     RST:in std_logic;
@@ -27,9 +27,9 @@ Entity rcu is
     CRC_ERROR:out std_logic;
     OPCODE:out std_logic_vector(1 downto 0)
   );
-end rcu;
+end rx_rcu;
 
-architecture moore of rcu is
+architecture moore of rx_rcu is
   type state_type is (IDLE, RECEIVING, CHECK_SYNC, POST_SYNC, NO_SYNC, ERROR,
   EOP_DETECT, WRITE_BYTE, ERROR2, PREIDLE, NO_SYNC2, RCV_PID, SEND_PID);
   signal state, nextstate : state_type;
