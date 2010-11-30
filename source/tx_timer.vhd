@@ -42,7 +42,7 @@ architecture moore of tx_timer is
       
       Next_State:process(state, count, SENDING)
         Begin
-          SHIFT_ENABLE_R <= '0';
+          SHIFT_ENABLE_R <= '0'; 
           case state is
           when IDLE => 
                           if SENDING = '1' then

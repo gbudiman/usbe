@@ -67,7 +67,7 @@ entity tx_encode is
                                   
                                   if EOP = '1' then
                                     DE_holdout_nxt <= '0';
-                                    dm_tx_nxt <= '0';
+                                    dm_tx_nxt <= '0'; 
                                     nextstate <= EOP_STATE;
                                   else
                                     if (SHIFT_ENABLE_E = '1') then

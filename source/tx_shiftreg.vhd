@@ -31,7 +31,7 @@ entity tx_shiftreg is
   BEGIN
      STOREREG: process (CLK, RST)
      begin  
-      if RST = '1' then
+      if RST = '1' then 
         present_val <= "00000000";
       elsif rising_edge(CLK) then
         present_val <= next_val;
