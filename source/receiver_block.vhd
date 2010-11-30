@@ -16,6 +16,7 @@ ENTITY Receiver_Block IS
       DM1_RX    : IN     std_logic;
       DP1_RX    : IN     std_logic;
       RST       : IN     std_logic;
+      EOP_EXTERNAL : OUT    std_logic;
       CRC_ERROR : OUT    std_logic;
       OPCODE    : OUT    std_logic_vector (1 DOWNTO 0);
       RCV_DATA  : OUT    std_logic_vector (7 DOWNTO 0);
@@ -49,12 +50,11 @@ ARCHITECTURE struct OF Receiver_Block IS
    SIGNAL BITSTUFF     : std_logic;
    SIGNAL D_EDGE       : std_logic;
    SIGNAL D_ORIG       : std_logic;
-   SIGNAL EOP          : std_logic;
    SIGNAL RCVING       : std_logic;
    SIGNAL RX_CRC       : std_logic_vector(15 DOWNTO 0);
    SIGNAL SHIFT_ENABLE : std_logic;
    SIGNAL rx_CHECK_CRC : std_logic_vector(15 DOWNTO 0);
-
+   SIGNAL EOP          : std_logic;
    -- Implicit buffer signal declarations
    SIGNAL OPCODE_internal   : std_logic_vector (1 DOWNTO 0);
    SIGNAL RCV_DATA_internal : std_logic_vector (7 DOWNTO 0);
@@ -240,5 +240,6 @@ BEGIN
    OPCODE   <= OPCODE_internal;
    RCV_DATA <= RCV_DATA_internal;
    W_ENABLE <= W_ENABLE_internal;
+   EOP_EXTERNAL <= EOP;
 
 END struct;
