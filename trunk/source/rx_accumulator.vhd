@@ -10,7 +10,7 @@
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 
-Entity rx_edgedetect is
+Entity rx_accumulator is
   port(
     CLK:in std_logic;
     RST:in std_logic;
@@ -18,9 +18,9 @@ Entity rx_edgedetect is
     W_ENABLE:in std_logic;
     rx_CHECK_CRC:out std_logic_vector(15 downto 0)
   );
-end rx_edgedetect;
+end rx_accumulator;
 
-architecture Behavioral of rx_edgedetect is
+architecture Behavioral of rx_accumulator is
   signal present_CHECK_CRC, new_CHECK_CRC : std_logic_vector(15 downto 0);
   Begin
   holdReg : process(CLK, RST)
@@ -32,6 +32,7 @@ architecture Behavioral of rx_edgedetect is
       end if;
     end process holdReg;
   
-  new_CHECK_CRC <= present_CHECK_CRC(7 downto 0) & RCV_DATA(7 downto 0) when (W_ENABLE = '1');
+  new_CHECK_CRC <= present_CHECK_CRC(7 downto 0) & RCV_DATA(7 downto 0) when (W_ENABLE = '1')
+                  else present_CHECK_CRC;
   rx_CHECK_CRC <= present_CHECK_CRC(15 downto 0);                                        
 end architecture;
