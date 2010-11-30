@@ -20,6 +20,7 @@ Entity rcu is
     SHIFT_ENABLE:in std_logic;
     BITSTUFF: in std_logic;
     RX_CRC: in std_logic_vector(15 downto 0);
+    RX_CHECK_CRC: in std_logic_vector(15 downto 0);
     RCV_DATA: in std_logic_vector(7 downto 0);
     RCVING:out std_logic;
     W_ENABLE:out std_logic;
@@ -35,7 +36,6 @@ architecture moore of rcu is
   signal state, nextstate : state_type;
   signal count, nextcount : STD_LOGIC_VECTOR(3 downto 0);
   signal nxtR_ERROR, curR_ERROR, nxtCRC_ERROR, curCRC_ERROR : std_logic;
-  signal recent_byte, most_recent_byte: STD_LOGIC_VECTOR(7 downto 0);
   begin
   StateReg : process(CLK, RST)
     begin
@@ -43,8 +43,6 @@ architecture moore of rcu is
         state <= IDLE;
         count <= "0000";
         R_ERROR <= '0';
-        most_recent_byte <= "00000000";
-        recent_byte <= "00000000";
       elsif(CLK'event and CLK = '1') then
         state <= nextstate;
         count <= nextcount;
@@ -55,7 +53,7 @@ architecture moore of rcu is
       end if;
     end process StateReg;
     
-    Next_State:process(state, EOP, count, D_EDGE, SHIFT_ENABLE, RCV_DATA, BITSTUFF, recent_byte, most_recent_byte)
+    Next_State:process(state, EOP, count, D_EDGE, SHIFT_ENABLE, RCV_DATA, BITSTUFF)
           Begin
             case state is
             when IDLE =>
@@ -147,7 +145,7 @@ architecture moore of rcu is
                           OPCODE <= "00";
                           nxtR_ERROR <= '0';
                           nxtCRC_ERROR <= '0';
-                          W_ENABLE <= '0';
+                          W_ENABLE <= '1';
                           nextcount <= "0000";
                           nextstate <= POST_SYNC;
             when NO_SYNC =>
@@ -226,8 +224,6 @@ architecture moore of rcu is
                           nxtCRC_ERROR <= '0';
                           W_ENABLE <= '1';
                           nextcount <= "0000";
-                          most_recent_byte <= rcv_data;
-                          recent_byte <= most_recent_byte;
                           nextstate <= POST_SYNC;
                           
             when EOP_DETECT =>
@@ -238,7 +234,7 @@ architecture moore of rcu is
                           OPCODE <= "11";
                           nextcount <= "0000";
                           if ( count = "0000") then
-                            if (RX_CRC = recent_byte & most_recent_byte) then
+                            if (RX_CRC = RX_CHECK_CRC) then
                               nextstate <= PREIDLE;
                             else
                               nextstate <= ERROR;
