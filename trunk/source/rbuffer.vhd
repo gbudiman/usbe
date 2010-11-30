@@ -24,7 +24,7 @@ ENTITY RBUFFER IS
 END RBUFFER;
 
 ARCHITECTURE brbuffer OF RBUFFER IS
-  TYPE myState IS (IDLE, PROCESSING, PASS, WAITST, GET);
+  TYPE myState IS (IDLE, P1, P2, P3, P4, PWAIT, DECS);
   SIGNAL state, nextState: myState;
   SIGNAL tempData, nextTempData: STD_LOGIC_VECTOR (7 DOWNTO 0);
   SIGNAL tempOpcode, nextTempOpcode: STD_LOGIC_VECTOR (1 DOWNTO 0);
@@ -45,48 +45,59 @@ BEGIN
     END IF;
   END PROCESS TLB;
   
-  NSL: PROCESS(state, NEXT_BYTE, BYTE_COUNT, OPCODE)
+  NSL: PROCESS(state, NEXT_BYTE, BYTE_COUNT, OPCODE, EOP)
   BEGIN
     nextState <= state;
     CASE STATE IS
       WHEN IDLE =>
         nextState <= IDLE;
-        IF ((BYTE_COUNT > 15 AND NEXT_BYTE = '1') OR EOP = '1') THEN
-          nextState <= PASS;
+        IF ((BYTE_COUNT > 15 AND NEXT_BYTE = '1') OR (EOP = '1' AND NEXT_BYTE = '1')) THEN
+          nextState <= P1;
         ELSE
           nextState <= IDLE;
         END IF;
-      WHEN PASS =>
-        nextState <= WAITST;
-      WHEN WAITST =>
-        nextState <= GET;
-      WHEN GET =>
-        nextState <= PROCESSING;
-      WHEN PROCESSING =>
-        IF (OPCODE = "10" OR OPCODE = "11") THEN nextState <= IDLE;
-        ELSIF (NEXT_BYTE = '1') THEN nextState <= PASS;
-        ELSE nextState <= PROCESSING;
+      WHEN P1 =>
+        nextState <= P2;
+      WHEN P2 =>
+        nextState <= P3;
+      WHEN P3 =>
+        nextState <= P4;
+      WHEN P4 =>
+        nextState <= PWAIT;
+      WHEN PWAIT =>
+        IF (NEXT_BYTE = '0') THEN
+          nextState <= DECS;
+        ELSE
+          nextState <= PWAIT;
+        END IF;
+      WHEN DECS =>
+        IF (OPCODE = "11" OR BYTE_COUNT = 0) THEN
+          nextState <= IDLE;
+        ELSE
+          nextState <= P1;
         END IF;
     END CASE;
   END PROCESS NSL;
   
-  OL: PROCESS(DATA, OPCODE, state)
+  OL: PROCESS(DATA, OPCODE, state, tempData, tempOpCode)
   BEGIN
     nextR_ENABLE <= '0';
+    nextB_READY <= '0';
+    nextTempOpCode <= tempOpCode;
+    nextTempData <= tempData;
     CASE STATE IS
       WHEN IDLE =>
-        nextB_READY <= '0';
-      WHEN PASS =>
+      WHEN P1 =>
         nextR_ENABLE <= '1';
-        nextB_READY <= '0';
-      WHEN WAITST =>
-        nextB_READY <= '0';
-      WHEN GET =>
+      WHEN P2 =>
+        nextR_ENABLE <= '0';
+      WHEN P3 =>
+      WHEN P4 =>
         nextTempData <= DATA;
-        nextTempOpcode <= OPCODE;
+        nextTempOpCode <= OPCODE;
         nextB_READY <= '1';
-      WHEN PROCESSING =>
-        nextB_READY <= '1';
+      WHEN PWAIT =>
+      WHEN DECS =>
     END CASE;
   END PROCESS OL;
 END brbuffer;

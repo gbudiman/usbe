@@ -81,14 +81,16 @@ BEGIN
 END sendFIFO;
 
 PROCEDURE cycleNB(
+  SIGNAL B_READY: IN STD_LOGIC;
   SIGNAL NEXT_BYTE: OUT STD_LOGIC) IS
 BEGIN
   NEXT_BYTE <= '0';
-  wait for 1 * period;
+  report "waiting" severity note;
+  wait until B_READY = '1';
   NEXT_BYTE <= '1';
-  wait for 7 * period;
-  NEXT_BYTE <= '0';
+  wait for 25 ns;
 END cycleNB;
+
 
 begin
   DUT: memoryblock port map(
@@ -123,10 +125,10 @@ process
   RST <= '1';
   NEXT_BYTE <= '1';
   W_ENABLE <= '0';
+  EOP <= '0';
   wait for period;
   RST <= '0';
   wait for period;
-  EOP <= '0';
   
   sendFIFO(x"01", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
   sendFIFO(x"02", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
@@ -135,52 +137,48 @@ process
   sendFIFO(x"05", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
   sendFIFO(x"06", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
   sendFIFO(x"07", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"08", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"09", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"13", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"23", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"33", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"43", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"53", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"63", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  cycleNB(NEXT_BYTE);
-  sendFIFO(x"73", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  cycleNB(NEXT_BYTE);
-  sendFIFO(x"83", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  cycleNB(NEXT_BYTE);
-  sendFIFO(x"93", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  cycleNB(NEXT_BYTE);
-  sendFIFO(x"A3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  cycleNB(NEXT_BYTE);
-  sendFIFO(x"B3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  cycleNB(NEXT_BYTE);
-  sendFIFO(x"C3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  cycleNB(NEXT_BYTE);
-  sendFIFO(x"D3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  cycleNB(NEXT_BYTE);
-  sendFIFO(x"E3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  cycleNB(NEXT_BYTE);
-  sendFIFO(x"F3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  cycleNB(NEXT_BYTE);
-  sendFIFO(x"FF", "11", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  for i in 0 to 16 loop
-    cycleNB(NEXT_BYTE);
-  end loop;
-  sendFIFO(x"20", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"21", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"22", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"08", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"09", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"13", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
   sendFIFO(x"23", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  EOP <= '1';
-  cycleNB(NEXT_BYTE);
-  EOP <= '0';
-  sendFIFO(x"24", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  cycleNB(NEXT_BYTE);
-  sendFIFO(x"25", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  sendFIFO(x"F3", "11", RCV_DATA, RCV_OPCODE, W_ENABLE);
-  cycleNB(NEXT_BYTE);
-  cycleNB(NEXT_BYTE);
-  cycleNB(NEXT_BYTE);
-  cycleNB(NEXT_BYTE);
+  sendFIFO(x"33", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"43", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"53", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"63", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"73", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  cycleNB(B_READY, NEXT_BYTE);
+  cycleNB(B_READY, NEXT_BYTE);
+  wait for 50 ns;
+  cycleNB(B_READY, NEXT_BYTE);
+  cycleNB(B_READY, NEXT_BYTE);
+  cycleNB(B_READY, NEXT_BYTE);
+  --for i in 0 to 14 loop
+--    report "Check" severity note;
+--    NEXT_BYTE <= '1';
+--    wait on B_READY;
+--    NEXT_BYTE <= '0';
+--    wait for 35 ns;
+--  end loop;
+--  wait for 100 ns;
+  sendFIFO(x"83", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"93", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"A3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"B3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"C3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"D3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"E3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"F3", "00", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"FF", "11", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"F0", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"F1", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"F2", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"F3", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"F4", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"F5", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  sendFIFO(x"F6", "01", RCV_DATA, RCV_OPCODE, W_ENABLE);
+  for i in 0 to 31 loop
+    cycleNB(B_READY, NEXT_BYTE);
+  end loop;
   wait;
     --CLK <= 
 --    NEXT_BYTE <= 
