@@ -67,6 +67,8 @@ BEGIN
       WHEN PWAIT =>
         IF (NEXT_BYTE = '0') THEN
           nextState <= DECS;
+        ELSIF (OPCODE = "11") THEN
+          nextState <= IDLE;
         ELSE
           nextState <= PWAIT;
         END IF;

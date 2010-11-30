@@ -138,10 +138,17 @@ BEGIN
           nextWritePtr <= writePtr;
           nextFull <= '1';
         ELSE
-          nextMemory(CONV_INTEGER(writeptr)) <= RCV_DATA;
-          nextOpCode(CONV_INTEGER(writeptr)) <= RCV_OPCODE;
-          nextWritePtr <= writePtr + 1;
-          nextFull <= '0';
+          IF (RCV_OPCODE = "11") THEN
+            nextMemory(CONV_INTEGER(writeptr - 2)) <= x"00";
+            nextOpCode(CONV_INTEGER(writeptr - 2)) <= "11";
+            nextWritePtr <= writePtr - 1;
+            nextFull <= '0';
+          ELSE
+            nextMemory(CONV_INTEGER(writeptr)) <= RCV_DATA;
+            nextOpCode(CONV_INTEGER(writeptr)) <= RCV_OPCODE;
+            nextWritePtr <= writePtr + 1;
+            nextFull <= '0';
+          END IF;
         END IF;
         
         IF (readptr = writeptr) THEN
