@@ -33,6 +33,6 @@ architecture Behavioral of rx_edgedetect is
       end if;
     end process holdReg;
   
-  D_EDGE <= (DP_hold1 XOR DP_hold2) AND (RST);
+  D_EDGE <= (DP_hold1 XOR DP_hold2) AND (NOT RST);
                                            
 end architecture;

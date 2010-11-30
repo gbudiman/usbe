@@ -52,7 +52,7 @@ architecture moore of rx_decode is
             case state is
             when ZERO =>   
                             nextstate <= ZERO;
-                            DP_hold1_nxt <= DP_hold1;
+                            DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
                             if DP1_RX = '1' then
@@ -66,7 +66,7 @@ architecture moore of rx_decode is
                           BITSTUFF <= '0';
             when ONE =>
                             nextstate <= ONE;
-                            DP_hold1_nxt <= DP_hold1;
+                            DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
                             if DP1_RX = '1' then
@@ -80,7 +80,7 @@ architecture moore of rx_decode is
                           BITSTUFF <= '0';
             when TWO =>
                             nextstate <= TWO;
-                            DP_hold1_nxt <=DP_hold1;
+                            DP_hold1_nxt <=DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
                             if DP1_RX = '1' then
@@ -94,7 +94,7 @@ architecture moore of rx_decode is
                           BITSTUFF <= '0'; 
             when THREE =>
                             nextstate <= THREE;
-                            DP_hold1_nxt <= DP_hold1;
+                            DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
                             if DP1_RX = '1' then
@@ -108,7 +108,7 @@ architecture moore of rx_decode is
                           bitstuff <= '0';
             when FOUR =>
                             nextstate <= FOUR;
-                            DP_hold1_nxt <= DP_hold1;
+                            DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
                             if DP1_RX = '1' then
@@ -122,7 +122,7 @@ architecture moore of rx_decode is
                           BITSTUFF <= '0';
             when FIVE =>
                             nextstate <= FIVE;
-                            DP_hold1_nxt <= DP_hold1;
+                            DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
                             if DP1_RX = '1' then
