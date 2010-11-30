@@ -39,7 +39,7 @@ architecture TEST of tb_tx_shiftreg is
          rst : in std_logic;
          SHIFT_ENABLE_R : in std_logic;
          t_bitstuff : in std_logic;
-         new_byte : in std_logic;
+         t_strobe : in std_logic;
          send_data  :in std_logic_vector(7 downto 0);
          d_encode  :out  std_logic
     );
@@ -50,7 +50,7 @@ architecture TEST of tb_tx_shiftreg is
   signal rst : std_logic;
   signal SHIFT_ENABLE_R : std_logic;
   signal t_bitstuff : std_logic;
-  signal new_byte : std_logic;
+  signal t_strobe : std_logic;
   signal send_data  : std_logic_vector(7 downto 0);
   signal d_encode  : std_logic;
 
@@ -62,7 +62,7 @@ begin
                 rst => rst,
                 SHIFT_ENABLE_R => SHIFT_ENABLE_R,
                 t_bitstuff => t_bitstuff,
-                new_byte => new_byte,
+                t_strobe => t_strobe,
                 send_data => send_data,
                 d_encode => d_encode
                 );
@@ -86,7 +86,7 @@ process
     
     SHIFT_ENABLE_R <= '0'; 
     t_bitstuff <= '0';
-    new_byte <= '0';
+    t_strobe <= '0';
     send_data <= "10101010";
     wait for period;
     
@@ -94,12 +94,12 @@ process
     wait for period;
     wait for 5 ns;
     
-    new_byte <= '1';
+    t_strobe <= '1';
     SHIFT_ENABLE_R <= '1';
     wait for period;
     SHIFT_ENABLE_R <= '0';
     wait for period*7;
-    new_byte <= '0';
+    t_strobe <= '0';
     
     SHIFT_ENABLE_R <= '1';
     wait for period;

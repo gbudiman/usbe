@@ -17,7 +17,7 @@ entity tx_shiftreg is
         rst   :in std_logic;
         SHIFT_ENABLE_R :in std_logic;
         t_bitstuff  :in std_logic;
-        next_byte    :in std_logic;
+        t_strobe    :in std_logic;
         send_data  :in std_logic_vector(7 downto 0);
         d_encode  :out  std_logic
         );
@@ -38,12 +38,12 @@ entity tx_shiftreg is
       end if;
      end process;
      
-     NEXT_VALUE: process (next_byte, SHIFT_ENABLE_R, t_bitstuff, present_val, send_data)
+     NEXT_VALUE: process (t_strobe, SHIFT_ENABLE_R, t_bitstuff, present_val, send_data)
      
      begin
      
-       if next_byte = '1' AND SHIFT_ENABLE_R = '1' then next_val <= send_data;
-       elsif  next_byte = '0' AND SHIFT_ENABLE_R='1' AND t_bitstuff = '0' then next_val <= '0' & present_val(7 downto 1);
+       if t_strobe = '1' AND SHIFT_ENABLE_R = '1' then next_val <= send_data;
+       elsif  t_strobe = '0' AND SHIFT_ENABLE_R='1' AND t_bitstuff = '0' then next_val <= '0' & present_val(7 downto 1);
        else next_val <= present_val;
        end if;
     
