@@ -136,8 +136,10 @@ begin
       if (RST = '1') then
         current_crc <= x"0000";
       elsif(CLK'event and CLK = '1') then
-        if (W_ENABLE = '1' AND OPCODE = "00") then
+        if (W_ENABLE = '1' AND OPCODE = "01") then
           current_crc <= nextCRC16_D8(RCV_DATA, current_crc);
+        elsif (OPCODE = "11") then
+          current_crc <= x"0000";
         end if;
       end if;
     end process NEWCRC;
