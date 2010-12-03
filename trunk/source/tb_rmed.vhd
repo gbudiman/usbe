@@ -49,6 +49,7 @@ architecture TEST of tb_rmed is
          PRGA_OPCODE : OUT STD_LOGIC_VECTOR (1 DOWNTO 0);
          PROCESSED_DATA : OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
          PROG_ERROR : OUT std_logic;
+         PARITY_ERROR : OUT std_logic;
          RBUF_FULL : OUT std_logic;
          R_ERROR : OUT std_logic
     );
@@ -69,6 +70,7 @@ architecture TEST of tb_rmed is
   signal PRGA_OPCODE : STD_LOGIC_VECTOR (1 DOWNTO 0);
   signal PROCESSED_DATA : STD_LOGIC_VECTOR (7 DOWNTO 0);
   signal PROG_ERROR : std_logic;
+  signal PARITY_ERROR : std_logic;
   signal RBUF_FULL : std_logic;
   signal R_ERROR : std_logic;
 
@@ -103,6 +105,23 @@ begin
     end loop;
 end sendByteFast;
 
+procedure HEXtoNRZI (
+  constant data : in std_logic_vector(7 downto 0);
+  signal D    : inout std_logic; 
+  signal D_MIN: out std_logic) is
+begin
+  for i in 0 to 7 loop
+    if (data(i) = '0') then
+      D <= not(D);
+      D_MIN <= D;
+    else
+      D <= D;
+      D_MIN <= not(D);
+    end if;
+    wait for 8*Period;
+  end loop;
+end HEXtoNRZI;
+
 procedure sendEOP (
     constant repeat: IN integer;
     signal d_plus: OUT STD_LOGIC;
@@ -128,7 +147,7 @@ BEGIN
     wait until B_READY = '1';
   end if;
   NEXT_BYTE <= '1';
-  wait for 25 ns;
+  wait for 25 * period;
 END cycleNB;
 
 begin
@@ -147,6 +166,7 @@ begin
                 PRGA_OPCODE => PRGA_OPCODE,
                 PROCESSED_DATA => PROCESSED_DATA,
                 PROG_ERROR => PROG_ERROR,
+                PARITY_ERROR => PARITY_ERROR,
                 RBUF_FULL => RBUF_FULL,
                 R_ERROR => R_ERROR
                 );
@@ -182,14 +202,23 @@ process
   sendUART(x"43", serial_in); -- C
   sendUART(x"45", serial_in); -- E
   sendUART(x"53", serial_in); -- S
+  sendUART("10101100", serial_in); -- parity
   wait for 8 us;
   report "Begin normal operation" severity note;
-  sendByteFast("01010100", DP1_RX, DM1_RX);
-  sendByteFast(x"76", DP1_RX, DM1_RX);
-  sendByteFast(x"77", DP1_RX, DM1_RX);
-  sendByteFast(x"78", DP1_RX, DM1_RX);
-  sendByteFast(x"79", DP1_RX, DM1_RX);
-  sendByteFast(x"72", DP1_RX, DM1_RX);
+--  sendByteFast("01010100", DP1_RX, DM1_RX);
+--  sendByteFast(x"76", DP1_RX, DM1_RX);
+--  sendByteFast(x"77", DP1_RX, DM1_RX);
+--  sendByteFast(x"78", DP1_RX, DM1_RX);
+--  sendByteFast(x"79", DP1_RX, DM1_RX);
+--  sendByteFast(x"72", DP1_RX, DM1_RX);
+  HEXtoNRZI("10000000", DP1_RX, DM1_RX);
+  HEXtoNRZI(x"74", DP1_RX, DM1_RX);
+  HEXtoNRZI(x"30", DP1_RX, DM1_RX);
+  HEXtoNRZI(x"31", DP1_RX, DM1_RX);
+  HEXtoNRZI(x"32", DP1_RX, DM1_RX);
+  HEXtoNRZI(x"33", DP1_RX, DM1_RX);
+  HEXtoNRZI(x"6F", DP1_RX, DM1_RX);
+  HEXtoNRZI(x"74", DP1_RX, DM1_RX);
   sendEOP(1, DP1_RX, DM1_RX);
   cycleNB(PDATA_READY, NEXT_BYTE);
   cycleNB(PDATA_READY, NEXT_BYTE);

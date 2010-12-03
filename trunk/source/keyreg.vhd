@@ -16,17 +16,18 @@ ENTITY keyreg IS
   PORT(CLK, RST, SBE, OE, RBUF_FULL: IN STD_LOGIC;
     RCV_DATA: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     PLAINKEY: OUT STD_LOGIC_VECTOR(63 DOWNTO 0);
-    KEY_ERROR, PROG_ERROR, CLR_RBUFF: OUT STD_LOGIC);
+    KEY_ERROR, PROG_ERROR, CLR_RBUFF, PARITY_ERROR: OUT STD_LOGIC);
 END keyreg;
 
 ARCHITECTURE keyb OF keyreg IS
-  TYPE keyState IS (IDLE, PREFILL, FILL, RECEIVE, ERROR, GOOD);
+  TYPE keyState IS (IDLE, PREFILL, FILL, RECEIVE, ERROR, GOOD, PARITY_OK);
   SIGNAL state, nextState: keyState;
   SIGNAL keyCount, nextKeyCount: STD_LOGIC_VECTOR(3 DOWNTO 0);
   SIGNAL address, nextAddress: STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL currentPlainKey, nextPlainKey: STD_LOGIC_VECTOR(63 DOWNTO 0);
+  SIGNAL parityAccumulator, nextParityAccumulator: STD_LOGIC_VECTOR(7 DOWNTO 0);
 BEGIN
-  keyp: PROCESS(CLK, RST, nextState, nextAddress, nextPlainKey, currentPlainKey)
+  keyp: PROCESS(CLK, RST, nextState, nextAddress, nextPlainKey, currentPlainKey, nextParityAccumulator)
   BEGIN
     IF (RST = '1') THEN
       state <= IDLE;
@@ -36,6 +37,7 @@ BEGIN
       address <= nextAddress;
       currentPlainKey <= nextPlainKey;
       PLAINKEY <= currentPlainKey;
+      parityAccumulator <= nextParityAccumulator;
     END IF;
   END PROCESS keyp;
   
@@ -58,7 +60,8 @@ BEGIN
       IF SBE = '1' OR OE ='1' THEN nextState <= ERROR;
       ELSIF keyCount < 8 AND RBUF_FULL = '1' THEN nextState <= PREFILL;
       END IF;
-    WHEN GOOD =>
+    WHEN GOOD => nextState <= PARITY_OK;
+    WHEN PARITY_OK =>
       IF RBUF_FULL = '1' THEN nextState <= PREFILL;
       ELSE nextState <= GOOD;
       END IF;
@@ -66,7 +69,7 @@ BEGIN
     END CASE;
   END PROCESS NSL;
     
-  OL: PROCESS(state, keyCount, RCV_DATA, address, currentPlainKey)
+  OL: PROCESS(state, keyCount, RCV_DATA, address, currentPlainKey, parityAccumulator)
   BEGIN
     nextKeyCount <= keyCount;
     key_Error <= '1';
@@ -74,12 +77,21 @@ BEGIN
     clr_rbuff <= '0';
     nextAddress <= address;
     nextPlainKey <= currentPlainKey;
+    nextParityAccumulator <= parityAccumulator;
     CASE STATE IS
       WHEN ERROR => PROG_ERROR <= '1';
+      WHEN PARITY_OK =>
       WHEN GOOD => 
-        KEY_ERROR <= '0';
-        nextKeyCount <= "0000";
+        IF (parityAccumulator + RCV_DATA = x"FF") THEN
+          KEY_ERROR <= '0';
+          parity_Error <= '0';
+        ELSE
+          KEY_ERROR <= '1';
+          parity_Error <= '1';
+          nextKeyCount <= "0000";
+        END IF;
       WHEN PREFILL =>
+        nextParityAccumulator <= x"00";
         CASE keyCount IS
           WHEN "0000" => nextaddress <= x"00";
           WHEN "0001" => nextaddress <= x"08";
@@ -101,6 +113,7 @@ BEGIN
         nextPlainKey(CONV_INTEGER(address + 6)) <= RCV_DATA(6);  
         nextPlainKey(CONV_INTEGER(address + 7)) <= RCV_DATA(7);             
         nextKeyCount <= keyCount + 1;
+        nextParityAccumulator <= parityAccumulator + RCV_DATA;
         CLR_RBUFF <= '1';
       WHEN RECEIVE =>
         CLR_RBUFF <= '0';
@@ -110,6 +123,7 @@ BEGIN
         prog_Error <= '0';
         clr_rbuff <= '0';
         nextPlainKey <= x"0000000000000000";
+        parity_Error <= '0';
     END CASE;
   END PROCESS OL;
 END keyb;

@@ -130,6 +130,7 @@ architecture moore of rx_CRC_CALC is
   end nextCRC16_D8;
 
 signal current_crc, current_rcv_data: std_logic_vector(15 downto 0);  
+signal cache_1, cache_2: std_logic_vector(15 downto 0);
 begin
   NEWCRC:process(CLK, RST)
     begin
@@ -138,12 +139,14 @@ begin
       elsif(CLK'event and CLK = '1') then
         if (W_ENABLE = '1' AND OPCODE = "01") then
           current_crc <= nextCRC16_D8(RCV_DATA, current_crc);
+          cache_1 <= current_crc;
+          cache_2 <= cache_1;
         elsif (OPCODE = "11") then
           current_crc <= x"0000";
         end if;
       end if;
     end process NEWCRC;
     
-    RX_CRC <= current_crc;
+    RX_CRC <= cache_2;
     
 end moore;
