@@ -75,6 +75,7 @@ process
 
 -- Insert TEST BENCH Code Here
     RST <= '1';
+    SENDING <= '0';
     wait for period;
     
     RST <= '0';
