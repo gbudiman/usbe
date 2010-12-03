@@ -28,7 +28,7 @@ entity tx_encode is
     type state_type is (ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, STUFF_BIT, EOP_STATE);
     signal state, nextstate : state_type;
     signal DE_holdout, dm_tx_nxt: std_logic;
-    signal DE_holdout_nxt: std_logic;
+    signal DE_holdout_nxt, DE_holdout_BS, DE_holdout_BS_nxt: std_logic;
     
     
   begin
@@ -39,12 +39,13 @@ entity tx_encode is
     BEGIN       
       if (RST = '1') then
         DE_holdout <= '1';
+        DE_holdout_BS <= '0';
         state <= ZERO;
       elsif(CLK'event and CLK = '1') then
           state <= nextstate;
           
           DE_holdout <= DE_holdout_nxt;
-          
+          DE_holdout_BS<= DE_holdout_BS_nxt;
           
           dp_tx_out <= DE_holdout_nxt;
           dm_tx_out <= dm_tx_nxt;  
@@ -57,6 +58,7 @@ entity tx_encode is
             
           Next_State:process(state, SHIFT_ENABLE_E, d_encode, RST, EOP, DE_holdout)
                 Begin
+                  DE_holdout_BS_nxt <= DE_holdout_BS;
                   case state is
                   when ZERO =>   
                                   nextstate <= ZERO;
@@ -285,6 +287,7 @@ entity tx_encode is
                                     
                                     if (SHIFT_ENABLE_E = '1') then
                                       nextstate <= STUFF_BIT;
+                                      DE_holdout_BS_nxt <= DE_holdout;
                                       DE_holdout_nxt <= '0';
                                       dm_tx_nxt <= '1';
                                     end if;
@@ -310,18 +313,17 @@ entity tx_encode is
                                       
                                       if (d_encode = '0') then
                                         
-                                        DE_holdout_nxt <= NOT DE_holdout;
-                                        dm_tx_nxt <= DE_holdout;
+                                        DE_holdout_nxt <= NOT DE_holdout_BS;
+                                        dm_tx_nxt <= DE_holdout_BS;
                                         
                                         
                                       else
-                                        if  (DE_holdout = '1') then
+                                        if  (DE_holdout_BS = '1') then
                                           nextstate <= ONE;
-                                          
-                                          DE_holdout_nxt <= DE_holdout;
-                                          
-                                          dm_tx_nxt <= NOT DE_holdout;
                                         end if;
+                                          DE_holdout_nxt <= DE_holdout_BS;
+                                          
+                                          dm_tx_nxt <= NOT DE_holdout_BS;
                                       end if;
                                       
                                     end if;  

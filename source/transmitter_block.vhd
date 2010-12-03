@@ -68,6 +68,7 @@ ARCHITECTURE struct OF transmitter_block IS
       PRGA_OUT    : IN     std_logic_vector (7 DOWNTO 0);
       RST         : IN     std_logic;
       T_STROBE    : IN     std_logic;
+      EOP         : IN     std_logic; 
       TX_CRC      : OUT    std_logic_vector (15 DOWNTO 0)
    );
    END COMPONENT;
@@ -131,7 +132,8 @@ BEGIN
          T_STROBE    => t_strobe,
          PRGA_OPCODE => prga_opcode,
          PRGA_OUT    => PRGA_OUT,
-         TX_CRC      => TX_CRC
+         TX_CRC      => TX_CRC,
+         EOP         => EOP
       );
    U_0 : tx_encode
       PORT MAP (

@@ -42,15 +42,18 @@ architecture TEST of tb_transmitter_block is
     signal prga_opcode    : inout std_logic_vector(1 downto 0)
     ) is
  
-    begin 
-      
-      wait until NEXT_BYTE = '1';
+    begin
+      if NEXT_BYTE ='0' then
+        wait until NEXT_BYTE = '1';
+      end if;
       PRGA_OUT <= byte;
       prga_opcode <= op;
       wait for period;
       p_ready <= '1';
       wait for period;
       p_ready <= '0';
+      wait for period * 5;
+      
       
     end READ_FIFO;
     
@@ -104,7 +107,6 @@ process
     p_ready <= '0';
     prga_opcode <= "00";
     rst <= '1';
-    NEXT_BYTE <= '1';
     wait for period;
     rst <= '0';
     READ_FIFO(x"80", "00", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
@@ -119,6 +121,7 @@ process
     READ_FIFO(x"47", "01", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
     READ_FIFO(x"48", "01", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
     READ_FIFO(x"49", "11", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
+    wait;
 
   end process;
 end TEST;
