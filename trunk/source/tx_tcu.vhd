@@ -58,16 +58,14 @@ entity tx_tcu is
       next_byte <= '0';
       t_strobe <= '0';
       EOP <= '0';
-      
+-- Send_Data/Flop_Data may need to be defined for all states. 
       case state is
                   when IDLE =>
                     
                     nextstate <= IDLE;
                     nextcount <= "0000000";
                     sending <= '0';
-                    EOP <= '0';
                     next_byte <= '1';
-                    
                     
                     if p_ready = '1' then
                       next_byte <= '0';
@@ -90,10 +88,11 @@ entity tx_tcu is
                     sending <= '1';
                     
                     if prga_opcode = "11" then
-                      EOP <= '1';
-                      nextstate <= SENDCRC1;
-                      nextcount <= "0000000";
-                      next_byte <= '1';
+                      if count = "0111111" then  -- 63
+                        nextstate <= SENDCRC1;
+                        nextcount <= "0000000";
+                        next_byte <= '1';
+                      end if;
                     end if;
                     
                     if t_bitstuff = '1' then
