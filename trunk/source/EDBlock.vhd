@@ -19,6 +19,7 @@ ENTITY EDBlock IS
       RST            : IN     std_logic;
       SERIAL_IN      : IN     std_logic;
       KEY_ERROR      : OUT    std_logic;
+      PARITY_ERROR   : OUT    std_logic;
       PDATA_READY    : OUT    STD_LOGIC;
       PROCESSED_DATA : OUT    STD_LOGIC_VECTOR (7 DOWNTO 0);
       PROG_ERROR     : OUT    std_logic;
@@ -79,6 +80,7 @@ ARCHITECTURE struct OF EDBlock IS
       KEY_ERROR  : OUT    std_logic;
       PLAINKEY   : OUT    std_logic_vector (63 DOWNTO 0);
       PROG_ERROR : OUT    std_logic;
+      PARITY_ERROR: OUT   std_logic;
       RBUF_FULL  : OUT    std_logic
    );
    END COMPONENT;
@@ -112,6 +114,7 @@ BEGIN
          SERIAL_IN  => SERIAL_IN,
          KEY_ERROR  => KEY_ERROR_internal,
          PROG_ERROR => PROG_ERROR,
+         PARITY_ERROR => PARITY_ERROR,
          PLAINKEY   => PLAINKEY,
          RBUF_FULL  => RBUF_FULL
       );
