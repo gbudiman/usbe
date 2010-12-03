@@ -35,10 +35,10 @@ Entity tx_CRC_CALC is
   port(
     CLK:in std_logic;
     RST:in std_logic;
-    W_ENABLE: in std_logic;
-    OPCODE: in std_logic_vector(1 downto 0);
-    RCV_DATA: in std_logic_vector(7 downto 0);
-    RX_CRC: out std_logic_vector(15 downto 0)
+    T_STROBE: in std_logic;
+    PRGA_OPCODE: in std_logic_vector(1 downto 0);
+    PRGA_OUT: in std_logic_vector(7 downto 0);
+    TX_CRC: out std_logic_vector(15 downto 0)
     );
 end tx_CRC_CALC;
 
@@ -86,9 +86,9 @@ begin
       if (RST = '1') then
         current_crc <= x"0000";
       elsif(CLK'event and CLK = '1') then
-        if (W_ENABLE = '1' AND OPCODE = "01") then
-          current_crc <= nextCRC16_D8(RCV_DATA, current_crc);
-        elsif (OPCODE = "11") then
+        if (T_STROBE = '1' AND PRGA_OPCODE = "01") then
+          current_crc <= nextCRC16_D8(PRGA_OUT, current_crc);
+        elsif (EOP = '1') then
           current_crc <= x"0000";
         end if;
       end if;
