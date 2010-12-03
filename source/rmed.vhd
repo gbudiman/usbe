@@ -26,6 +26,7 @@ ENTITY RMED IS
       PRGA_OPCODE    : OUT    STD_LOGIC_VECTOR (1 DOWNTO 0);
       PROCESSED_DATA : OUT    STD_LOGIC_VECTOR (7 DOWNTO 0);
       PROG_ERROR     : OUT    std_logic;
+      PARITY_ERROR   : OUT    std_logic;
       RBUF_FULL      : OUT    std_logic;
       R_ERROR        : OUT    std_logic
    );
@@ -76,6 +77,7 @@ ARCHITECTURE struct OF RMED IS
       PDATA_READY    : OUT    STD_LOGIC ;
       PROCESSED_DATA : OUT    STD_LOGIC_VECTOR (7 DOWNTO 0);
       PROG_ERROR     : OUT    std_logic ;
+      PARITY_ERROR   : OUT    std_logic ;
       RBUF_FULL      : OUT    std_logic 
    );
    END COMPONENT;
@@ -133,6 +135,7 @@ BEGIN
          PDATA_READY    => PDATA_READY,
          PROCESSED_DATA => PROCESSED_DATA,
          PROG_ERROR     => PROG_ERROR,
+         PARITY_ERROR   => PARITY_ERROR,
          RBUF_FULL      => RBUF_FULL
       );
    U_2 : Receiver_Block

@@ -20,7 +20,8 @@ ENTITY uart_rcv_block IS
       PROG_ERROR: OUT    std_logic;
       PLAINKEY  : OUT    std_logic_vector(63 DOWNTO 0);
       --OE        : OUT    std_logic;
-      RBUF_FULL : OUT    std_logic
+      RBUF_FULL : OUT    std_logic;
+      PARITY_ERROR: OUT  std_logic
       --RCV_DATA  : OUT    std_logic_vector (7 DOWNTO 0);
       --SBE       : OUT    std_logic
    );
@@ -168,6 +169,7 @@ ARCHITECTURE struct1 OF uart_rcv_block IS
       PLAINKEY      : OUT   STD_LOGIC_VECTOR (63 DOWNTO 0);
       KEY_ERROR     : OUT   STD_LOGIC;
       PROG_ERROR    : OUT   STD_LOGIC;
+      PARITY_ERROR  : OUT   STD_LOGIC;
       CLR_RBUFF     : OUT   STD_LOGIC
     );
     END COMPONENT;
@@ -263,6 +265,7 @@ BEGIN
          PLAINKEY      => PLAINKEY,
          KEY_ERROR     => KEY_ERROR,
          PROG_ERROR    => PROG_ERROR,
+         PARITY_ERROR  => PARITY_ERROR,
          CLR_RBUFF     => CLR_RBUF
       );
    U_7 : uart_timer
