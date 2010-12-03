@@ -71,12 +71,6 @@ entity tx_tcu is
                       next_byte <= '0';
                       flop_data <= PRGA_OUT;
                       nextstate <= SEND;
-                      
-                      if prga_opcode = "11" then
-                        EOP <= '1';
-                        nextstate <= IDLE;
-                      end if;
-                      
                     end if;
                     
 
@@ -86,14 +80,6 @@ entity tx_tcu is
                     send_data <= flop_data;
                     nextcount <= count + 1;
                     sending <= '1';
-                    
-                    if prga_opcode = "11" then
-                      if count = "0111111" then  -- 63
-                        nextstate <= SENDCRC1;
-                        nextcount <= "0000000";
-                        next_byte <= '1';
-                      end if;
-                    end if;
                     
                     if t_bitstuff = '1' then
                       nextcount <= count;
@@ -126,10 +112,17 @@ entity tx_tcu is
                     nextstate <= UPDATEDATA;
                   end if;
                   
-                  if count = "0111111" then
+                  if prga_opcode = "11" then
+                    if count = "0111111" then  -- 63
+                      nextstate <= SENDCRC1;
+                      nextcount <= "0000000";
+                      next_byte <= '1';
+                    end if;
+                  end if;
+                  
+                  if count = "1000000" then
                     EOP <= '1';
                     nextstate <= IDLE;
-                    nextcount <= "0000000";
                   end if;
                 
                   
@@ -150,20 +143,15 @@ entity tx_tcu is
                     nextcount <= "0000000";
                   end if;
                   
-                  if prga_opcode = "11" then
-                    nextstate <= SENDCRC1;
-                    
-                    nextcount <= "0000000";
-                    next_byte <= '1';
-                  end if;
-                  
                 when SENDCRC1 =>
                   
                   nextstate <= SENDCRC1;
                   sending <= '1';
+                  nextcount <= count + 1;
                   
                   if count = "0111111" then
                     nextstate <= SENDCRC2;
+                    nextcount <= "0000000";
                   end if;
                   
                   send_data <= t_crc(15 downto 8);
@@ -172,10 +160,12 @@ entity tx_tcu is
                   
                   nextstate <= SENDCRC2;
                   sending <= '1';
+                  nextcount <= count + 1;
                   
                   if count = "0111111" then
                     EOP <= '1';
                     nextstate <= IDLE;
+                    nextcount <= "0000000";
                   end if;
 
                   send_data <= t_crc(7 downto 0);  
