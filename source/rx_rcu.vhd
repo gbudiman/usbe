@@ -230,7 +230,7 @@ architecture moore of rx_rcu is
                           RCVING <= '0';
                           nxtR_ERROR <= '0';
                           nxtCRC_ERROR <= '0';
-                          W_ENABLE <= '0';
+                          W_ENABLE <= '1';
                           OPCODE <= "11";
                           nextcount <= "0000";
                           if ( count = "0000") then
