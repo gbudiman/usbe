@@ -103,7 +103,7 @@ process
 
 -- Insert TEST BENCH Code Here
 
-    PRGA_OUT <= "00000000";
+    --PRGA_OUT <= "00000000";
     p_ready <= '0';
     prga_opcode <= "00";
     rst <= '1';
@@ -113,8 +113,8 @@ process
     READ_FIFO(x"D4", "00", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
     READ_FIFO(x"40", "01", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
     READ_FIFO(x"41", "01", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
-    READ_FIFO(x"42", "01", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
-    READ_FIFO(x"43", "01", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
+    READ_FIFO(x"FF", "01", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
+    READ_FIFO(x"FF", "01", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
     READ_FIFO(x"44", "01", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
     READ_FIFO(x"45", "01", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
     READ_FIFO(x"46", "01", NEXT_BYTE,p_ready,PRGA_out, prga_opcode); 
