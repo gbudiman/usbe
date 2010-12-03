@@ -31,7 +31,7 @@ entity tx_tcu is
   
   architecture behavioral of tx_tcu is
     
-    type state_type is (IDLE, SEND, MULTITASK, UPDATEDATA, SENDCRC1, SENDCRC2);
+    type state_type is (IDLE, SEND, MULTITASK, UPDATEDATA, SENDCRC1, SENDCRC2, PRESEND);
     signal state, nextstate : state_type;
     signal count, nextcount : STD_LOGIC_VECTOR(6 downto 0);
     signal flop_data : std_logic_vector(7 downto 0);  
@@ -71,10 +71,10 @@ entity tx_tcu is
                     if p_ready = '1' then
                       next_byte <= '0';
                       flop_data <= PRGA_OUT;
-                      nextstate <= SEND;
+                      nextstate <= PRESEND;
                     end if;
                     
-
+                  
                   when SEND =>
                   
                     nextstate <= SEND;
@@ -126,6 +126,11 @@ entity tx_tcu is
                     nextstate <= IDLE;
                   end if;
                 
+                when PRESEND => -- Custom Updatedata state
+                  nextState <= SEND;
+                  send_data <= PRGA_OUT;
+                  nextCount <= "0000000";
+                  sending <= '1';
                   
                 when UPDATEDATA =>
                   

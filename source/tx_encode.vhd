@@ -41,6 +41,8 @@ entity tx_encode is
         DE_holdout <= '1';
         DE_holdout_BS <= '0';
         state <= ZERO;
+        dp_tx_out <= '1';
+        dm_tx_out <= '0';
       elsif(CLK'event and CLK = '1') then
           state <= nextstate;
           
@@ -56,7 +58,7 @@ entity tx_encode is
       
       
             
-          Next_State:process(state, SHIFT_ENABLE_E, d_encode, RST, EOP, DE_holdout)
+          Next_State:process(state, SHIFT_ENABLE_E, d_encode, RST, EOP, DE_holdout, DE_holdout_BS)
                 Begin
                   DE_holdout_BS_nxt <= DE_holdout_BS;
                   case state is

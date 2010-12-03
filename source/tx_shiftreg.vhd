@@ -36,7 +36,7 @@ entity tx_shiftreg is
      begin  
       if RST = '1' then 
         present_val <= "00000000";
-        count <= "0000";
+        count <= "1000";
       elsif rising_edge(CLK) then
         present_val <= next_val;
         count <= next_count;
