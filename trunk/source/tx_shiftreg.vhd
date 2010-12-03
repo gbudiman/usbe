@@ -10,6 +10,8 @@
 
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 
 entity tx_shiftreg is
@@ -27,23 +29,35 @@ entity tx_shiftreg is
   ARCHITECTURE dataflow OF tx_shiftreg IS
          signal present_val : std_logic_vector(7 downto 0);
          signal next_val : std_logic_vector(7 downto 0);
+         signal count, next_count : std_logic_vector(3 downto 0);
  
   BEGIN
      STOREREG: process (CLK, RST)
      begin  
       if RST = '1' then 
         present_val <= "00000000";
+        count <= "0000";
       elsif rising_edge(CLK) then
         present_val <= next_val;
+        count <= next_count;
       end if;
      end process;
      
      NEXT_VALUE: process (t_strobe, SHIFT_ENABLE_R, t_bitstuff, present_val, send_data)
      
      begin
+       next_count <= count;
+       if SHIFT_ENABLE_R = '1' then
+         next_count <= count + 1;
+       end if;
+       
      
-       if t_strobe = '1' AND SHIFT_ENABLE_R = '1' then next_val <= send_data;
-       elsif  t_strobe = '0' AND SHIFT_ENABLE_R='1' AND t_bitstuff = '0' then next_val <= '0' & present_val(7 downto 1);
+      -- if t_strobe = '1' AND SHIFT_ENABLE_R = '1' then next_val <= send_data;
+       if SHIFT_ENABLE_R = '1' AND count = "1000" then
+         next_val <= send_data;
+         next_count <= "0000";
+       elsif SHIFT_ENABLE_R='1' AND t_bitstuff = '0' then next_val <= '0' & present_val(7 downto 1);
+      --elsif  t_strobe = '0' AND SHIFT_ENABLE_R='1' AND t_bitstuff = '0' then next_val <= '0' & present_val(7 downto 1);
        else next_val <= present_val;
        end if;
     

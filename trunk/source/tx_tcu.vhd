@@ -66,6 +66,7 @@ entity tx_tcu is
                     nextcount <= "0000000";
                     sending <= '0';
                     next_byte <= '1';
+                    send_data <= "00000000";
                     
                     if p_ready = '1' then
                       next_byte <= '0';
