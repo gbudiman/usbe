@@ -35,6 +35,7 @@ Entity tx_CRC_CALC is
   port(
     CLK:in std_logic;
     RST:in std_logic;
+    EOP:in std_logic;
     T_STROBE: in std_logic;
     PRGA_OPCODE: in std_logic_vector(1 downto 0);
     PRGA_OUT: in std_logic_vector(7 downto 0);
@@ -94,6 +95,6 @@ begin
       end if;
     end process NEWCRC;
     
-    RX_CRC <= current_crc;
+    TX_CRC <= current_crc;
     
 end txcrcm;
