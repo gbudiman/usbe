@@ -56,7 +56,7 @@ BEGIN
       --EMPTY <= nextEmpty;
       IF (W_ENABLE = '1') THEN
         IF (RCV_OPCODE = "11") THEN
-          writeptr <= writeptr - 2;
+          writeptr <= writeptr - 1;
           opcode(CONV_INTEGER(writeptr-2)) <= "11";
         ELSE 
           memory(CONV_INTEGER(writeptr)) <= RCV_DATA;

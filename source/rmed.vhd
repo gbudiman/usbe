@@ -134,8 +134,8 @@ BEGIN
          KEY_ERROR      => KEY_ERROR,
          PDATA_READY    => PDATA_READY,
          PROCESSED_DATA => PROCESSED_DATA,
-         PROG_ERROR     => PROG_ERROR,
          PARITY_ERROR   => PARITY_ERROR,
+         PROG_ERROR     => PROG_ERROR,
          RBUF_FULL      => RBUF_FULL
       );
    U_2 : Receiver_Block

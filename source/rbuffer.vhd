@@ -75,8 +75,10 @@ BEGIN
       WHEN DECS =>
         IF (OPCODE = "11" OR BYTE_COUNT = 0) THEN
           nextState <= IDLE;
-        ELSE
+        ELSIF (NEXT_BYTE = '1') THEN
           nextState <= P1;
+        ELSE
+          nextState <= DECS;
         END IF;
     END CASE;
   END PROCESS NSL;

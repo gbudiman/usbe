@@ -272,6 +272,7 @@ BEGIN
         delaydata <= BYTE;
       WHEN PTOUT =>
         PROCESSED_DATA <= delaydata; 
+        PDATA_READY <= '1';
       WHEN PACKETRESET =>
         nextinti <= x"00";
         nextintj <= x"00";
