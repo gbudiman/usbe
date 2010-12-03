@@ -202,7 +202,7 @@ process
   sendUART(x"43", serial_in); -- C
   sendUART(x"45", serial_in); -- E
   sendUART(x"53", serial_in); -- S
-  sendUART("10101100", serial_in); -- parity
+  --sendUART("01001010", serial_in); -- parity
   wait for 8 us;
   report "Begin normal operation" severity note;
 --  sendByteFast("01010100", DP1_RX, DM1_RX);
