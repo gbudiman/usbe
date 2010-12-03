@@ -33,6 +33,7 @@ architecture moore of tx_timer is
         if (RST = '1') then
           count <= "0000";
           state <= IDLE;
+          SHIFT_ENABLE_E <= '0';
         elsif(CLK'event and CLK = '1') then
           count <= nextcount;
           state <= nextstate;
