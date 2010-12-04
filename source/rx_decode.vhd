@@ -22,7 +22,7 @@ Entity rx_decode is
   );
 end rx_decode;
 architecture moore of rx_decode is
-  type state_type is (ZERO, ONE, TWO, THREE, FOUR, FIVE, READ_STUFF);
+  type state_type is (ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, READ_STUFF);
   signal state, nextstate : state_type;
   signal DP_hold1, DP_hold2: std_logic;
   signal DP_hold1_nxt, DP_hold2_nxt: std_logic;
@@ -123,6 +123,20 @@ architecture moore of rx_decode is
                           BITSTUFF <= '0';
             when FIVE =>
                             nextstate <= FIVE;
+                            DP_hold1_nxt <= DP1_RX;
+                            DP_hold2_nxt <= DP_hold2;
+                          if ( SHIFT_ENABLE = '1') then
+                            if DP1_RX = DP_hold2 then
+                              nextstate <= SIX;
+                            else
+                              nextstate <= ZERO;
+                            end if;
+                            DP_hold1_nxt <= DP1_RX;
+                            DP_hold2_nxt <= DP_hold1;
+                          end if;
+                          BITSTUFF <= '0';
+            when SIX =>
+                            nextstate <= SIX;
                             DP_hold1_nxt <= DP_hold1;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
@@ -130,22 +144,26 @@ architecture moore of rx_decode is
                             DP_hold1_nxt <= DP_hold1;
                             DP_hold2_nxt <= DP_hold2;
                           end if;
-                          BITSTUFF <= '0';
+                          BITSTUFF <= '1';
                           
             when READ_STUFF =>
                             nextstate <= READ_STUFF;
-                            DP_hold1_nxt <= DP_hold1;
+                            DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
                             DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold1;
                             if (DP1_RX = DP_hold2) then
                               nextstate <= ZERO;
+                              DP_hold1_nxt <= DP1_RX;
+                              DP_hold2_nxt<= DP_hold1;
                             else
                               nextstate <= ONE;
+                              DP_hold1_nxt <= DP1_RX;
+                              DP_hold2_nxt<= DP_hold1;
                             end if;
                           end if;              
-                          BITSTUFF <='1';
+                          BITSTUFF <='0';
                           
                           
             when others =>  nextstate <= ZERO;
