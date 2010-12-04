@@ -57,7 +57,7 @@ BEGIN
       --FULL <= nextFull;
       --EMPTY <= nextEmpty;
       state <= NORMAL;
-      IF (W_ENABLE = '1') THEN
+      IF (W_ENABLE = '1' AND (writePtr + 1) /= readPtr) THEN
         IF (RCV_OPCODE = "11") THEN
           writeptr <= writeptr - 1;
           opcode(CONV_INTEGER(writeptr-2)) <= "11";
@@ -70,7 +70,7 @@ BEGIN
       
       IF state = NORMAL THEN
         BYTE_COUNT <= writePtr - readPtr;
-        IF (R_ENABLE = '1') THEN
+        IF (R_ENABLE = '1' AND writePtr /= readPtr) THEN
           DATA <= memory(CONV_INTEGER(readptr));
           OUT_OPCODE <= opcode(CONV_INTEGER(readptr));
           readptr <= readptr + 1;

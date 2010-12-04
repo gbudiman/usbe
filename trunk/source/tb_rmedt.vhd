@@ -38,6 +38,8 @@ architecture TEST of tb_rmedt is
          CLK : IN std_logic;
          DM1_RX : IN std_logic;
          DP1_RX : IN std_logic;
+         dm_tx_out : OUT std_logic;
+         dp_tx_out : OUT std_logic;
          RST : IN std_logic;
          SERIAL_IN : IN std_logic;
          CRC_ERROR : OUT std_logic;
@@ -55,6 +57,8 @@ architecture TEST of tb_rmedt is
   signal CLK : std_logic;
   signal DM1_RX : std_logic;
   signal DP1_RX : std_logic;
+  signal DM1_TX : std_logic;
+  signal DP1_TX : std_logic;
   signal RST : std_logic;
   signal SERIAL_IN : std_logic;
   signal CRC_ERROR : std_logic;
@@ -91,43 +95,54 @@ procedure HEXtoNRZI (
   signal D    : inout std_logic; 
   signal D_MIN: out std_logic) is
   variable count: integer;
-begin
-  count := bc_count;
-  case count is
-    when 0 => report "0";
-    when 1 => report "1";
-    when 2 => report "2";
-    when 3 => report "3";
-    when 4 => report "4";
-    when 5 => report "5";
-    when 6 => report "6";
-    when 7 => report "7";
-    when others => report "HUH?";
-  end case;
-  for i in 0 to 7 loop
-    -- report "IN" severity note;
-    if (data(i) = '0') then
-      count := 0;
-      D <= not(D);
-      D_MIN <= D;
-    else
-      if (count = 5) then
+  variable D_Last: std_logic;
+  begin
+    count := bc_count;
+--    case count is
+--      when 0 => report "0";
+--      when 1 => report "1";
+--      when 2 => report "2";
+--      when 3 => report "3";
+--      when 4 => report "4";
+--      when 5 => report "5";
+--      when 6 => report "6";
+--      when 7 => report "7";
+--      when others => report "HUH?";
+--    end case;
+    for i in 0 to 7 loop
+      -- report "IN" severity note;
+      if (data(i) = '0') then
         count := 0;
         D <= not(D);
         D_MIN <= D;
-        wait for 8*Period;
-        D <= not(D);
-        D_MIN <= D;
       else
-        count := count + 1;
-        D <= D;
-        D_MIN <= not(D);
+        if (count = 5) then
+          D_Last := D;
+          if (data(i) = '0') then
+            count := 1;
+          else
+            count := 0;
+          end if;
+          D <= not(D);
+          D_MIN <= D;
+          wait for 8*Period;
+          if (data(i) = '0') then
+            D <= not(D_Last);
+            D_MIN <= D_Last;
+          else
+            D <= (D_LAST);
+            D_MIN <= not(D_Last);
+          end if;
+        else
+          count := count + 1;
+          D <= D;
+          D_MIN <= not(D);
+        end if;
       end if;
-    end if;
-    wait for 8*Period;
-    bc_count := count;
-  end loop;
-end HEXtoNRZI;
+      wait for 8*Period;
+      bc_count := count;
+    end loop;
+  end HEXtoNRZI;
 
 procedure sendEOP (
     constant repeat: IN integer;
@@ -149,6 +164,8 @@ begin
                 CLK => CLK,
                 DM1_RX => DM1_RX,
                 DP1_RX => DP1_RX,
+                dm_tx_out => DM1_TX,
+                dp_tx_out => DP1_TX,
                 RST => RST,
                 SERIAL_IN => SERIAL_IN,
                 CRC_ERROR => CRC_ERROR,
@@ -209,33 +226,107 @@ process
   
   HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"11", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"30", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"31", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"32", BC, DP1_RX, DM1_RX);
+  for i in 0 to 7 loop
+    report "Sending..." severity note;
+    HEXtoNRZI(x"30", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"31", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"32", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"33", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"34", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"35", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"36", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"37", BC, DP1_RX, DM1_RX);
+  end loop;
   HEXtoNRZI(x"DD", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"BE", BC, DP1_RX, DM1_RX);
   sendEOP(0, DP1_RX, DM1_RX);
---  
---  wait for 4 us;
---  
---  sendUART(x"21", serial_in); -- !
---  sendUART(x"21", serial_in); -- !
---  sendUART(x"54", serial_in); -- T
---  sendUART(x"45", serial_in); -- E
---  sendUART(x"52", serial_in); -- R
---  sendUART(x"43", serial_in); -- C
---  sendUART(x"45", serial_in); -- E
---  sendUART(x"53", serial_in); -- S
---
---  wait for 12 us;
---  BC := 0;
+  
+  wait for 8 us;
+  
+  sendUART(x"21", serial_in); -- !
+  sendUART(x"21", serial_in); -- !
+  sendUART(x"54", serial_in); -- T
+  sendUART(x"45", serial_in); -- E
+  sendUART(x"52", serial_in); -- R
+  sendUART(x"43", serial_in); -- C
+  sendUART(x"45", serial_in); -- E
+  sendUART(x"53", serial_in); -- S
+  sendUART("11110111", serial_in); -- parity
+
+  wait for 12 us;
+  BC := 0;
   report "Starting new data" severity note;
   HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"11", BC, DP1_RX, DM1_RX);
+  
   HEXtoNRZI(x"9E", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"13", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"CF", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"A5", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"A6", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"45", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"77", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"8b", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"a4", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"d9", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"02", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"40", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"a4", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"a8", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"56", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"62", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"5d", BC, DP1_RX, DM1_RX);
+  
+  HEXtoNRZI(x"e6", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"27", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"c6", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"c6", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"b3", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"9d", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"b2", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"86", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"84", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"b0", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"fd", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"d0", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"c7", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"d7", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"11", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"da", BC, DP1_RX, DM1_RX);
+  
+  HEXtoNRZI(x"2a", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"55", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"c2", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"b7", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"28", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"c1", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"c8", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"dc", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"83", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"e6", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"57", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"92", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"2b", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"46", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"c5", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"3e", BC, DP1_RX, DM1_RX);
+  
+  HEXtoNRZI(x"32", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"a6", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"ba", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"ab", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"00", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"c7", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"2c", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"2e", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"7d", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"79", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"eb", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"94", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"05", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"cc", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"fa", BC, DP1_RX, DM1_RX);
+  
+  HEXtoNRZI(x"79", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"6C", BC, DP1_RX, DM1_RX);
   sendEOP(0, DP1_RX, DM1_RX);
 
