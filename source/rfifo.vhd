@@ -35,6 +35,7 @@ ARCHITECTURE BRFIFO OF RFIFO IS
   SIGNAL nextData: STD_LOGIC_VECTOR (7 DOWNTO 0);
   SIGNAL nextout_opcode: STD_LOGIC_VECTOR (1 DOWNTO 0);
   SIGNAL nextFull, nextEmpty: STD_LOGIC;
+  SIGNAL flop_bc: STD_LOGIC_VECTOR(4 DOWNTO 0);
 BEGIN
   TLA: PROCESS(CLK, RST, nextWritePtr, nextReadPtr, nextMemory, nextData, nextout_opcode, nextOpCode, nextFull, nextEmpty)
   BEGIN
@@ -69,9 +70,12 @@ BEGIN
         DATA <= memory(CONV_INTEGER(readptr));
         OUT_OPCODE <= opcode(CONV_INTEGER(readptr));
         readptr <= readptr + 1;
+      ELSE
+        readptr <= readptr;
       END IF;
       
-      BYTE_COUNT <= writePtr - readPtr;
+      BYTE_COUNT <= flop_bc;
+      flop_bc <= writePtr - readPtr;
       IF (writeptr = readptr) THEN
         EMPTY <= '1';
       ELSE

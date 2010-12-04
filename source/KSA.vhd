@@ -66,6 +66,7 @@ BEGIN
     IF (RST = '1') THEN
       state <= IDLE;
       si <= x"00";
+      PDATA_READY <= '0';
     ELSIF (RISING_EDGE(CLK)) THEN
       state <= nextState;
       si <= nextsi;
@@ -188,7 +189,9 @@ BEGIN
     END CASE;
   END PROCESS NSL;
   
-  OL: PROCESS(state, keyTable, permuteTable, si, sj, key, keyi, nextsi, nextsj, temp, inti, intj, xordata, delaydata, BYTE, prefillComplete, permuteComplete)
+  OL: PROCESS(state, keyTable, permuteTable, 
+    si, sj, key, keyi, nextsi, nextsj, temp, inti, intj, 
+    xordata, delaydata, BYTE, prefillComplete, permuteComplete)
   BEGIN         
     nextsi <= si; 
     nextinti <= inti;
