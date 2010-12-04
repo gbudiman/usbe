@@ -25,9 +25,9 @@ entity tx_encode is
   
   architecture moore of tx_encode is
     
-    type state_type is (ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, STUFF_BIT, EOP_STATE);
+    type state_type is (ZERO, ONE, TWO, THREE, FOUR, FIVE, STUFF_BIT, EOP_STATE);
     signal state, nextstate : state_type;
-    signal DE_holdout, dm_tx_nxt: std_logic;
+    signal DE_holdout, DE_holdout_last, dm_tx_nxt: std_logic;
     signal DE_holdout_nxt, DE_holdout_BS, DE_holdout_BS_nxt: std_logic;
     
     
@@ -46,6 +46,7 @@ entity tx_encode is
       elsif(CLK'event and CLK = '1') then
           state <= nextstate;
           
+          DE_holdout_last <= DE_holdout;
           DE_holdout <= DE_holdout_nxt;
           DE_holdout_BS<= DE_holdout_BS_nxt;
           
@@ -80,13 +81,13 @@ entity tx_encode is
                                         
                                         DE_holdout_nxt <= NOT DE_holdout;
                                         dm_tx_nxt <= DE_holdout;
-                                        
-                                        if (DE_holdout = '0') then
-                                          nextstate <= ONE;
-                                        end if;
+                                        nextstate <= ZERO;
+                                        --if (DE_holdout = '0') then
+--                                          nextstate <= ONE;
+--                                        end if;
                                         
                                       else
-                                        if  (DE_holdout = '1') then
+                                        if  (DE_holdout = DE_holdout_last) then
                                           nextstate <= ONE;
                                         end if;
                                       end if;
@@ -114,13 +115,13 @@ entity tx_encode is
                                         dm_tx_nxt <= DE_holdout;
                                         
                                         if (DE_holdout = '0') then
-                                          nextstate <= TWO;
+                                          nextstate <= ZERO;
                                         else
                                           nextstate <= ZERO;
                                         end if;
                                         
                                       else
-                                        if  (DE_holdout = '1') then
+                                        if  (DE_holdout = DE_holdout_last) then
                                           nextstate <= TWO;
                                         else
                                           nextstate <= ZERO;
@@ -148,15 +149,10 @@ entity tx_encode is
                                         
                                         DE_holdout_nxt <= NOT DE_holdout;
                                         dm_tx_nxt <= DE_holdout;
-                                        
-                                        if (DE_holdout = '0') then
-                                          nextstate <= THREE;
-                                        else
-                                          nextstate <= ZERO;
-                                        end if;
+                                        nextstate <= ZERO;
                                         
                                       else
-                                        if  (DE_holdout = '1') then
+                                        if  (DE_holdout = DE_holdout_last) then
                                           nextstate <= THREE;
                                         else
                                           nextstate <= ZERO;
@@ -186,13 +182,13 @@ entity tx_encode is
                                         dm_tx_nxt <= DE_holdout;
                                         
                                         if (DE_holdout = '0') then
-                                          nextstate <= FOUR;
+                                          nextstate <= ZERO;
                                         else
                                           nextstate <= ZERO;
                                         end if;
                                         
                                       else
-                                        if  (DE_holdout = '1') then
+                                        if  (DE_holdout = DE_holdout_last) then
                                           nextstate <= FOUR;
                                         else
                                           nextstate <= ZERO;
@@ -222,13 +218,13 @@ entity tx_encode is
                                         dm_tx_nxt <= DE_holdout;
                                         
                                         if (DE_holdout = '0') then
-                                          nextstate <= FIVE;
+                                          nextstate <= ZERO;
                                         else
                                           nextstate <= ZERO;
                                         end if;
                                         
                                       else
-                                        if  (DE_holdout = '1') then
+                                        if  (DE_holdout = DE_holdout_last) then
                                           nextstate <= FIVE;
                                         else
                                           nextstate <= ZERO;
@@ -250,48 +246,12 @@ entity tx_encode is
                                     dm_tx_nxt <= '0';
                                     nextstate <= EOP_STATE;
                                   else
-                                    if (SHIFT_ENABLE_E = '1') then
-                                      
-                                      if (d_encode = '0') then
-                                        
-                                        DE_holdout_nxt <= NOT DE_holdout;
-                                        dm_tx_nxt <= DE_holdout;
-                                        
-                                        if (DE_holdout = '0') then
-                                          nextstate <= SIX;
-                                        else
-                                          nextstate <= ZERO;
-                                        end if;
-                                        
-                                      else
-                                        if  (DE_holdout = '1') then
-                                          nextstate <= SIX;
-                                        else
-                                          nextstate <= ZERO;
-                                        end if;
-                                      end if;
-                                      
-                                    end if; 
-                                  end if;
-                                t_bitstuff <= '0';
-                  when SIX =>
-                                  nextstate <= SIX;
-                                  
-                                  DE_holdout_nxt <= DE_holdout;
-                                  
-                                  dm_tx_nxt <= NOT DE_holdout;
-                                  
-                                  if EOP = '1' then
-                                    DE_holdout_nxt <= '0';
-                                    dm_tx_nxt <= '0';
-                                    nextstate <= EOP_STATE;
-                                  else
                                     
                                     if (SHIFT_ENABLE_E = '1') then
                                       nextstate <= STUFF_BIT;
                                       DE_holdout_BS_nxt <= DE_holdout;
-                                      DE_holdout_nxt <= '0';
-                                      dm_tx_nxt <= '1';
+                                      DE_holdout_nxt <= NOT DE_holdout;
+                                      dm_tx_nxt <= DE_holdout;
                                     end if;
                               
                                   end if;
@@ -300,9 +260,9 @@ entity tx_encode is
                   when STUFF_BIT =>
                                   nextstate <= STUFF_BIT;
                                   
-                                  DE_holdout_nxt <= '0';
+                                  DE_holdout_nxt <= NOT DE_holdout_BS;
                                   
-                                  dm_tx_nxt <= '1';
+                                  dm_tx_nxt <= DE_holdout_BS;
                                   
                                   if EOP = '1' then
                                     DE_holdout_nxt <= '0';
@@ -317,10 +277,12 @@ entity tx_encode is
                                         
                                         DE_holdout_nxt <= NOT DE_holdout_BS;
                                         dm_tx_nxt <= DE_holdout_BS;
-                                        
+                                        if  (DE_holdout_BS = DE_holdout) then
+                                          nextstate <= ONE;
+                                        end if;
                                         
                                       else
-                                        if  (DE_holdout_BS = '1') then
+                                        if  (DE_holdout_BS = DE_holdout) then
                                           nextstate <= ONE;
                                         end if;
                                           DE_holdout_nxt <= DE_holdout_BS;
