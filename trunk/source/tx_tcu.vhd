@@ -90,12 +90,13 @@ entity tx_tcu is
                       t_strobe <= '1';
                     elsif count = "0000001" then
                       t_strobe <= '0';
+                      nextState <= MULTITASK;
                     end if;                      
                     
-                    if count = "0110000" then  --48
-                      next_byte <= '1';                     
-                      nextstate <= MULTITASK;
-                    end if;
+                    --if count = "0110000" then  --48
+--                      next_byte <= '1';                     
+--                      nextstate <= MULTITASK;
+--                    end if;
                     
                 when MULTITASK =>
                   
@@ -113,11 +114,12 @@ entity tx_tcu is
                     nextstate <= UPDATEDATA;
                   end if;
                   
+                  
                   if prga_opcode = "11" then
+                    next_byte <= '0';
                     if count = "0111111" then  -- 63
                       nextstate <= SENDCRC1;
                       nextcount <= "0000000";
-                      next_byte <= '1';
                     end if;
                   end if;
                   
@@ -167,17 +169,22 @@ entity tx_tcu is
                   nextstate <= SENDCRC2;
                   sending <= '1';
                   nextcount <= count + 1;
+                  --EOP <= '0';
                   
-                  if count = "0111111" then
+                  if count > "1000011" then
                     EOP <= '1';
+                    --nextstate <= IDLE;
+                    --nextcount <= "0000000";
+                  end if;
+                  
+                  if count = "1001100" then
+                    EOP <= '0';
                     nextstate <= IDLE;
-                    nextcount <= "0000000";
+                    nextCount <= "0000000";
                   end if;
 
                   send_data <= t_crc(7 downto 0);  
-                    
-                    
-
+                        
                 when others =>
                   
                   nextcount <= "0000000";

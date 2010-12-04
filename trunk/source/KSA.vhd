@@ -57,8 +57,11 @@ ARCHITECTURE bksa OF KSA IS
   SIGNAL temp, nextTemp: STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL xordata: STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL delaydata: STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL p_ready_flop: STD_LOGIC;
 BEGIN
-  TLB: PROCESS(CLK, RST, nextState, nextsi, nextsj, nextinti, nextintj, nextTemp, nextPermuteComplete, nextPrefillComplete, nextKeyi, nextPermuteTable)
+  TLB: PROCESS(CLK, RST, 
+    nextState, nextsi, nextsj, nextinti, nextintj, nextTemp, nextPermuteComplete, nextPrefillComplete, 
+    nextKeyi, nextPermuteTable, p_ready_flop)
   BEGIN
     IF (RST = '1') THEN
       state <= IDLE;
@@ -74,6 +77,7 @@ BEGIN
       prefillComplete <= nextPrefillComplete;
       temp <= nextTemp;
       permuteTable <= nextPermuteTable;
+      PDATA_READY <= p_ready_flop;
     END IF;
   END PROCESS TLB;
   
@@ -130,7 +134,9 @@ BEGIN
       WHEN PSTEPD =>
         nextState <= PWAIT;
       WHEN PWAIT =>
-        IF (BYTE_READY = '1') THEN
+        IF (KEY_ERROR = '1') THEN
+          nextState <= IDLE;
+        ELSIF (BYTE_READY = '1') THEN
           IF (OPCODE = "01") THEN
             nextState <= PSTEPA;
           ELSIF (OPCODE = "00") THEN
@@ -146,7 +152,9 @@ BEGIN
       WHEN PASSTHROUGH =>
         nextState <= PTOUT;
       WHEN PTOUT =>
-        IF (BYTE_READY = '1') THEN
+        IF (KEY_ERROR = '1') THEN
+          nextState <= IDLE;
+        ELSIF (BYTE_READY = '1') THEN
           IF (OPCODE = "01") THEN
             nextState <= PSTEPA;
           ELSIF (OPCODE = "00") THEN
@@ -160,7 +168,9 @@ BEGIN
           nextState <= PTOUT;
         END IF;
       WHEN PACKETRESET =>
-        IF (BYTE_READY = '1') THEN
+        IF (KEY_ERROR = '1') THEN
+          nextState <= IDLE;
+        ELSIF (BYTE_READY = '1') THEN
           IF (OPCODE = "01") THEN
             nextState <= PSTEPA;
           ELSIF (OPCODE = "00") THEN
@@ -183,7 +193,8 @@ BEGIN
     nextsi <= si; 
     nextinti <= inti;
     nextintj <= intj;
-    PDATA_READY <= '0';
+    --PDATA_READY <= '0';
+    p_ready_flop <= '0';
     delaydata <= delaydata;
     xordata <= xordata;
     nextkeyi <= keyi;
@@ -199,7 +210,7 @@ BEGIN
         nextPrefillComplete <= '0';
         nextPermuteComplete <= '0';
         --TABLE_READY <= '0';
-        PDATA_READY <= '0';
+        --PDATA_READY <= '0';
         --for i in 0 to 2047 loop
         --  OUT_TABLE(i) <= '0';
         --end loop;
@@ -241,6 +252,8 @@ BEGIN
       WHEN DONE => -- state 6
         nextinti <= x"00";
         nextintj <= x"00";
+        nextsi <= x"00";
+        nextsj <= x"00";
         --for i in 0 to 255 loop
 --          OUT_TABLE(i * 8) <= permuteTable(i)(0);
 --          OUT_TABLE(i * 8 + 1) <= permuteTable(i)(1);
@@ -265,14 +278,19 @@ BEGIN
         nextTemp <= permuteTable(CONV_INTEGER(inti)) + permuteTable(CONV_INTEGER(intj));
       WHEN PSTEPD =>
         xordata <= permuteTable(CONV_INTEGER(temp));
+        PROCESSED_DATA <= permuteTable(CONV_INTEGER(temp)) XOR delaydata;
+        --PDATA_READY <= '1';
+        p_ready_flop <= '1';
       WHEN PWAIT =>
-        PROCESSED_DATA <= xordata XOR delaydata;
-        PDATA_READY <= '1';
+        --PROCESSED_DATA <= xordata XOR delaydata;
+        --PDATA_READY <= '1';
       WHEN PASSTHROUGH =>
         delaydata <= BYTE;
+        --PDATA_READY <= '1';
+        p_ready_flop <= '1';
       WHEN PTOUT =>
         PROCESSED_DATA <= delaydata; 
-        PDATA_READY <= '1';
+        --PDATA_READY <= '1';
       WHEN PACKETRESET =>
         nextinti <= x"00";
         nextintj <= x"00";
