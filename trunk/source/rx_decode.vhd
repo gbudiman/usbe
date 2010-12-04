@@ -142,7 +142,7 @@ architecture moore of rx_decode is
                             if (DP1_RX = DP_hold2) then
                               nextstate <= ZERO;
                             else
-                              nextstate <= ZERO;
+                              nextstate <= ONE;
                             end if;
                           end if;              
                           BITSTUFF <='1';
