@@ -11,7 +11,7 @@ use ieee.std_logic_1164.all;
 --use gold_lib.all;   --UNCOMMENT if you're using a GOLD model
 
 entity tb_DECODE is
-  generic(period : time := 83 ns);
+  generic(period : time := 10.4167 ns);
 end tb_DECODE;
 
 architecture TEST of tb_DECODE is

@@ -111,7 +111,7 @@ begin
       D <= not(D);
       D_MIN <= D;
     else
-      if (count = 6) then
+      if (count = 5) then
         count := 0;
         D <= not(D);
         D_MIN <= D;
@@ -197,26 +197,27 @@ process
   report "Begin normal operation" severity note;
   
   HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"FE", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"A5", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"6C", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
   sendEOP(0, DP1_RX, DM1_RX);
-  
-  wait for 4 us;
-  
-  sendUART(x"21", serial_in); -- !
-  sendUART(x"21", serial_in); -- !
-  sendUART(x"54", serial_in); -- T
-  sendUART(x"45", serial_in); -- E
-  sendUART(x"52", serial_in); -- R
-  sendUART(x"43", serial_in); -- C
-  sendUART(x"45", serial_in); -- E
-  sendUART(x"53", serial_in); -- S
-
-  wait for 12 us;
+--  
+--  wait for 4 us;
+--  
+--  sendUART(x"21", serial_in); -- !
+--  sendUART(x"21", serial_in); -- !
+--  sendUART(x"54", serial_in); -- T
+--  sendUART(x"45", serial_in); -- E
+--  sendUART(x"52", serial_in); -- R
+--  sendUART(x"43", serial_in); -- C
+--  sendUART(x"45", serial_in); -- E
+--  sendUART(x"53", serial_in); -- S
+--
+--  wait for 12 us;
+--  BC := 0;
   report "Starting new data" severity note;
   HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"11", BC, DP1_RX, DM1_RX);
