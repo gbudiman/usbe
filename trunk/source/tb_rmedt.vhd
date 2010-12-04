@@ -111,28 +111,28 @@ procedure HEXtoNRZI (
 --    end case;
     for i in 0 to 7 loop
       -- report "IN" severity note;
-      if (data(i) = '0') then
-        count := 0;
+      if (count = 6) then
+        D_Last := D;
+        if (data(i) = '0') then
+          count := 1;
+        else
+          count := 0;
+        end if;
         D <= not(D);
         D_MIN <= D;
+        wait for 8*Period;
+        if (data(i) = '0') then
+          D <= not(D_Last);
+          D_MIN <= D_Last;
+        else
+          D <= (D_LAST);
+          D_MIN <= not(D_Last);
+        end if;
       else
-        if (count = 5) then
-          D_Last := D;
-          if (data(i) = '0') then
-            count := 1;
-          else
-            count := 0;
-          end if;
+        if (data(i) = '0') then
+          count := 0;
           D <= not(D);
           D_MIN <= D;
-          wait for 8*Period;
-          if (data(i) = '0') then
-            D <= not(D_Last);
-            D_MIN <= D_Last;
-          else
-            D <= (D_LAST);
-            D_MIN <= not(D_Last);
-          end if;
         else
           count := count + 1;
           D <= D;

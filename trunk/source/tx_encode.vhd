@@ -25,7 +25,7 @@ entity tx_encode is
   
   architecture moore of tx_encode is
     
-    type state_type is (ZERO, ONE, TWO, THREE, FOUR, FIVE, STUFF_BIT, EOP_STATE);
+    type state_type is (ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, STUFF_BIT, EOP_STATE);
     signal state, nextstate : state_type;
     signal DE_holdout, DE_holdout_last, dm_tx_nxt: std_logic;
     signal DE_holdout_nxt, DE_holdout_BS, DE_holdout_BS_nxt: std_logic;
@@ -236,6 +236,42 @@ entity tx_encode is
                                 t_bitstuff <= '0';
                   when FIVE =>
                                   nextstate <= FIVE;
+                                  
+                                  DE_holdout_nxt <= DE_holdout;
+                                  
+                                  dm_tx_nxt <= NOT DE_holdout;
+                                  
+                                  if EOP = '1' then
+                                    DE_holdout_nxt <= '0';
+                                    dm_tx_nxt <= '0';
+                                    nextstate <= EOP_STATE;
+                                  else
+                                    if (SHIFT_ENABLE_E = '1') then
+                                      
+                                      if (d_encode = '0') then
+                                        
+                                        DE_holdout_nxt <= NOT DE_holdout;
+                                        dm_tx_nxt <= DE_holdout;
+                                        
+                                        if (DE_holdout = '0') then
+                                          nextstate <= ZERO;
+                                        else
+                                          nextstate <= ZERO;
+                                        end if;
+                                        
+                                      else
+                                        if  (DE_holdout = DE_holdout_last) then
+                                          nextstate <= SIX;
+                                        else
+                                          nextstate <= ZERO;
+                                        end if;
+                                      end if;
+                                      
+                                    end if; 
+                                  end if;
+                                t_bitstuff <= '0';              
+                  when SIX =>
+                                  nextstate <= SIX;
                                   
                                   DE_holdout_nxt <= DE_holdout;
                                   
