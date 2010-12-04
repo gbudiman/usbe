@@ -25,10 +25,10 @@ ENTITY RFIFO IS
 END RFIFO;
 
 ARCHITECTURE BRFIFO OF RFIFO IS
-  --TYPE fState IS (OUT_OF_RESET, IDLE, D_WRITE, D_READ, D_BOTH);
+  TYPE fState IS (OUT_OF_RESET, NORMAL);
   TYPE ma IS ARRAY (0 TO 31) OF STD_LOGIC_VECTOR (7 DOWNTO 0);
   TYPE mo IS ARRAY (0 TO 31) OF STD_LOGIC_VECTOR (1 DOWNTO 0);
-  --SIGNAL state, nextState: fState;
+  SIGNAL state: fState;
   SIGNAL memory, nextMemory: ma;
   SIGNAL opcode, nextOpCode: mo;
   SIGNAL readptr, nextreadptr, writeptr, nextwriteptr: STD_LOGIC_VECTOR (4 DOWNTO 0);
@@ -44,6 +44,7 @@ BEGIN
       readptr <= "00000";
       writeptr <= "00000";
       BYTE_COUNT <= "00000";
+      state <= OUT_OF_RESET;
     ELSIF (RISING_EDGE(clk)) THEN
       --state <= nextState;
       --readptr <= nextReadPtr;
@@ -55,6 +56,7 @@ BEGIN
       --BYTE_COUNT <= writePtr - readPtr;
       --FULL <= nextFull;
       --EMPTY <= nextEmpty;
+      state <= NORMAL;
       IF (W_ENABLE = '1') THEN
         IF (RCV_OPCODE = "11") THEN
           writeptr <= writeptr - 1;
@@ -66,16 +68,21 @@ BEGIN
         END IF;
       END IF;
       
-      IF (R_ENABLE = '1') THEN
-        DATA <= memory(CONV_INTEGER(readptr));
-        OUT_OPCODE <= opcode(CONV_INTEGER(readptr));
-        readptr <= readptr + 1;
+      IF state = NORMAL THEN
+        BYTE_COUNT <= writePtr - readPtr;
+        IF (R_ENABLE = '1') THEN
+          DATA <= memory(CONV_INTEGER(readptr));
+          OUT_OPCODE <= opcode(CONV_INTEGER(readptr));
+          readptr <= readptr + 1;
+        ELSE
+          readptr <= readptr;
+        END IF;
       ELSE
-        readptr <= readptr;
+        BYTE_COUNT <= "00000";
+        readptr <= "00000";
       END IF;
       
-      BYTE_COUNT <= flop_bc;
-      flop_bc <= writePtr - readPtr;
+      
       IF (writeptr = readptr) THEN
         EMPTY <= '1';
       ELSE
