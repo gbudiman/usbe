@@ -54,7 +54,8 @@ entity tx_shiftreg is
        if SHIFT_ENABLE_R = '1' AND count = "1000" then
          next_val <= send_data;
          next_count <= "0001";
-       elsif SHIFT_ENABLE_R='1' AND t_bitstuff = '0' then next_val <= '0' & present_val(7 downto 1);
+       elsif SHIFT_ENABLE_R='1' AND t_bitstuff = '0' then 
+         next_val <= '0' & present_val(7 downto 1);
        else next_val <= present_val;
        end if;
     
