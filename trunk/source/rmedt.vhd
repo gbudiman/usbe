@@ -61,7 +61,7 @@ ARCHITECTURE struct OF RMEDT IS
 
 
    -- Component Declarations
-   COMPONENT RMED
+   COMPONENT rmed
    PORT (
       CLK            : IN     std_logic ;
       DM1_RX         : IN     std_logic ;

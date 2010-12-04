@@ -129,6 +129,8 @@ process
   NEXT_BYTE <= '1';
   W_ENABLE <= '0';
   EOP <= '0';
+  RCV_DATA <= x"00";
+  RCV_OPCODE <= "00";
   wait for period;
   RST <= '0';
   wait for period;

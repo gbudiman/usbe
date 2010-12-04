@@ -87,7 +87,7 @@ begin
       if (RST = '1') then
         current_crc <= x"0000";
       elsif(CLK'event and CLK = '1') then
-        if (T_STROBE = '1' AND ((PRGA_OPCODE = "01") OR (PRGA_OPCODE = "00"))) then
+        if (T_STROBE = '1' AND PRGA_OPCODE = "01") then
           current_crc <= nextCRC16_D8(PRGA_OUT, current_crc);
         elsif (EOP = '1') then
           current_crc <= x"0000";
