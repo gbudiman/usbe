@@ -55,7 +55,7 @@ architecture moore of rx_decode is
                             DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
-                            if DP1_RX = '1' then
+                            if DP1_RX = DP_hold1 then
                               nextstate <= ONE;
                             else
                               nextstate <= ZERO;
@@ -69,7 +69,7 @@ architecture moore of rx_decode is
                             DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
-                            if DP1_RX = '1' then
+                            if DP1_RX = DP_hold1 then
                               nextstate <= TWO;
                             else
                               nextstate <= ZERO;
@@ -83,7 +83,7 @@ architecture moore of rx_decode is
                             DP_hold1_nxt <=DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
-                            if DP1_RX = '1' then
+                            if DP1_RX = DP_hold1 then
                               nextstate <= THREE;
                             else
                               nextstate <= ZERO;
@@ -97,7 +97,7 @@ architecture moore of rx_decode is
                             DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
-                            if DP1_RX = '1' then
+                            if DP1_RX = DP_hold1 then
                               nextstate <= FOUR;
                             else
                               nextstate <= ZERO;
@@ -111,7 +111,7 @@ architecture moore of rx_decode is
                             DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
-                            if DP1_RX = '1' then
+                            if DP1_RX = DP_hold1 then
                               nextstate <= FIVE;
                             else
                               nextstate <= ZERO;
@@ -125,7 +125,7 @@ architecture moore of rx_decode is
                             DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
-                            if DP1_RX = '1' then
+                            if DP1_RX = DP_hold1 then
                               nextstate <= SIX;
                             else
                               nextstate <= ZERO;
@@ -152,7 +152,7 @@ architecture moore of rx_decode is
                           if ( SHIFT_ENABLE = '1') then
                             DP_hold1_nxt <= DP1_RX;
                             DP_hold2_nxt <= DP_hold1;
-                            if (DP1_RX = '1') then
+                            if (DP1_RX = DP_hold1) then
                               nextstate <= ONE;
                             else
                               nextstate <= ZERO;

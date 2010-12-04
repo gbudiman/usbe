@@ -177,34 +177,12 @@ process
   HEXtoNRZI(x"A5", DP1_RX, DM1_RX);
   HEXtoNRZI(x"6C", DP1_RX, DM1_RX);
   sendEOP(0, DP1_RX, DM1_RX);
-  
-  wait for 4 us;
-  
-  sendUART(x"21", serial_in); -- !
-  sendUART(x"21", serial_in); -- !
-  sendUART(x"54", serial_in); -- T
-  sendUART(x"45", serial_in); -- E
-  sendUART(x"52", serial_in); -- R
-  sendUART(x"43", serial_in); -- C
-  sendUART(x"45", serial_in); -- E
-  sendUART(x"53", serial_in); -- S
-  
-  wait for 12 us;
-  report "Starting new data" severity note;
   HEXtoNRZI("10000000", DP1_RX, DM1_RX);
-  HEXtoNRZI(x"11", DP1_RX, DM1_RX);
-  HEXtoNRZI(x"9E", DP1_RX, DM1_RX);
-  HEXtoNRZI(x"13", DP1_RX, DM1_RX);
-  HEXtoNRZI(x"CF", DP1_RX, DM1_RX);
-  HEXtoNRZI(x"A5", DP1_RX, DM1_RX);
-  HEXtoNRZI(x"6C", DP1_RX, DM1_RX);
+  HEXtoNRZI(x"FE", DP1_RX, DM1_RX);
+  HEXtoNRZI(x"41", DP1_RX, DM1_RX);
+  HEXtoNRZI(x"81", DP1_RX, DM1_RX);
+  HEXtoNRZI(x"45", DP1_RX, DM1_RX);
   sendEOP(0, DP1_RX, DM1_RX);
-  --HEXtoNRZI("10000000", DP1_RX, DM1_RX);
-  --HEXtoNRZI(x"FE", DP1_RX, DM1_RX);
-  --HEXtoNRZI(x"41", DP1_RX, DM1_RX);
-  --HEXtoNRZI(x"81", DP1_RX, DM1_RX);
-  --HEXtoNRZI(x"45", DP1_RX, DM1_RX);
-  --sendEOP(0, DP1_RX, DM1_RX);
   
   wait;
   
