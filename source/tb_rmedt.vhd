@@ -197,12 +197,12 @@ process
   report "Begin normal operation" severity note;
   
   HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"FE", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"11", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"30", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"31", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"32", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"DD", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"BE", BC, DP1_RX, DM1_RX);
   sendEOP(0, DP1_RX, DM1_RX);
 --  
 --  wait for 4 us;

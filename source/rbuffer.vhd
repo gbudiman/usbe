@@ -51,7 +51,8 @@ BEGIN
     CASE STATE IS
       WHEN IDLE =>
         nextState <= IDLE;
-        IF ((BYTE_COUNT > 15 AND NEXT_BYTE = '1') OR (EOP = '1' AND NEXT_BYTE = '1')) THEN
+        IF ((BYTE_COUNT > 15 AND NEXT_BYTE = '1') 
+            OR (EOP = '1' AND NEXT_BYTE = '1' AND BYTE_COUNT > 0)) THEN
           nextState <= P1;
         ELSE
           nextState <= IDLE;
