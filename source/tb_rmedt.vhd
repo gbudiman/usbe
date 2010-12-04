@@ -191,6 +191,17 @@ process
   sendUART(x"43", serial_in); -- C
   sendUART(x"45", serial_in); -- E
   sendUART(x"53", serial_in); -- S
+  sendUART(x"36", serial_in); -- wrong parity
+  
+  sendUART(x"21", serial_in); -- !
+  sendUART(x"21", serial_in); -- !
+  sendUART(x"54", serial_in); -- T
+  sendUART(x"45", serial_in); -- E
+  sendUART(x"52", serial_in); -- R
+  sendUART(x"43", serial_in); -- C
+  sendUART(x"45", serial_in); -- E
+  sendUART(x"53", serial_in); -- S
+  sendUART("11110111", serial_in); -- parity
   
   wait for 12 us;
   
