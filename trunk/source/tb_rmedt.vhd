@@ -45,6 +45,7 @@ architecture TEST of tb_rmedt is
          RST : IN std_logic;
          SERIAL_IN : IN std_logic;
          CRC_ERROR : OUT std_logic;
+         BS_ERROR: OUT std_logic;
          EMPTY : OUT STD_LOGIC;
          FULL : OUT STD_LOGIC;
          KEY_ERROR : OUT std_logic;
@@ -64,6 +65,7 @@ architecture TEST of tb_rmedt is
   signal RST : std_logic;
   signal SERIAL_IN : std_logic;
   signal CRC_ERROR : std_logic;
+  signal BS_ERROR : std_logic;
   signal EMPTY : STD_LOGIC;
   signal FULL : STD_LOGIC;
   signal KEY_ERROR : std_logic;
@@ -90,6 +92,18 @@ begin
   serial_in <= '1';
   wait for 30 * period;
 end sendUART;
+
+procedure sendByteFast (
+    constant data : in std_logic_vector(7 downto 0);
+    signal DP1_RX: OUT STD_LOGIC;
+    signal DM1_RX: OUT STD_LOGIC) is
+begin
+    for i in 7 downto 0 loop
+        DP1_RX <= data(i);
+        DM1_RX <= NOT data(i);
+        wait for 8*period * 1;
+    end loop;
+end sendByteFast;
 
 procedure HEXtoNRZI (
   constant data : in std_logic_vector(7 downto 0);
@@ -145,6 +159,7 @@ procedure HEXtoNRZI (
       bc_count := count;
     end loop;
   end HEXtoNRZI;
+  
 procedure STRINGtoNRZI (
   constant word: IN string;
   constant length: IN integer;
@@ -218,6 +233,7 @@ begin
                 RST => RST,
                 SERIAL_IN => SERIAL_IN,
                 CRC_ERROR => CRC_ERROR,
+                BS_ERROR => BS_ERROR,
                 EMPTY => EMPTY,
                 FULL => FULL,
                 KEY_ERROR => KEY_ERROR,
@@ -273,6 +289,19 @@ process
   
   report "Begin normal operation" severity note;
   
+  sendByteFast("01010100", DP1_RX, DM1_RX);
+  sendByteFast("00000000", DP1_RX, DM1_RX);
+  sendByteFast("01010100", DP1_RX, DM1_RX);
+  sendByteFast("01010100", DP1_RX, DM1_RX);
+  sendEOP(0, DP1_RX, DM1_RX);
+  
+  HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"90", BC, DP1_RX, DM1_RX);
+  STRINGtoNRZI("This", 4, BC, DP1_RX, DM1_RX);
+  sendByteFast("00000000", DP1_RX, DM1_RX);
+  HEXtoNRZI(x"2C", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"5E", BC, DP1_RX, DM1_RX);
+  sendEOP(0, DP1_RX, DM1_RX); 
   --for i in 0 to 15 loop
 --    report "Sending..." severity note;
 --    HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);

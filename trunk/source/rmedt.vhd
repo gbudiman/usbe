@@ -18,6 +18,7 @@ ENTITY RMEDT IS
       RST        : IN     std_logic;
       SERIAL_IN  : IN     std_logic;
       CRC_ERROR  : OUT    std_logic;
+      BS_ERROR   : OUT    std_logic;
       EMPTY      : OUT    STD_LOGIC;
       FULL       : OUT    STD_LOGIC;
       KEY_ERROR  : OUT    std_logic;
@@ -70,6 +71,7 @@ ARCHITECTURE struct OF RMEDT IS
       RST            : IN     std_logic ;
       SERIAL_IN      : IN     std_logic ;
       CRC_ERROR      : OUT    std_logic ;
+      BS_ERROR_EXTERNAL       : OUT    std_logic ;
       EMPTY          : OUT    STD_LOGIC ;
       FULL           : OUT    STD_LOGIC ;
       KEY_ERROR      : OUT    std_logic ;
@@ -115,6 +117,7 @@ BEGIN
          RST            => RST,
          SERIAL_IN      => SERIAL_IN,
          CRC_ERROR      => CRC_ERROR,
+         BS_ERROR_EXTERNAL       => BS_ERROR,
          EMPTY          => EMPTY,
          FULL           => FULL,
          KEY_ERROR      => KEY_ERROR,
