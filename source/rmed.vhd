@@ -19,6 +19,7 @@ ENTITY RMED IS
       RST            : IN     std_logic;
       SERIAL_IN      : IN     std_logic;
       CRC_ERROR      : OUT    std_logic;
+      BS_ERROR_EXTERNAL: OUT  std_logic;
       EMPTY          : OUT    STD_LOGIC;
       FULL           : OUT    STD_LOGIC;
       KEY_ERROR      : OUT    std_logic;
@@ -89,6 +90,7 @@ ARCHITECTURE struct OF RMED IS
       RST          : IN     std_logic;
       CRC_ERROR    : OUT    std_logic;
       EOP_EXTERNAL : OUT    std_logic;
+      BS_ERROR_EXTERNAL: OUT std_logic;
       OPCODE       : OUT    std_logic_vector (1 DOWNTO 0);
       RCV_DATA     : OUT    std_logic_vector (7 DOWNTO 0);
       R_ERROR      : OUT    std_logic;
@@ -145,6 +147,7 @@ BEGIN
          DP1_RX       => DP1_RX,
          RST          => RST,
          EOP_EXTERNAL => EOP_EXTERNAL,
+         BS_ERROR_EXTERNAL => BS_ERROR_EXTERNAL,
          CRC_ERROR    => CRC_ERROR,
          OPCODE       => OPCODE,
          RCV_DATA     => RCV_DATA,
