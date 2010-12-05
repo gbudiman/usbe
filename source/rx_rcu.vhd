@@ -19,6 +19,7 @@ Entity rx_rcu is
     EOP:in std_logic;
     SHIFT_ENABLE:in std_logic;
     BITSTUFF: in std_logic;
+    BS_ERROR: IN STD_LOGIC;
     RX_CRC: in std_logic_vector(15 downto 0);
     RX_CHECK_CRC: in std_logic_vector(15 downto 0);
     RCV_DATA: in std_logic_vector(7 downto 0);
@@ -32,28 +33,33 @@ end rx_rcu;
 
 architecture moore of rx_rcu is
   type state_type is (IDLE, RECEIVING, CHECK_SYNC, POST_SYNC, NO_SYNC, ERROR,
-  EOP_DETECT, WRITE_BYTE, ERROR2, PREIDLE, NO_SYNC2, RCV_PID, SEND_PID);
+  EOP_DETECT, WRITE_BYTE, ERROR2, PREIDLE, NO_SYNC2, RCV_PID, SEND_PID,
+  BS_ERROR_STATE, BS_ERROR_STATE2);
   signal state, nextstate : state_type;
   signal count, nextcount : STD_LOGIC_VECTOR(3 downto 0);
   signal nxtR_ERROR, curR_ERROR, nxtCRC_ERROR, curCRC_ERROR : std_logic;
   begin
-  StateReg : process(CLK, RST)
+  StateReg : process(CLK, RST, nextState, nxtR_ERROR, nxtCRC_ERROR, nextCount)
     begin
       if (RST = '1') then
         state <= IDLE;
         count <= "0000";
         R_ERROR <= '0';
       elsif(CLK'event and CLK = '1') then
+        IF (BS_ERROR = '1') THEN
+          state <= BS_ERROR_STATE;
+        END IF;
         state <= nextstate;
         count <= nextcount;
         R_ERROR <= nxtR_ERROR;
         curR_ERROR <= nxtR_ERROR;
         CRC_ERROR <= nxtCRC_ERROR;
         curCRC_ERROR <= nxtCRC_ERROR;
+        --BS_ERROR <= nxtBS_ERROR;
       end if;
     end process StateReg;
     
-    Next_State:process(state, EOP, count, D_EDGE, SHIFT_ENABLE, RCV_DATA, BITSTUFF)
+    Next_State:process(state, EOP, count, D_EDGE, SHIFT_ENABLE, RCV_DATA, BITSTUFF, BS_ERROR)
           Begin
             case state is
             when IDLE =>
@@ -148,6 +154,31 @@ architecture moore of rx_rcu is
                           W_ENABLE <= '1';
                           nextcount <= "0000";
                           nextstate <= POST_SYNC;
+            when BS_ERROR_STATE =>
+                          RCVING <= '1';
+                          OPCODE <= "10";
+                          nxtR_ERROR <= '0';
+                          nxtCRC_ERROR <= '0';
+                          W_ENABLE <= '0';
+                          nextcount <= "0000";
+                          if (EOP = '1') THEN
+                            nextState <= BS_ERROR_STATE2;
+                          else
+                            nextState <= BS_ERROR_STATE;
+                          end if;
+            WHEN BS_ERROR_STATE2 =>
+                          RCVING <= '0';
+                          OPCODe <= "10";
+                          nxtR_ERROR <= '0';
+                          nxtCRC_ERROR <= '0';
+                          W_ENABLE <= '0';
+                          nextCount <= "0000";
+                          if (D_EDGE = '1') THEN
+                            nextState <= RECEIVING;
+                          else
+                            nextState <= BS_ERROR_STATE2;
+                          end if;
+                          
             when NO_SYNC =>
                           RCVING <= '1';
                           OPCODE <= "10";
@@ -254,6 +285,7 @@ architecture moore of rx_rcu is
                           nextstate <= IDLE;
                           
   end case;
+  
 end process Next_State;
 end architecture;                             
 
