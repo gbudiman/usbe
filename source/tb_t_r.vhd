@@ -72,6 +72,7 @@ procedure sendTransmitter(
   signal P_READY: OUT STD_LOGIC) IS
 begin
   if (NEXT_BYTE = '0') THEN
+    report "spin wait" severity note;
     wait until NEXT_BYTE = '1';
   END IF;
   wait for 8 * period;
@@ -112,20 +113,22 @@ process
 
 -- Insert TEST BENCH Code Here
     p_ready <= '0';
-    prga_out <= x"00";
-    prga_opcode <= "10";
+    prga_out <= x"80";
+    prga_opcode <= "00";
     rst <= '1';
     wait for 5 ns;
     rst <= '0';
     wait for 5 ns;
     
-    sendTransmitter(x"80", "00", PRGA_OUT, PRGA_OPCODE, NEXT_BYTE, P_READY);
-    sendTransmitter(x"FF", "01", PRGA_OUT, PRGA_OPCODE, NEXT_BYTE, P_READY);
-    sendTransmitter(x"FF", "01", PRGA_OUT, PRGA_OPCODE, NEXT_BYTE, P_READY);
-    sendTransmitter(x"FF", "01", PRGA_OUT, PRGA_OPCODE, NEXT_BYTE, P_READY);
-    sendTransmitter(x"FF", "01", PRGA_OUT, PRGA_OPCODE, NEXT_BYTE, P_READY);
-    sendTransmitter(x"FF", "01", PRGA_OUT, PRGA_OPCODE, NEXT_BYTE, P_READY);
-    sendTransmitter(x"FF", "11", PRGA_OUT, PRGA_OPCODE, NEXT_BYTE, P_READY);
+    wait for 50 ns;
+    P_READY <= '1';
+    wait for period;
+    P_READY <= '0';
+    sendTransmitter("11111111", "00", PRGA_OUT, PRGA_OPCODE, NEXT_BYTE, P_READY);
+    sendTransmitter("11011111", "01", PRGA_OUT, PRGA_OPCODE, NEXT_BYTE, P_READY);
+    sendTransmitter("11101111", "01", PRGA_OUT, PRGA_OPCODE, NEXT_BYTE, P_READY);
+    sendTransmitter("11101111", "01", PRGA_OUT, PRGA_OPCODE, NEXT_BYTE, P_READY);
+    sendTransmitter("11111111", "11", PRGA_OUT, PRGA_OPCODE, NEXT_BYTE, P_READY);
     --PRGA_OUT <= 
     --clk <= 
     --p_ready <= 

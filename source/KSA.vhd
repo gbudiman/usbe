@@ -295,8 +295,8 @@ BEGIN
         PROCESSED_DATA <= delaydata; 
         --PDATA_READY <= '1';
       WHEN PACKETRESET =>
-        nextinti <= x"00";
-        nextintj <= x"00";
+        --nextinti <= x"00";
+        --nextintj <= x"00";
     END CASE;
   END PROCESS OL;
 END bksa;
