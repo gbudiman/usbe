@@ -248,6 +248,8 @@ process
   RST <= '1';
   D_MINUS_HOSTSIDE <= '0';
   D_PLUS_HOSTSIDE <= '1';
+  D_MINUS_SLAVESIDE <= 'Z';
+  D_PLUS_SLAVESIDE <= 'Z';
   wait for 55 ns;
   RST <= '0';
   wait for 5 ns;
@@ -271,8 +273,11 @@ process
   HEXtoNRZI(x"5E", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   sendEOP(0, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   wait for 10 us;
-  D_MINUS_HOSTSIDE <= '0';
-  D_PLUS_HOSTSIDE <= '1';
+  D_MINUS_HOSTSIDE <= 'Z';
+  D_PLUS_HOSTSIDE <= 'Z';
+  D_MINUS_SLAVESIDE <= '1';
+  D_PLUS_SLAVESIDE <= '0';
+  wait for 1 ns;
   HEXtoNRZI("10000000", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
   HEXtoNRZI(x"11", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
   report "Sending..." severity note;
