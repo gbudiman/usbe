@@ -24,7 +24,8 @@ ENTITY USBE IS
       KEY_ERROR         : OUT    std_logic;
       PARITY_ERROR      : OUT    std_logic;
       PROG_ERROR        : OUT    std_logic;
-      BS_ERROR          : OUT    std_logic;
+      BS_ERROR_HOST     : OUT    std_logic;
+      BS_ERROR_SLAVE    : OUT    std_logic;
       R_ERROR_HOST      : OUT    std_logic;
       R_ERROR_SLAVE     : OUT    std_logic;
       D_MINUS_HOSTSIDE  : INOUT  std_ulogic;
@@ -69,8 +70,6 @@ ARCHITECTURE struct OF USBE IS
    SIGNAL PARITY_ERROR2    : std_logic;
    SIGNAL PROG_ERROR1      : std_logic;
    SIGNAL PROG_ERROR2      : std_logic;
-   SIGNAL BS_ERROR_EXTERNAL1  : std_logic;
-   SIGNAL BS_ERROR_EXTERNAL2  : std_logic;
    SIGNAL Host_is_Sending     : std_logic;
    SIGNAL Slave_is_Sending    : std_logic;
    
@@ -136,7 +135,7 @@ BEGIN
          KEY_ERROR    => KEY_ERROR1,
          PROG_ERROR   => PROG_ERROR1,
          PARITY_ERROR => PARITY_ERROR1,
-         BS_ERROR     => BS_ERROR_EXTERNAL1,
+         BS_ERROR     => BS_ERROR_HOST,
          RBUF_FULL    => OPEN,
          R_ERROR      => R_ERROR_HOST,
          SENDING      => Host_is_Sending,
@@ -156,7 +155,7 @@ BEGIN
          KEY_ERROR    => KEY_ERROR2,
          PROG_ERROR   => PROG_ERROR2,
          PARITY_ERROR => PARITY_ERROR2,
-         BS_ERROR     => BS_ERROR_EXTERNAL2,
+         BS_ERROR     => BS_ERROR_SLAVE,
          RBUF_FULL    => OPEN,
          R_ERROR      => R_ERROR_SLAVE,
          SENDING      => Slave_is_Sending,

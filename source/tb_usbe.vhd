@@ -49,6 +49,8 @@ architecture TEST of tb_usbe is
          KEY_ERROR : OUT std_logic;
          PARITY_ERROR : OUT std_logic;
          PROG_ERROR : OUT std_logic;
+         BS_ERROR_HOST : OUT std_logic;
+         BS_ERROR_SLAVE : OUT std_logic;
          R_ERROR_HOST : OUT std_logic;
          R_ERROR_SLAVE : OUT std_logic;
          D_MINUS_HOSTSIDE : INOUT std_logic;
@@ -71,6 +73,8 @@ architecture TEST of tb_usbe is
   signal KEY_ERROR : std_logic;
   signal PARITY_ERROR : std_logic;
   signal PROG_ERROR : std_logic;
+  signal BS_ERROR_HOST : std_logic;
+  signal BS_ERROR_SLAVE : std_logic;
   signal R_ERROR_HOST : std_logic;
   signal R_ERROR_SLAVE : std_logic;
   signal D_MINUS_HOSTSIDE : std_logic;
@@ -217,6 +221,8 @@ begin
                 KEY_ERROR => KEY_ERROR,
                 PARITY_ERROR => PARITY_ERROR,
                 PROG_ERROR => PROG_ERROR,
+                BS_ERROR_HOST => BS_ERROR_HOST,
+                BS_ERROR_SLAVE => BS_ERROR_SLAVE,
                 R_ERROR_HOST => R_ERROR_HOST,
                 R_ERROR_SLAVE => R_ERROR_SLAVE,
                 D_MINUS_HOSTSIDE => D_MINUS_HOSTSIDE,
@@ -264,6 +270,18 @@ process
   HEXtoNRZI(x"2C", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   HEXtoNRZI(x"5E", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   sendEOP(0, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
+  wait for 10 us;
+  D_MINUS_HOSTSIDE <= '0';
+  D_PLUS_HOSTSIDE <= '1';
+  HEXtoNRZI("10000000", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
+  HEXtoNRZI(x"11", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
+  report "Sending..." severity note;
+  STRINGtoNRZI("This", 4, BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
+  HEXtoNRZI(x"2C", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
+  HEXtoNRZI(x"5E", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
+  sendEOP(0, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
+  
+  
 --    CLK <= 
 --    RST <= 
 --    SERIAL_IN <= 
