@@ -241,9 +241,7 @@ process
   SERIAL_IN <= '1';
   RST <= '1';
   D_MINUS_HOSTSIDE <= '0';
-  D_MINUS_SLAVESIDE <= '0';
   D_PLUS_HOSTSIDE <= '1';
-  D_PLUS_SLAVESIDE <= '1';
   wait for 55 ns;
   RST <= '0';
   wait for 5 ns;
@@ -258,11 +256,11 @@ process
   sendUART(x"45", serial_in); -- E
   sendUART(x"53", serial_in); -- S
   sendUART("11110111", serial_in); -- parity
-  
+  wait for 12 us;
   HEXtoNRZI("10000000", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   HEXtoNRZI(x"11", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   report "Sending..." severity note;
-  STRINGtoNRZI("This is a long string", 21, BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
+  STRINGtoNRZI("This", 4, BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   HEXtoNRZI(x"2C", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   HEXtoNRZI(x"5E", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   sendEOP(0, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
