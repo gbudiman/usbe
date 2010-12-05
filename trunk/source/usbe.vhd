@@ -68,9 +68,13 @@ ARCHITECTURE struct OF USBE IS
    SIGNAL PARITY_ERROR2    : std_logic;
    SIGNAL PROG_ERROR1      : std_logic;
    SIGNAL PROG_ERROR2      : std_logic;
-   SIGNAL SENDING_HOST     : std_logic;
-   SIGNAL SENDING_SLAVE    : std_logic;
-
+   SIGNAL Host_is_Sending     : std_logic;
+   SIGNAL Slave_is_Sending    : std_logic;
+   
+   SIGNAL D_PLUS_TX_HOST_ex   : std_ulogic;
+   SIGNAL D_PLUS_TX_SLAVE_ex  : std_ulogic;
+   SIGNAL D_MINUS_TX_HOST_ex  : std_ulogic;
+   SIGNAL D_MINUS_TX_SLAVE_ex : std_ulogic;
 
    -- Component Declarations
    COMPONENT RMEDT
@@ -130,7 +134,7 @@ BEGIN
          PARITY_ERROR => PARITY_ERROR1,
          RBUF_FULL    => OPEN,
          R_ERROR      => R_ERROR_HOST,
-         SENDING      => SENDING_SLAVE,
+         SENDING      => Host_is_Sending,
          dm_tx_out    => D_MINUS_TX_SLAVE,
          dp_tx_out    => D_PLUS_TX_SLAVE
       );
@@ -149,21 +153,31 @@ BEGIN
          PARITY_ERROR => PARITY_ERROR2,
          RBUF_FULL    => OPEN,
          R_ERROR      => R_ERROR_SLAVE,
-         SENDING      => SENDING_HOST,
+         SENDING      => Slave_is_Sending,
          dm_tx_out    => D_MINUS_TX_HOST,
          dp_tx_out    => D_PLUS_TX_HOST
       );
       
+
+   D_PLUS_TX_HOST_ex <= 'Z' WHEN Slave_is_Sending = '0' ELSE D_PLUS_TX_HOST;
+   D_MINUS_TX_HOST_ex <= 'Z' WHEN Slave_is_Sending = '0' ELSE D_MINUS_TX_HOST;
+   D_PLUS_TX_SLAVE_ex <= 'Z' WHEN Host_is_Sending = '0' ELSE D_PLUS_TX_SLAVE;
+   D_MINUS_TX_SLAVE_ex <= 'Z' WHEN Host_is_Sending = '0' ELSE D_MINUS_TX_SLAVE;
    
-   D_PLUS_HOSTSIDE <= D_PLUS_TX_HOST WHEN Sending_Host = '1' ELSE 'Z';   
-   D_MINUS_HOSTSIDE <= D_MINUS_TX_HOST WHEN Sending_Host = '1' ELSE 'Z';
-   D_PLUS_SLAVESIDE <= D_PLUS_TX_SLAVE WHEN Sending_Slave = '1' ELSE 'Z';
-   D_MINUS_SLAVESIDE <= D_MINUS_TX_SLAVE WHEN Sending_Slave = '1' ELSE 'Z';
+   --D_PLUS_TX_HOST <= D_PLUS_TX_HOST_ex;
+   --D_MINUS_TX_HOST <= D_MINUS_TX_HOST_ex;
+   --D_PLUS_TX_SLAVE <= D_PLUS_TX_SLAVE_ex;
+   --D_MINUS_TX_SLAVE <= D_MINUS_TX_SLAVE_ex;
    
-   D_PLUS_RX_HOST <= D_PLUS_HOSTSIDE;
-   D_MINUS_RX_HOST <= D_MINUS_HOSTSIDE;
-   D_PLUS_RX_SLAVE <= D_PLUS_SLAVESIDE;
-   D_MINUS_RX_SLAVE <= D_MINUS_SLAVESIDE;
+   D_PLUS_HOSTSIDE <= D_PLUS_TX_HOST_ex WHEN Slave_Is_Sending = '1' ELSE 'Z';
+   D_MINUS_HOSTSIDE <= D_MINUS_TX_HOST_ex WHEN Slave_Is_Sending = '1' ELSE 'Z';
+   D_PLUS_SLAVESIDE <= D_PLUS_TX_SLAVE_ex WHEN Host_is_Sending = '1' ELSE 'Z';
+   D_MINUS_SLAVESIDE <= D_MINUS_TX_SLAVE_ex WHEN Host_is_Sending = '1' ELSE 'Z';
+   
+   D_PLUS_RX_HOST <= D_PLUS_HOSTSIDE WHEN Slave_is_Sending = '0' ELSE 'Z';
+   D_MINUS_RX_HOST <= D_MINUS_HOSTSIDE WHEN Slave_is_Sending = '0' ELSE 'Z';
+   D_PLUS_RX_SLAVE <= D_PLUS_SLAVESIDE WHEN Host_is_Sending = '0' ELSE 'Z';
+   D_MINUS_RX_SLAVE <= D_MINUS_SLAVESIDE WHEN Host_is_Sending = '0' ELSE 'Z';
    
 --       IO_DATA: process (RST, CLK, Sending_Host, Sending_Slave, 
 --         D_Plus_Hostside, D_Minus_Hostside, D_Plus_Slaveside, D_Minus_Slaveside,
