@@ -145,7 +145,54 @@ procedure HEXtoNRZI (
       bc_count := count;
     end loop;
   end HEXtoNRZI;
-
+procedure STRINGtoNRZI (
+  constant word: IN string;
+  constant length: IN integer;
+  variable bc_count: inout integer;
+  signal D: inout std_logic;
+  signal D_MIN: out std_logic) is
+  variable count: integer;
+  variable D_Last: std_logic;
+  variable data: std_logic_vector(7 downto 0);
+  begin
+    count := bc_count;
+    for i in 1 to length loop
+      data := CONV_STD_LOGIC_VECTOR(CONV_INTEGER(CHARACTER'POS(word(i))), 8);
+      for i in 0 to 7 loop
+        if (data(i) = '0') then
+          count := 0;
+          D <= not(D);
+          D_MIN <= D;
+        else
+          if (count = 5) then
+            D_Last := D;
+            if (data(i) = '0') then
+              count := 1;
+            else
+              count := 0;
+            end if;
+            D <= not(D);
+            D_MIN <= D;
+            wait for 8*Period;
+            if (data(i) = '0') then
+              D <= not(D_Last);
+              D_MIN <= D_Last;
+            else
+              D <= (D_LAST);
+              D_MIN <= not(D_Last);
+            end if;
+          else
+            count := count + 1;
+            D <= D;
+            D_MIN <= not(D);
+          end if;
+        end if;
+        wait for 8*Period;
+      end loop;
+    end loop;
+    bc_count := count;
+  end STRINGtoNRZI;
+  
 procedure sendEOP (
     constant repeat: IN integer;
     signal d_plus: OUT STD_LOGIC;
@@ -239,12 +286,15 @@ process
 --  end loop;
   HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"90", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"61", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"62", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"63", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"64", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"3D", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"EF", BC, DP1_RX, DM1_RX);
+  STRINGtoNRZI("This is a long string", 21, BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"2C", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"5E", BC, DP1_RX, DM1_RX);
+  --HEXtoNRZI(x"61", BC, DP1_RX, DM1_RX);
+--  HEXtoNRZI(x"62", BC, DP1_RX, DM1_RX);
+--  HEXtoNRZI(x"63", BC, DP1_RX, DM1_RX);
+--  HEXtoNRZI(x"64", BC, DP1_RX, DM1_RX);
+--  HEXtoNRZI(x"3D", BC, DP1_RX, DM1_RX);
+--  HEXtoNRZI(x"EF", BC, DP1_RX, DM1_RX);
   sendEOP(0, DP1_RX, DM1_RX);
   wait for 8 us;
   
