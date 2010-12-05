@@ -101,7 +101,7 @@ procedure HEXtoNRZI (
   constant data : in std_logic_vector(7 downto 0);
   variable bc_count : inout integer;
   signal D    : inout std_logic; 
-  signal D_MIN: out std_logic) is
+  signal D_MIN: inout std_logic) is
   variable count: integer;
   variable D_Last: std_logic;
   begin

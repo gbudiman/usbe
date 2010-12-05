@@ -105,43 +105,11 @@ BEGIN
    -- eb2 2
    --THIS NEEDS CODE
    
-
-   IO_DATA: process (Sending_Host, Sending_Slave, 
-     D_Plus_Hostside, D_Minus_Hostside, D_Plus_Slaveside, D_Minus_Slaveside,
-     D_Plus_RX_Slave, D_Minus_RX_Slave, D_Plus_TX_Slave, D_Plus_TX_Host)
-   begin
-     if (Sending_Host = '1') then
-       -- Host send state
-       -- Host side lines are on read
-       -- Slave side lines are on write
-       D_Plus_RX_Host <= D_Plus_Hostside;
-       D_Minus_RX_Host <= D_Minus_Hostside;
-       D_Plus_Slaveside <= D_Plus_TX_Slave;
-       D_Minus_Slaveside <= D_Minus_TX_Slave;
-     elsif(Sending_Slave = '1') then
-       -- Slave send state
-       -- Slave side lines are on read
-       -- Host side lines are on write
-       D_Plus_Hostside <= D_Plus_TX_Host;
-       D_Minus_Hostside <= D_Minus_TX_Host;
-       D_Plus_RX_Slave <= D_Plus_Slaveside;
-       D_Minus_RX_Slave <= D_Minus_Slaveside;
-     else
-       -- Neither sending
-       report "check" severity note;
-       D_Plus_RX_Host <= D_Plus_Hostside;
-       D_Minus_RX_Host <= D_Minus_Hostside;
-       D_Plus_RX_Slave <= D_Plus_Slaveside;
-       D_Minus_RX_Slave <= D_Minus_Slaveside;	
-     end if;
-   end process IO_DATA;                                        
-
-
    -- ModuleWare code(v1.9) for instance 'U_3' of 'nor'
-   PROG_ERROR <= NOT(PROG_ERROR1 OR PROG_ERROR2);
+   PROG_ERROR <= PROG_ERROR1 OR PROG_ERROR2;
 
    -- ModuleWare code(v1.9) for instance 'U_4' of 'nor'
-   PARITY_ERROR <= NOT(PARITY_ERROR1 OR PARITY_ERROR2);
+   PARITY_ERROR <= PARITY_ERROR1 OR PARITY_ERROR2;
 
    -- ModuleWare code(v1.9) for instance 'U_2' of 'or'
    KEY_ERROR <= KEY_ERROR2 OR KEY_ERROR1;
@@ -185,5 +153,41 @@ BEGIN
          dm_tx_out    => D_MINUS_TX_HOST,
          dp_tx_out    => D_PLUS_TX_HOST
       );
+      
+      
+       IO_DATA: process (RST, CLK, Sending_Host, Sending_Slave, 
+         D_Plus_Hostside, D_Minus_Hostside, D_Plus_Slaveside, D_Minus_Slaveside,
+         D_Plus_RX_Slave, D_Minus_RX_Slave, D_Plus_TX_Slave, D_Plus_TX_Host)
+       begin
+         if (Sending_Host = '1') then
+           -- Host send state
+           -- Host side lines are on read
+           -- Slave side lines are on write
+           D_Plus_RX_Host <= D_Plus_Hostside;
+           D_Minus_RX_Host <= D_Minus_Hostside;
+           D_Plus_Slaveside <= D_Plus_TX_Slave;
+           D_Minus_Slaveside <= D_Minus_TX_Slave;
+         elsif(Sending_Slave = '1') then
+           -- Slave send state
+           -- Slave side lines are on read
+           -- Host side lines are on write
+           D_Plus_Hostside <= D_Plus_TX_Host;
+           D_Minus_Hostside <= D_Minus_TX_Host;
+           D_Plus_RX_Slave <= D_Plus_Slaveside;
+           D_Minus_RX_Slave <= D_Minus_Slaveside;
+         else
+           -- Neither sending
+           D_Plus_RX_Host <= D_Plus_Hostside;
+           D_Minus_RX_Host <= D_Minus_Hostside;
+           D_Plus_RX_Slave <= D_Plus_Slaveside;
+           D_Minus_RX_Slave <= D_Minus_Slaveside;	
+--           D_Plus_TX_Host <= 'Z';
+--           D_Minus_TX_Host <= 'Z';
+--           D_Plus_TX_Slave <= 'Z';
+--           D_Minus_TX_Slave <= 'Z';
+         end if;
+       end process IO_DATA;                                        
+      
+      
 
 END struct;
