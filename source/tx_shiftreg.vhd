@@ -48,7 +48,9 @@ entity tx_shiftreg is
      begin
        next_count <= count;
        if SHIFT_ENABLE_R = '1' then
-         next_count <= count + 1;
+         if t_bitstuff = '0' then
+          next_count <= count + 1;
+        end if;
        end if;
        
        if SHIFT_ENABLE_R = '1' AND count = "1000" then
