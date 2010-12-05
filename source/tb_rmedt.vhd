@@ -226,25 +226,26 @@ process
   
   report "Begin normal operation" severity note;
   
-  for i in 0 to 15 loop
-    report "Sending..." severity note;
-    HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"11", BC, DP1_RX, DM1_RX);
-    for j in 0 to 15 loop
-      HEXtoNRZI(CONV_STD_LOGIC_VECTOR(i * 16 + j, 8), BC, DP1_RX, DM1_RX);
-    end loop;
-    --HEXtoNRZI(x"31", BC, DP1_RX, DM1_RX);
---    HEXtoNRZI(x"32", BC, DP1_RX, DM1_RX);
---    HEXtoNRZI(x"33", BC, DP1_RX, DM1_RX);
---    HEXtoNRZI(x"34", BC, DP1_RX, DM1_RX);
---    HEXtoNRZI(x"35", BC, DP1_RX, DM1_RX);
---    HEXtoNRZI(x"36", BC, DP1_RX, DM1_RX);
---    HEXtoNRZI(x"37", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"ED", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"BD", BC, DP1_RX, DM1_RX);
-    sendEOP(0, DP1_RX, DM1_RX);
-  end loop;
-  --sendEOP(500, DP1_RX, DM1_RX);
+  --for i in 0 to 15 loop
+--    report "Sending..." severity note;
+--    HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
+--    HEXtoNRZI(x"11", BC, DP1_RX, DM1_RX);
+--    for j in 0 to 15 loop
+--      HEXtoNRZI(CONV_STD_LOGIC_VECTOR(i * 16 + j, 8), BC, DP1_RX, DM1_RX);
+--    end loop;
+--    HEXtoNRZI(x"ED", BC, DP1_RX, DM1_RX);
+--    HEXtoNRZI(x"BD", BC, DP1_RX, DM1_RX);
+--    sendEOP(0, DP1_RX, DM1_RX);
+--  end loop;
+  HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"90", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"61", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"62", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"63", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"64", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"3D", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"EF", BC, DP1_RX, DM1_RX);
+  sendEOP(0, DP1_RX, DM1_RX);
   wait for 8 us;
   
   sendUART(x"21", serial_in); -- !
