@@ -106,14 +106,16 @@ BEGIN
    --THIS NEEDS CODE
    
 
-   IO_DATA: process (Sending_Host, Sending_Slave)
+   IO_DATA: process (Sending_Host, Sending_Slave, 
+     D_Plus_Hostside, D_Minus_Hostside, D_Plus_Slaveside, D_Minus_Slaveside,
+     D_Plus_RX_Slave, D_Minus_RX_Slave, D_Plus_TX_Slave, D_Plus_TX_Host)
    begin
      if (Sending_Host = '1') then
        -- Host send state
        -- Host side lines are on read
        -- Slave side lines are on write
-       D_Plus_Hostside <= D_Plus_RX_Host;
-       D_Minus_Hostside <= D_Minus_RX_Host;
+       D_Plus_RX_Host <= D_Plus_Hostside;
+       D_Minus_RX_Host <= D_Minus_Hostside;
        D_Plus_Slaveside <= D_Plus_TX_Slave;
        D_Minus_Slaveside <= D_Minus_TX_Slave;
      elsif(Sending_Slave = '1') then
@@ -122,14 +124,15 @@ BEGIN
        -- Host side lines are on write
        D_Plus_Hostside <= D_Plus_TX_Host;
        D_Minus_Hostside <= D_Minus_TX_Host;
-       D_Plus_Slaveside <= D_Plus_RX_Slave;
-       D_Minus_Slaveside <= D_Minus_RX_Slave;
+       D_Plus_RX_Slave <= D_Plus_Slaveside;
+       D_Minus_RX_Slave <= D_Minus_Slaveside;
      else
        -- Neither sending
-       D_Plus_Hostside <= D_Plus_RX_Host;
-       D_Minus_Hostside <= D_Minus_RX_Host;
-       D_Plus_Slaveside <= D_Plus_RX_Slave;
-       D_Minus_Slaveside <= D_Minus_RX_Slave;			
+       report "check" severity note;
+       D_Plus_RX_Host <= D_Plus_Hostside;
+       D_Minus_RX_Host <= D_Minus_Hostside;
+       D_Plus_RX_Slave <= D_Plus_Slaveside;
+       D_Minus_RX_Slave <= D_Minus_Slaveside;	
      end if;
    end process IO_DATA;                                        
 
