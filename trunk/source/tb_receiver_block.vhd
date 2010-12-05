@@ -39,6 +39,8 @@ architecture TEST of tb_receiver_block is
          DM1_RX : IN std_logic;
          DP1_RX : IN std_logic;
          RST : IN std_logic;
+         BS_ERROR_EXTERNAL : OUT std_logic;
+         EOP_EXTERNAL: OUT std_logic;
          CRC_ERROR : OUT std_logic;
          OPCODE : OUT std_logic_vector (1 DOWNTO 0);
          RCV_DATA : OUT std_logic_vector (7 DOWNTO 0);
@@ -56,7 +58,9 @@ architecture TEST of tb_receiver_block is
   signal OPCODE : std_logic_vector (1 DOWNTO 0);
   signal RCV_DATA : std_logic_vector (7 DOWNTO 0);
   signal R_ERROR : std_logic;
+  signal BS_ERROR : std_logic;
   signal W_ENABLE : std_logic;
+  signal EOP : std_logic;
 
 -- signal <name> : <type>;
 signal DBUS : STD_LOGIC_VECTOR (7 DOWNTO 0);
@@ -114,6 +118,8 @@ begin
                 DM1_RX => DM1_RX,
                 DP1_RX => DP1_RX,
                 RST => RST,
+                BS_ERROR_EXTERNAL => BS_ERROR,
+                EOP_EXTERNAL => EOP,
                 CRC_ERROR => CRC_ERROR,
                 OPCODE => OPCODE,
                 RCV_DATA => RCV_DATA,
@@ -146,17 +152,39 @@ process
 
 -- Insert TEST BENCH Code Here
 
-    DM1_RX <= '1';
+    DM1_RX <= '0';
     DP1_RX <= '1';
     RST <= '1';
     wait for period;
     RST <= '0';
     wait for period;
+--    sendByteFast("01010100", DP1_RX, DM1_RX);
+--    
+--    sendByteFast("11010100", DP1_RX, DM1_RX);
+--    sendByteFast("00100011", DP1_RX, DM1_RX);
+--    sendByteFast("01000110", DP1_RX, DM1_RX);
+--    sendByteFast("00111000", DP1_RX, DM1_RX);
+--    sendByteFast("10110010", DP1_RX, DM1_RX);
+--    sendByteFast("10111010", DP1_RX, DM1_RX);
+--    sendByteFast("11001011", DP1_RX, DM1_RX);
+--    sendByteFast("01010100", DP1_RX, DM1_RX);
+--    
+--    sendByteFast("11010100", DP1_RX, DM1_RX);
+--    sendByteFast("00100011", DP1_RX, DM1_RX);
+--    sendByteFast("01000110", DP1_RX, DM1_RX);
+--    sendByteFast("00111000", DP1_RX, DM1_RX);
+--    sendByteFast("10110010", DP1_RX, DM1_RX);
+--    sendByteFast("11111101", DP1_RX, DM1_RX);
+--    sendByteIncomplete("10000000", 7, DP1_RX, DM1_RX);
+--    sendByteFast("01010100", DP1_RX, DM1_RX);
+--    
+--    sendEOP(0, DP1_RX, DM1_RX);
+    
     sendByteFast("01010100", DP1_RX, DM1_RX);
     
     sendByteFast("11010100", DP1_RX, DM1_RX);
-    sendByteFast("00100011", DP1_RX, DM1_RX);
-    sendByteFast("01000110", DP1_RX, DM1_RX);
+    sendByteFast("11111110", DP1_RX, DM1_RX);
+    sendByteFast("11111111", DP1_RX, DM1_RX);
     sendByteFast("00111000", DP1_RX, DM1_RX);
     sendByteFast("10110010", DP1_RX, DM1_RX);
     sendByteFast("10111010", DP1_RX, DM1_RX);
@@ -168,17 +196,17 @@ process
     sendByteFast("01000110", DP1_RX, DM1_RX);
     sendByteFast("00111000", DP1_RX, DM1_RX);
     sendByteFast("10110010", DP1_RX, DM1_RX);
-    sendByteFast("11111101", DP1_RX, DM1_RX);
-    sendByteIncomplete("10000000", 7, DP1_RX, DM1_RX);
+    sendByteFast("10111010", DP1_RX, DM1_RX);
+    sendByteFast("10111111", DP1_RX, DM1_RX);
+    sendByteIncomplete("00000000", 7, DP1_RX, DM1_RX);
     sendByteFast("01010100", DP1_RX, DM1_RX);
     
     sendEOP(0, DP1_RX, DM1_RX);
-    
     sendByteFast("01010100", DP1_RX, DM1_RX);
     
     sendByteFast("11010100", DP1_RX, DM1_RX);
-    sendByteFast("00100011", DP1_RX, DM1_RX);
-    sendByteFast("01000110", DP1_RX, DM1_RX);
+    sendByteFast("11111110", DP1_RX, DM1_RX);
+    sendByteFast("11111111", DP1_RX, DM1_RX);
     sendByteFast("00111000", DP1_RX, DM1_RX);
     sendByteFast("10110010", DP1_RX, DM1_RX);
     sendByteFast("10111010", DP1_RX, DM1_RX);

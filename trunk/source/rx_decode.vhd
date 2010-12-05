@@ -18,11 +18,12 @@ Entity rx_decode is
     SHIFT_ENABLE: in std_logic;
     EOP: in std_logic;
     D_ORIG: out std_logic;
-    BITSTUFF: out std_logic
+    BITSTUFF: out std_logic;
+    BS_ERROR_output: OUT std_logic
   );
 end rx_decode;
 architecture moore of rx_decode is
-  type state_type is (ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, READ_STUFF);
+  type state_type is (ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, READ_STUFF, BS_ERROR);
   signal state, nextstate : state_type;
   signal DP_hold1, DP_hold2: std_logic;
   signal DP_hold1_nxt, DP_hold2_nxt: std_logic;
@@ -48,8 +49,9 @@ architecture moore of rx_decode is
       
       D_ORIG <= (DP_hold1 xnor DP_hold2);
       
-    Next_State:process(state, SHIFT_ENABLE, DP1_RX, RST)
+    Next_State:process(state, SHIFT_ENABLE, DP1_RX, RST, EOP)
           Begin
+            BS_ERROR_OUTPUT <= '0';
             case state is
             when ZERO =>   
                             nextstate <= ZERO;
@@ -140,7 +142,11 @@ architecture moore of rx_decode is
                             DP_hold1_nxt <= DP_hold1;
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
-                            nextstate <= READ_STUFF;
+                            IF (DP1_RX = DP_hold2) THEN
+                              nextState <= BS_ERROR;
+                            ELSE
+                              nextstate <= READ_STUFF;
+                            END IF;
                             DP_hold1_nxt <= DP_hold1;
                             DP_hold2_nxt <= DP_hold2;
                           end if;
@@ -162,10 +168,18 @@ architecture moore of rx_decode is
                               DP_hold1_nxt <= DP1_RX;
                               DP_hold2_nxt<= DP_hold1;
                             end if;
-                          end if;              
+                          end if;
+                                        
                           BITSTUFF <='0';
                           
-                          
+            when BS_ERROR =>
+              BS_ERROR_OUTPUT <= '1';
+              IF (EOP = '1') THEN
+                nextState <= ZERO;
+              ELSE
+                nextState <= BS_ERROR;
+              END IF;
+              
             when others =>  nextstate <= ZERO;
                             BITSTUFF <= '0';
                             DP_hold1_nxt <= '1';

@@ -16,6 +16,7 @@ ENTITY Receiver_Block IS
       DM1_RX    : IN     std_logic;
       DP1_RX    : IN     std_logic;
       RST       : IN     std_logic;
+      BS_ERROR_EXTERNAL : OUT     std_logic;
       EOP_EXTERNAL : OUT    std_logic;
       CRC_ERROR : OUT    std_logic;
       OPCODE    : OUT    std_logic_vector (1 DOWNTO 0);
@@ -48,6 +49,7 @@ ARCHITECTURE struct OF Receiver_Block IS
 
    -- Internal signal declarations
    SIGNAL BITSTUFF     : std_logic;
+   SIGNAL BS_ERROR     : std_logic;
    SIGNAL D_EDGE       : std_logic;
    SIGNAL D_ORIG       : std_logic;
    SIGNAL RCVING       : std_logic;
@@ -88,8 +90,9 @@ ARCHITECTURE struct OF Receiver_Block IS
       EOP          : IN     std_logic;
       RST          : IN     std_logic;
       SHIFT_ENABLE : IN     std_logic;
+      D_ORIG       : OUT    std_logic;
       BITSTUFF     : OUT    std_logic;
-      D_ORIG       : OUT    std_logic
+      BS_ERROR_output     : OUT    std_logic
    );
    END COMPONENT;
    COMPONENT rx_edgedetect
@@ -110,6 +113,7 @@ ARCHITECTURE struct OF Receiver_Block IS
    COMPONENT rx_rcu
    PORT (
       BITSTUFF     : IN     std_logic;
+      BS_ERROR     : IN     std_logic;
       CLK          : IN     std_logic;
       D_EDGE       : IN     std_logic;
       EOP          : IN     std_logic;
@@ -170,14 +174,6 @@ BEGIN
          RCV_DATA => RCV_DATA_internal,
          RX_CRC   => RX_CRC
       );
-   U_0 : rx_accumulator
-      PORT MAP (
-         CLK          => CLK,
-         RST          => RST,
-         RCV_DATA     => RCV_DATA_internal,
-         W_ENABLE     => W_ENABLE_internal,
-         rx_CHECK_CRC => rx_CHECK_CRC
-      );
    U_2 : rx_decode
       PORT MAP (
          CLK          => CLK,
@@ -186,7 +182,16 @@ BEGIN
          SHIFT_ENABLE => SHIFT_ENABLE,
          EOP          => EOP,
          D_ORIG       => D_ORIG,
-         BITSTUFF     => BITSTUFF
+         BITSTUFF     => BITSTUFF,
+         BS_ERROR_output     => BS_ERROR
+      );
+   U_0 : rx_accumulator
+      PORT MAP (
+         CLK          => CLK,
+         RST          => RST,
+         RCV_DATA     => RCV_DATA_internal,
+         W_ENABLE     => W_ENABLE_internal,
+         rx_CHECK_CRC => rx_CHECK_CRC
       );
    U_4 : rx_edgedetect
       PORT MAP (
@@ -209,6 +214,7 @@ BEGIN
          EOP          => EOP,
          SHIFT_ENABLE => SHIFT_ENABLE,
          BITSTUFF     => BITSTUFF,
+         BS_ERROR     => BS_ERROR,
          RX_CRC       => RX_CRC,
          RX_CHECK_CRC => rx_CHECK_CRC,
          RCV_DATA     => RCV_DATA_internal,
@@ -241,5 +247,6 @@ BEGIN
    RCV_DATA <= RCV_DATA_internal;
    W_ENABLE <= W_ENABLE_internal;
    EOP_EXTERNAL <= EOP;
+   BS_ERROR_EXTERNAL <= BS_ERROR;
 
 END struct;
