@@ -26,10 +26,10 @@ ENTITY USBE IS
       PROG_ERROR        : OUT    std_logic;
       R_ERROR_HOST      : OUT    std_logic;
       R_ERROR_SLAVE     : OUT    std_logic;
-      D_MINUS_HOSTSIDE  : INOUT  std_logic;
-      D_MINUS_SLAVESIDE : INOUT  std_logic;
-      D_PLUS_HOSTSIDE   : INOUT  std_logic;
-      D_PLUS_SLAVESIDE  : INOUT  std_logic
+      D_MINUS_HOSTSIDE  : INOUT  std_ulogic;
+      D_MINUS_SLAVESIDE : INOUT  std_ulogic;
+      D_PLUS_HOSTSIDE   : INOUT  std_ulogic;
+      D_PLUS_SLAVESIDE  : INOUT  std_ulogic
    );
 
 -- Declarations
@@ -54,14 +54,14 @@ ARCHITECTURE struct OF USBE IS
    -- Architecture declarations
 
    -- Internal signal declarations
-   SIGNAL D_MINUS_RX_HOST  : std_logic;
-   SIGNAL D_MINUS_RX_SLAVE : std_logic;
-   SIGNAL D_MINUS_TX_HOST  : std_logic;
-   SIGNAL D_MINUS_TX_SLAVE : std_logic;
-   SIGNAL D_PLUS_RX_HOST   : std_logic;
-   SIGNAL D_PLUS_RX_SLAVE  : std_logic;
-   SIGNAL D_PLUS_TX_HOST   : std_logic;
-   SIGNAL D_PLUS_TX_SLAVE  : std_logic;
+   SIGNAL D_MINUS_RX_HOST  : std_ulogic;
+   SIGNAL D_MINUS_RX_SLAVE : std_ulogic;
+   SIGNAL D_MINUS_TX_HOST  : std_ulogic;
+   SIGNAL D_MINUS_TX_SLAVE : std_ulogic;
+   SIGNAL D_PLUS_RX_HOST   : std_ulogic;
+   SIGNAL D_PLUS_RX_SLAVE  : std_ulogic;
+   SIGNAL D_PLUS_TX_HOST   : std_ulogic;
+   SIGNAL D_PLUS_TX_SLAVE  : std_ulogic;
    SIGNAL KEY_ERROR1       : std_logic;
    SIGNAL KEY_ERROR2       : std_logic;
    SIGNAL PARITY_ERROR1    : std_logic;
@@ -76,8 +76,8 @@ ARCHITECTURE struct OF USBE IS
    COMPONENT RMEDT
    PORT (
       CLK          : IN     std_logic;
-      DM1_RX       : IN     std_logic;
-      DP1_RX       : IN     std_logic;
+      DM1_RX       : IN     std_ulogic;
+      DP1_RX       : IN     std_ulogic;
       RST          : IN     std_logic;
       SERIAL_IN    : IN     std_logic;
       CRC_ERROR    : OUT    std_logic;
@@ -89,8 +89,8 @@ ARCHITECTURE struct OF USBE IS
       RBUF_FULL    : OUT    std_logic;
       R_ERROR      : OUT    std_logic;
       SENDING      : OUT    std_logic;
-      dm_tx_out    : OUT    std_logic;
-      dp_tx_out    : OUT    std_logic
+      dm_tx_out    : OUT    std_ulogic;
+      dp_tx_out    : OUT    std_ulogic
    );
    END COMPONENT;
 
@@ -154,39 +154,50 @@ BEGIN
          dp_tx_out    => D_PLUS_TX_HOST
       );
       
-      
-       IO_DATA: process (RST, CLK, Sending_Host, Sending_Slave, 
-         D_Plus_Hostside, D_Minus_Hostside, D_Plus_Slaveside, D_Minus_Slaveside,
-         D_Plus_RX_Slave, D_Minus_RX_Slave, D_Plus_TX_Slave, D_Plus_TX_Host)
-       begin
-         if (Sending_Host = '1') then
-           -- Host send state
-           -- Host side lines are on read
-           -- Slave side lines are on write
-           D_Plus_RX_Host <= D_Plus_Hostside;
-           D_Minus_RX_Host <= D_Minus_Hostside;
-           D_Plus_Slaveside <= D_Plus_TX_Slave;
-           D_Minus_Slaveside <= D_Minus_TX_Slave;
-         elsif(Sending_Slave = '1') then
-           -- Slave send state
-           -- Slave side lines are on read
-           -- Host side lines are on write
-           D_Plus_Hostside <= D_Plus_TX_Host;
-           D_Minus_Hostside <= D_Minus_TX_Host;
-           D_Plus_RX_Slave <= D_Plus_Slaveside;
-           D_Minus_RX_Slave <= D_Minus_Slaveside;
-         else
-           -- Neither sending
-           D_Plus_RX_Host <= D_Plus_Hostside;
-           D_Minus_RX_Host <= D_Minus_Hostside;
-           D_Plus_RX_Slave <= D_Plus_Slaveside;
-           D_Minus_RX_Slave <= D_Minus_Slaveside;	
---           D_Plus_TX_Host <= 'Z';
---           D_Minus_TX_Host <= 'Z';
---           D_Plus_TX_Slave <= 'Z';
---           D_Minus_TX_Slave <= 'Z';
-         end if;
-       end process IO_DATA;                                        
+   
+   D_PLUS_HOSTSIDE <= D_PLUS_TX_HOST WHEN Sending_Host = '1' ELSE 'Z';   
+   D_MINUS_HOSTSIDE <= D_MINUS_TX_HOST WHEN Sending_Host = '1' ELSE 'Z';
+   D_PLUS_SLAVESIDE <= D_PLUS_TX_SLAVE WHEN Sending_Slave = '1' ELSE 'Z';
+   D_MINUS_SLAVESIDE <= D_MINUS_TX_SLAVE WHEN Sending_Slave = '1' ELSE 'Z';
+   
+   D_PLUS_RX_HOST <= D_PLUS_HOSTSIDE;
+   D_MINUS_RX_HOST <= D_MINUS_HOSTSIDE;
+   D_PLUS_RX_SLAVE <= D_PLUS_SLAVESIDE;
+   D_MINUS_RX_SLAVE <= D_MINUS_SLAVESIDE;
+   
+--       IO_DATA: process (RST, CLK, Sending_Host, Sending_Slave, 
+--         D_Plus_Hostside, D_Minus_Hostside, D_Plus_Slaveside, D_Minus_Slaveside,
+--         D_Plus_RX_Slave, D_Minus_RX_Slave, D_Plus_TX_Slave, D_Plus_TX_Host)
+--       begin
+--         
+         --if (Sending_Host = '1') then
+--           -- Host send state
+--           -- Host side lines are on read
+--           -- Slave side lines are on write
+--           D_Plus_RX_Host <= D_Plus_Hostside;
+--           D_Minus_RX_Host <= D_Minus_Hostside;
+--           D_Plus_Slaveside <= D_Plus_TX_Slave;
+--           D_Minus_Slaveside <= D_Minus_TX_Slave;
+--         elsif(Sending_Slave = '1') then
+--           -- Slave send state
+--           -- Slave side lines are on read
+--           -- Host side lines are on write
+--           D_Plus_Hostside <= D_Plus_TX_Host;
+--           D_Minus_Hostside <= D_Minus_TX_Host;
+--           D_Plus_RX_Slave <= D_Plus_Slaveside;
+--           D_Minus_RX_Slave <= D_Minus_Slaveside;
+--         else
+--           -- Neither sending
+--           D_Plus_RX_Host <= D_Plus_Hostside;
+--           D_Minus_RX_Host <= D_Minus_Hostside;
+--           D_Plus_RX_Slave <= D_Plus_Slaveside;
+--           D_Minus_RX_Slave <= D_Minus_Slaveside;	
+----           D_Plus_TX_Host <= 'Z';
+----           D_Minus_TX_Host <= 'Z';
+----           D_Plus_TX_Slave <= 'Z';
+----           D_Minus_TX_Slave <= 'Z';
+--         end if;
+       --end process IO_DATA;                                        
       
       
 
