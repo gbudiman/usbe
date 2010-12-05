@@ -74,7 +74,7 @@ BEGIN
           nextState <= PWAIT;
         END IF;
       WHEN DECS =>
-        IF (OPCODE = "11" OR BYTE_COUNT = 0) THEN
+        IF (BYTE_COUNT = 0) THEN
           nextState <= IDLE;
         ELSIF (NEXT_BYTE = '1') THEN
           nextState <= P1;

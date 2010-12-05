@@ -210,6 +210,7 @@ procedure cycleNB(
 begin
   NEXT_BYTE <= '1';
   if P_READY = '0' then
+    report "spin wait" severity note;
     wait until P_READY = '1';
     NEXT_BYTE <= '0';
   end if;
@@ -280,17 +281,15 @@ process
     HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
     HEXtoNRZI(x"11", BC, DP1_RX, DM1_RX);
     report "Sending..." severity note;
-    --STRINGtoNRZI("This is a long string", 21, BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"FF", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"BE", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"BE", BC, DP1_RX, DM1_RX);
+    STRINGtoNRZI("This is a long string", 21, BC, DP1_RX, DM1_RX);
+    sendEOP(0, DP1_RX, DM1_RX);
+    for i in 0 to 32 loop
+      cycleNB(NEXT_BYTE, PDATA_READY);
+    end loop;
+    wait for 12 us;
+    HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"11", BC, DP1_RX, DM1_RX);
+    STRINGtoNRZI("Another long string following the previous string", 49, BC, DP1_RX, DM1_RX);
     sendEOP(0, DP1_RX, DM1_RX);
     --HEXtoNRZI(x"30", BC, DP1_RX, DM1_RX);
 --    HEXtoNRZI(x"31", BC, DP1_RX, DM1_RX);
@@ -312,7 +311,7 @@ process
 --    HEXtoNRZI(x"BE", BC, DP1_RX, DM1_RX);
 --    sendEOP(0, DP1_RX, DM1_RX);
     
-    for i in 0 to 32 loop
+    for i in 0 to 64 loop
       cycleNB(NEXT_BYTE, PDATA_READY);
     end loop;
     --CLK <= 

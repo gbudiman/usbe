@@ -8,6 +8,8 @@
 library ieee;
 --library gold_lib;   --UNCOMMENT if you're using a GOLD model
 use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+use ieee.std_logic_arith.all;
 --use gold_lib.all;   --UNCOMMENT if you're using a GOLD model
 
 entity tb_rmedt is
@@ -224,23 +226,25 @@ process
   
   report "Begin normal operation" severity note;
   
-  HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"11", BC, DP1_RX, DM1_RX);
-  for i in 0 to 7 loop
+  for i in 0 to 15 loop
     report "Sending..." severity note;
-    HEXtoNRZI(x"30", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"31", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"32", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"33", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"34", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"35", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"36", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"37", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"11", BC, DP1_RX, DM1_RX);
+    for j in 0 to 15 loop
+      HEXtoNRZI(CONV_STD_LOGIC_VECTOR(i * 16 + j, 8), BC, DP1_RX, DM1_RX);
+    end loop;
+    --HEXtoNRZI(x"31", BC, DP1_RX, DM1_RX);
+--    HEXtoNRZI(x"32", BC, DP1_RX, DM1_RX);
+--    HEXtoNRZI(x"33", BC, DP1_RX, DM1_RX);
+--    HEXtoNRZI(x"34", BC, DP1_RX, DM1_RX);
+--    HEXtoNRZI(x"35", BC, DP1_RX, DM1_RX);
+--    HEXtoNRZI(x"36", BC, DP1_RX, DM1_RX);
+--    HEXtoNRZI(x"37", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"ED", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"BD", BC, DP1_RX, DM1_RX);
+    sendEOP(0, DP1_RX, DM1_RX);
   end loop;
-  HEXtoNRZI(x"DD", BC, DP1_RX, DM1_RX);
-  HEXtoNRZI(x"BE", BC, DP1_RX, DM1_RX);
-  sendEOP(0, DP1_RX, DM1_RX);
-  
+  --sendEOP(500, DP1_RX, DM1_RX);
   wait for 8 us;
   
   sendUART(x"21", serial_in); -- !
@@ -325,6 +329,7 @@ process
   HEXtoNRZI(x"05", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"cc", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"fa", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"31", BC, DP1_RX, DM1_RX);
   
   HEXtoNRZI(x"79", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"6C", BC, DP1_RX, DM1_RX);
