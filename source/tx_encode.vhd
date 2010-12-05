@@ -313,14 +313,9 @@ entity tx_encode is
                                         
                                         DE_holdout_nxt <= NOT DE_holdout_BS;
                                         dm_tx_nxt <= DE_holdout_BS;
-                                        if  (DE_holdout_BS = DE_holdout) then
                                           nextstate <= ONE;
-                                        end if;
                                         
                                       else
-                                        if  (DE_holdout_BS = DE_holdout) then
-                                          nextstate <= ONE;
-                                        end if;
                                           DE_holdout_nxt <= DE_holdout_BS;
                                           
                                           dm_tx_nxt <= NOT DE_holdout_BS;
