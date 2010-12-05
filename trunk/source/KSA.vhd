@@ -236,8 +236,8 @@ BEGIN
         nextsj <= x"00";
         nextPrefillComplete <= '1';
       WHEN D_SWAP => -- state 2
-        IF (si = x"FF") THEN
-          nextsi <= si;
+        IF (si + 1 = x"00") THEN
+          nextsi <= x"00";
           nextPermuteComplete <= '1';
         ELSE
           nextsi <= si + 1;
@@ -246,10 +246,10 @@ BEGIN
         nextKeyi(1) <= si(1);
         nextKeyi(0) <= si(0);
       WHEN D_SWAP_J => -- state 3
-        nextTemp <= permuteTable(CONV_INTEGER(si));
-        nextsj <= sj + permuteTable(CONV_INTEGER(si)) + keyTable(CONV_INTEGER(keyi));
+        nextTemp <= permuteTable(CONV_INTEGER(si - 1));
+        nextsj <= sj + permuteTable(CONV_INTEGER(si - 1)) + keyTable(CONV_INTEGER(keyi));
       WHEN D_SWAP_X => -- state 4
-        nextPermuteTable(CONV_INTEGER(si)) <= permuteTable(CONV_INTEGER(sj));
+        nextPermuteTable(CONV_INTEGER(si - 1)) <= permuteTable(CONV_INTEGER(sj));
       WHEN D_SWAP_Y => -- state 5
         nextPermuteTable(CONV_INTEGER(sj)) <= temp;
       WHEN DONE => -- state 6
