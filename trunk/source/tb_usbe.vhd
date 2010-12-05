@@ -275,9 +275,9 @@ process
   wait for 10 us;
   D_MINUS_HOSTSIDE <= 'Z';
   D_PLUS_HOSTSIDE <= 'Z';
-  D_MINUS_SLAVESIDE <= '1';
-  D_PLUS_SLAVESIDE <= '0';
-  wait for 1 ns;
+  D_MINUS_SLAVESIDE <= '0';
+  D_PLUS_SLAVESIDE <= '1';
+  wait for 10 us;
   HEXtoNRZI("10000000", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
   HEXtoNRZI(x"11", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
   report "Sending..." severity note;
