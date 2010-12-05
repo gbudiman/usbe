@@ -36,7 +36,7 @@ entity tx_shiftreg is
      begin  
       if RST = '1' then 
         present_val <= "00000000";
-        count <= "1000";
+        count <= "0111";
       elsif rising_edge(CLK) then
         present_val <= next_val;
         count <= next_count;
@@ -53,9 +53,9 @@ entity tx_shiftreg is
         end if;
        end if;
        
-       if SHIFT_ENABLE_R = '1' AND count = "1000" then
+       if SHIFT_ENABLE_R = '1' AND count = "0111" then
          next_val <= send_data;
-         next_count <= "0001";
+         next_count <= "0000";
        elsif SHIFT_ENABLE_R='1' AND t_bitstuff = '0' then 
          next_val <= '0' & present_val(7 downto 1);
        else next_val <= present_val;
