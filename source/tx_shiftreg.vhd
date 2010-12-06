@@ -29,14 +29,14 @@ entity tx_shiftreg is
   ARCHITECTURE dataflow OF tx_shiftreg IS
          signal present_val : std_logic_vector(7 downto 0);
          signal next_val : std_logic_vector(7 downto 0);
-         signal count, next_count : std_logic_vector(3 downto 0);
+         signal count, next_count : std_logic_vector(2 downto 0);
  
   BEGIN
      STOREREG: process (CLK, RST)
      begin  
       if RST = '1' then 
         present_val <= "00000000";
-        count <= "0111";
+        count <= "111";
       elsif rising_edge(CLK) then
         present_val <= next_val;
         count <= next_count;
@@ -53,9 +53,9 @@ entity tx_shiftreg is
         end if;
        end if;
        
-       if SHIFT_ENABLE_R = '1' AND count = "0111" then
+       if SHIFT_ENABLE_R = '1' AND count = "111" then
          next_val <= send_data;
-         next_count <= "0000";
+         next_count <= "000";
        elsif SHIFT_ENABLE_R='1' AND t_bitstuff = '0' then 
          next_val <= '0' & present_val(7 downto 1);
        else next_val <= present_val;
