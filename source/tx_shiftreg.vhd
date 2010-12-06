@@ -43,7 +43,7 @@ entity tx_shiftreg is
       end if;
      end process;
      
-     NEXT_VALUE: process (t_strobe, SHIFT_ENABLE_R, t_bitstuff, present_val, send_data)
+     NEXT_VALUE: process (t_strobe, SHIFT_ENABLE_R, t_bitstuff, present_val, send_data, count)
      
      begin
        next_count <= count;
