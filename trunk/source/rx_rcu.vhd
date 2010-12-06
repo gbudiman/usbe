@@ -34,7 +34,7 @@ end rx_rcu;
 architecture moore of rx_rcu is
   type state_type is (IDLE, RECEIVING, CHECK_SYNC, POST_SYNC, NO_SYNC, ERROR,
   EOP_DETECT, WRITE_BYTE, ERROR2, PREIDLE, NO_SYNC2, RCV_PID, SEND_PID,
-  BS_ERROR_STATE, BS_ERROR_STATE2);
+  BS_ERROR_STATE, BS_ERROR_STATE2, BS_ERROR_STATE3);
   signal state, nextstate : state_type;
   signal count, nextcount : STD_LOGIC_VECTOR(3 downto 0);
   signal nxtR_ERROR, curR_ERROR, nxtCRC_ERROR, curCRC_ERROR : std_logic;
@@ -184,9 +184,21 @@ architecture moore of rx_rcu is
                           W_ENABLE <= '0';
                           nextCount <= "0000";
                           if (D_EDGE = '1') THEN
-                            nextState <= RECEIVING;
+                            nextState <= BS_ERROR_STATE3;
                           else
                             nextState <= BS_ERROR_STATE2;
+                          end if;
+            WHEN BS_ERROR_STATE3 =>
+                          RCVING <= '0';
+                          OPCODe <= "10";
+                          nxtR_ERROR <= '0';
+                          nxtCRC_ERROR <= '0';
+                          W_ENABLE <= '0';
+                          nextCount <= "0000";
+                          if (D_EDGE = '1') THEN
+                            nextState <= RECEIVING;
+                          else
+                            nextState <= BS_ERROR_STATE3;
                           end if;
                           
             when NO_SYNC =>
