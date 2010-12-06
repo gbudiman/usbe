@@ -281,20 +281,15 @@ process
   
   report "Begin normal operation" severity note;
   
-  sendByteFast("01010100", DP1_RX, DM1_RX);
-  sendByteFast("00000000", DP1_RX, DM1_RX);
-  sendByteFast("01010100", DP1_RX, DM1_RX);
-  sendByteFast("01010100", DP1_RX, DM1_RX);
-  sendEOP(0, DP1_RX, DM1_RX);
-  
   HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"90", BC, DP1_RX, DM1_RX);
-  STRINGtoNRZI("This", 4, BC, DP1_RX, DM1_RX);
+  STRINGtoNRZI("This is a long string", 21, BC, DP1_RX, DM1_RX);
   sendByteFast("00000000", DP1_RX, DM1_RX);
   HEXtoNRZI(x"2C", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"5E", BC, DP1_RX, DM1_RX);
   sendEOP(0, DP1_RX, DM1_RX); 
 
+  wait;
     --CLK <= 
     --DM1_RX <= 
     --DP1_RX <= 
