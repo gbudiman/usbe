@@ -19,7 +19,7 @@ Entity rx_rcu is
     EOP:in std_logic;
     SHIFT_ENABLE:in std_logic;
     BITSTUFF: in std_logic;
-    BS_ERROR: in STD_LOGIC;
+    BS_ERROR: in std_logic;
     RX_CRC: in std_logic_vector(15 downto 0);
     RX_CHECK_CRC: in std_logic_vector(15 downto 0);
     RCV_DATA: in std_logic_vector(7 downto 0);

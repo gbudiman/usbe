@@ -59,7 +59,8 @@ entity tx_encode is
       
       
             
-          Next_State:process(state, SHIFT_ENABLE_E, d_encode, RST, EOP, DE_holdout, DE_holdout_BS)
+          Next_State:process(state, SHIFT_ENABLE_E, d_encode, RST, EOP, DE_holdout, DE_holdout_BS,
+                             DE_holdout_last)
                 Begin
                   DE_holdout_BS_nxt <= DE_holdout_BS;
                   case state is
