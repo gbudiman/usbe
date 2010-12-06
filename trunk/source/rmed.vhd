@@ -82,7 +82,7 @@ ARCHITECTURE struct OF RMED IS
       RBUF_FULL      : OUT    std_logic 
    );
    END COMPONENT;
-   COMPONENT Receiver_Block
+   COMPONENT receiver_block
    PORT (
       CLK          : IN     std_logic;
       DM1_RX       : IN     std_logic;
@@ -140,7 +140,7 @@ BEGIN
          PROG_ERROR     => PROG_ERROR,
          RBUF_FULL      => RBUF_FULL
       );
-   U_2 : Receiver_Block
+   U_2 : receiver_block
       PORT MAP (
          CLK          => CLK,
          DM1_RX       => DM1_RX,

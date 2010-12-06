@@ -19,11 +19,11 @@ Entity rx_decode is
     EOP: in std_logic;
     D_ORIG: out std_logic;
     BITSTUFF: out std_logic;
-    BS_ERROR_output: OUT std_logic
+    BS_ERROR: OUT std_logic
   );
 end rx_decode;
 architecture moore of rx_decode is
-  type state_type is (ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, READ_STUFF, BS_ERROR);
+  type state_type is (ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, READ_STUFF, BS_ERR);
   signal state, nextstate : state_type;
   signal DP_hold1, DP_hold2: std_logic;
   signal DP_hold1_nxt, DP_hold2_nxt: std_logic;
@@ -51,7 +51,7 @@ architecture moore of rx_decode is
       
     Next_State:process(state, SHIFT_ENABLE, DP1_RX, RST, EOP)
           Begin
-            BS_ERROR_OUTPUT <= '0';
+            BS_ERROR <= '0';
             case state is
             when ZERO =>   
                             nextstate <= ZERO;
@@ -143,7 +143,7 @@ architecture moore of rx_decode is
                             DP_hold2_nxt <= DP_hold2;
                           if ( SHIFT_ENABLE = '1') then
                             IF (DP1_RX = DP_hold2) THEN
-                              nextState <= BS_ERROR;
+                              nextState <= BS_ERR;
                             ELSE
                               nextstate <= READ_STUFF;
                             END IF;
@@ -172,12 +172,12 @@ architecture moore of rx_decode is
                                         
                           BITSTUFF <='0';
                           
-            when BS_ERROR =>
-              BS_ERROR_OUTPUT <= '1';
+            when BS_ERR =>
+              BS_ERROR <= '1';
               IF (EOP = '1') THEN
                 nextState <= ZERO;
               ELSE
-                nextState <= BS_ERROR;
+                nextState <= BS_ERR;
               END IF;
               
             when others =>  nextstate <= ZERO;

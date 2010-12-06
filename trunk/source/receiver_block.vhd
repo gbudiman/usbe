@@ -10,7 +10,7 @@ LIBRARY ieee;
 USE ieee.std_logic_1164.all;
 USE ieee.std_logic_arith.all;
 
-ENTITY Receiver_Block IS
+ENTITY receiver_block IS
    PORT( 
       CLK       : IN     std_logic;
       DM1_RX    : IN     std_logic;
@@ -43,7 +43,7 @@ USE ieee.std_logic_1164.all;
 USE ieee.std_logic_arith.all;
 USE IEEE.STD_LOGIC_UNSIGNED.all;
 
-ARCHITECTURE struct OF Receiver_Block IS
+ARCHITECTURE struct OF receiver_block IS
 
    -- Architecture declarations
 
@@ -92,7 +92,7 @@ ARCHITECTURE struct OF Receiver_Block IS
       SHIFT_ENABLE : IN     std_logic;
       D_ORIG       : OUT    std_logic;
       BITSTUFF     : OUT    std_logic;
-      BS_ERROR_output     : OUT    std_logic
+      BS_ERROR     : OUT    std_logic
    );
    END COMPONENT;
    COMPONENT rx_edgedetect
@@ -183,7 +183,7 @@ BEGIN
          EOP          => EOP,
          D_ORIG       => D_ORIG,
          BITSTUFF     => BITSTUFF,
-         BS_ERROR_output     => BS_ERROR
+         BS_ERROR     => BS_ERROR
       );
    U_0 : rx_accumulator
       PORT MAP (
