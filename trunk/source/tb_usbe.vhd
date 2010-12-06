@@ -1,6 +1,6 @@
 -- $Id: $
--- File name:   tb_usbe.vhd
--- Created:     12/5/2010
+-- File name:   tb_rmedt_square.vhd
+-- Created:     12/6/2010
 -- Author:      Gloria Budiman
 -- Lab Section: 337-02
 -- Version:     1.0  Initial Test Bench
@@ -10,6 +10,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
+library OSU_AMI05;
+use OSU_AMI05.all;
 --use gold_lib.all;   --UNCOMMENT if you're using a GOLD model
 
 entity tb_usbe is
@@ -35,52 +37,52 @@ architecture TEST of tb_usbe is
     return res;
   end;
 
-  component usbe
+  component rmedt_square
     PORT(
          CLK : IN std_logic;
+         DPHS : INOUT std_logic;
+         DMHS : INOUT std_logic;
          RST : IN std_logic;
          SERIAL_IN : IN std_logic;
-         CRC_ERROR_HOST : OUT std_logic;
-         CRC_ERROR_SLAVE : OUT std_logic;
-         EMPTY_HOST : OUT STD_LOGIC;
-         EMPTY_SLAVE : OUT STD_LOGIC;
-         FULL_HOST : OUT STD_LOGIC;
-         FULL_SLAVE : OUT STD_LOGIC;
-         KEY_ERROR : OUT std_logic;
-         PARITY_ERROR : OUT std_logic;
-         PROG_ERROR : OUT std_logic;
-         BS_ERROR_HOST : OUT std_logic;
-         BS_ERROR_SLAVE : OUT std_logic;
-         R_ERROR_HOST : OUT std_logic;
-         R_ERROR_SLAVE : OUT std_logic;
-         D_MINUS_HOSTSIDE : INOUT std_logic;
-         D_MINUS_SLAVESIDE : INOUT std_logic;
-         D_PLUS_HOSTSIDE : INOUT std_logic;
-         D_PLUS_SLAVESIDE : INOUT std_logic
+         BSE_H : OUT std_logic;
+         BSE_S : OUT std_logic;
+         CRCE_H : OUT std_logic;
+         CRCE_S : OUT std_logic;
+         DPSS : INOUT std_logic;
+         DMSS : INOUT std_logic;
+         EMPTY_H : OUT STD_LOGIC;
+         EMPTY_S : OUT STD_LOGIC;
+         FULL_H : OUT STD_LOGIC;
+         FULL_S : OUT STD_LOGIC;
+         RE_H : OUT std_logic;
+         RE_S : OUT std_logic;
+         c_key_error : OUT std_logic;
+         c_parity_error : OUT std_logic;
+         c_prog_error : OUT std_logic
     );
   end component;
 
 -- Insert signals Declarations here
   signal CLK : std_logic;
+  signal DPHS : std_logic;
+  signal DMHS : std_logic;
   signal RST : std_logic;
   signal SERIAL_IN : std_logic;
-  signal CRC_ERROR_HOST : std_logic;
-  signal CRC_ERROR_SLAVE : std_logic;
-  signal EMPTY_HOST : STD_LOGIC;
-  signal EMPTY_SLAVE : STD_LOGIC;
-  signal FULL_HOST : STD_LOGIC;
-  signal FULL_SLAVE : STD_LOGIC;
-  signal KEY_ERROR : std_logic;
-  signal PARITY_ERROR : std_logic;
-  signal PROG_ERROR : std_logic;
-  signal BS_ERROR_HOST : std_logic;
-  signal BS_ERROR_SLAVE : std_logic;
-  signal R_ERROR_HOST : std_logic;
-  signal R_ERROR_SLAVE : std_logic;
-  signal D_MINUS_HOSTSIDE : std_logic;
-  signal D_MINUS_SLAVESIDE : std_logic;
-  signal D_PLUS_HOSTSIDE : std_logic;
-  signal D_PLUS_SLAVESIDE : std_logic;
+  signal BSE_H : std_logic;
+  signal BSE_S : std_logic;
+  signal CRCE_H : std_logic;
+  signal CRCE_S : std_logic;
+  signal DPSS : std_logic;
+  signal DMSS : std_logic;
+  signal EMPTY_H : STD_LOGIC;
+  signal EMPTY_S : STD_LOGIC;
+  signal FULL_H : STD_LOGIC;
+  signal FULL_S : STD_LOGIC;
+  signal RE_H : std_logic;
+  signal RE_S : std_logic;
+  signal c_key_error : std_logic;
+  signal c_parity_error : std_logic;
+  signal c_prog_error : std_logic;
 
 -- signal <name> : <type>;
 procedure sendUART(
@@ -101,38 +103,62 @@ begin
   wait for 30 * period;
 end sendUART;
 
+procedure sendByteFast (
+    constant data : in std_logic_vector(7 downto 0);
+    signal DP1_RX: OUT STD_LOGIC;
+    signal DM1_RX: OUT STD_LOGIC) is
+begin
+    for i in 7 downto 0 loop
+        DP1_RX <= data(i);
+        DM1_RX <= NOT data(i);
+        wait for 8*period * 1;
+    end loop;
+end sendByteFast;
+
 procedure HEXtoNRZI (
   constant data : in std_logic_vector(7 downto 0);
   variable bc_count : inout integer;
   signal D    : inout std_logic; 
-  signal D_MIN: inout std_logic) is
+  signal D_MIN: out std_logic) is
   variable count: integer;
   variable D_Last: std_logic;
   begin
     count := bc_count;
+--    case count is
+--      when 0 => report "0";
+--      when 1 => report "1";
+--      when 2 => report "2";
+--      when 3 => report "3";
+--      when 4 => report "4";
+--      when 5 => report "5";
+--      when 6 => report "6";
+--      when 7 => report "7";
+--      when others => report "HUH?";
+--    end case;
     for i in 0 to 7 loop
-      if (data(i) = '0') then
-        count := 0;
+      -- report "IN" severity note;
+      if (count = 6) then
+        D_Last := D;
+        if (data(i) = '0') then
+          count := 1;
+        else
+          count := 0;
+        end if;
         D <= not(D);
         D_MIN <= D;
+        wait for 8*Period;
+        if (data(i) = '0') then
+          D <= not(D_Last);
+          D_MIN <= D_Last;
+        else
+          D <= (D_LAST);
+          D_MIN <= not(D_Last);
+        end if;
       else
-        if (count = 5) then
-          D_Last := D;
-          if (data(i) = '0') then
-            count := 1;
-          else
-            count := 0;
-          end if;
+        if (data(i) = '0') then
+          count := 0;
           D <= not(D);
           D_MIN <= D;
-          wait for 8*Period;
-          if (data(i) = '0') then
-            D <= not(D_Last);
-            D_MIN <= D_Last;
-          else
-            D <= (D_LAST);
-            D_MIN <= not(D_Last);
-          end if;
         else
           count := count + 1;
           D <= D;
@@ -143,7 +169,7 @@ procedure HEXtoNRZI (
       bc_count := count;
     end loop;
   end HEXtoNRZI;
-
+  
 procedure STRINGtoNRZI (
   constant word: IN string;
   constant length: IN integer;
@@ -191,7 +217,7 @@ procedure STRINGtoNRZI (
     end loop;
     bc_count := count;
   end STRINGtoNRZI;
-
+  
 procedure sendEOP (
     constant repeat: IN integer;
     signal d_plus: OUT STD_LOGIC;
@@ -207,40 +233,28 @@ begin
   wait for 8 * period;
 end sendEOP;
 
-procedure sendByteFast (
-    constant data : in std_logic_vector(7 downto 0);
-    signal DP1_RX: OUT STD_LOGIC;
-    signal DM1_RX: OUT STD_LOGIC) is
 begin
-    for i in 7 downto 0 loop
-        DP1_RX <= data(i);
-        DM1_RX <= NOT data(i);
-        wait for 8*period * 1;
-    end loop;
-end sendByteFast;
-
-begin
-  DUT: usbe port map(
+  DUT: rmedt_square port map(
                 CLK => CLK,
+                DPHS => DPHS,
+                DMHS => DMHS,
                 RST => RST,
                 SERIAL_IN => SERIAL_IN,
-                CRC_ERROR_HOST => CRC_ERROR_HOST,
-                CRC_ERROR_SLAVE => CRC_ERROR_SLAVE,
-                EMPTY_HOST => EMPTY_HOST,
-                EMPTY_SLAVE => EMPTY_SLAVE,
-                FULL_HOST => FULL_HOST,
-                FULL_SLAVE => FULL_SLAVE,
-                KEY_ERROR => KEY_ERROR,
-                PARITY_ERROR => PARITY_ERROR,
-                PROG_ERROR => PROG_ERROR,
-                BS_ERROR_HOST => BS_ERROR_HOST,
-                BS_ERROR_SLAVE => BS_ERROR_SLAVE,
-                R_ERROR_HOST => R_ERROR_HOST,
-                R_ERROR_SLAVE => R_ERROR_SLAVE,
-                D_MINUS_HOSTSIDE => D_MINUS_HOSTSIDE,
-                D_MINUS_SLAVESIDE => D_MINUS_SLAVESIDE,
-                D_PLUS_HOSTSIDE => D_PLUS_HOSTSIDE,
-                D_PLUS_SLAVESIDE => D_PLUS_SLAVESIDE
+                BSE_H => BSE_H,
+                BSE_S => BSE_S,
+                CRCE_H => CRCE_H,
+                CRCE_S => CRCE_S,
+                DPSS => DPSS,
+                DMSS => DMSS,
+                EMPTY_H => EMPTY_H,
+                EMPTY_S => EMPTY_S,
+                FULL_H => FULL_H,
+                FULL_S => FULL_S,
+                RE_H => RE_H,
+                RE_S => RE_S,
+                c_key_error => c_key_error,
+                c_parity_error => c_parity_error,
+                c_prog_error => c_prog_error
                 );
 
 --   GOLD: <GOLD_NAME> port map(<put mappings here>);
@@ -253,20 +267,20 @@ autoClock: process
   END process autoClock;
   
 process
-  variable bc: integer;
+variable bc: integer;
   begin
   bc := 0;
-  SERIAL_IN <= '1';
-  RST <= '1';
-  D_MINUS_HOSTSIDE <= '0';
-  D_PLUS_HOSTSIDE <= '1';
-  D_MINUS_SLAVESIDE <= 'Z';
-  D_PLUS_SLAVESIDE <= 'Z';
-  wait for 55 ns;
-  RST <= '0';
-  wait for 5 ns;
-  
 -- Insert TEST BENCH Code Here
+  RST <= '1';
+  DPHS <= '1';
+  DMHS <= '0';
+  DPSS <= 'Z';
+  DMSS <= 'Z';
+  SERIAL_IN <= '1';
+  wait for 12 ns;
+  RST <= '0';
+  wait for 12 ns;
+  
   sendUART(x"21", serial_in); -- !
   sendUART(x"21", serial_in); -- !
   sendUART(x"54", serial_in); -- T
@@ -275,39 +289,70 @@ process
   sendUART(x"43", serial_in); -- C
   sendUART(x"45", serial_in); -- E
   sendUART(x"53", serial_in); -- S
-  sendUART("11110111", serial_in); -- parity
+  sendUART(x"36", serial_in); -- wrong parity
+  
+  sendUART(x"21", serial_in); -- !
+  sendUART(x"21", serial_in); -- !
+  sendUART(x"54", serial_in); -- T
+  sendUART(x"45", serial_in); -- E
+  sendUART(x"52", serial_in); -- R
+  sendUART(x"43", serial_in); -- C
+  sendUART(x"45", serial_in); -- E
+  sendUART(x"53", serial_in); -- S
+  sendUART("11110111", serial_in); -- correct parity
+  
   wait for 12 us;
-  HEXtoNRZI("10000000", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
-  HEXtoNRZI(x"11", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
-  report "Sending..." severity note;
-  STRINGtoNRZI("This", 4, BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
-  --sendByteFast(x"00", D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
-  HEXtoNRZI(x"2C", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
-  HEXtoNRZI(x"5E", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
-  sendEOP(0, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
-  wait for 10 us;
-  D_MINUS_HOSTSIDE <= 'Z';
-  D_PLUS_HOSTSIDE <= 'Z';
-  D_MINUS_SLAVESIDE <= '0';
-  D_PLUS_SLAVESIDE <= '1';
-  wait for 10 us;
-  HEXtoNRZI("10000000", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
-  HEXtoNRZI(x"11", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
-  report "Sending..." severity note;
-  STRINGtoNRZI("This", 4, BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
-  --sendByteFast(x"00", D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
-  HEXtoNRZI(x"2C", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
-  HEXtoNRZI(x"5E", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
-  sendEOP(0, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
   
+  report "Begin normal operation" severity note;
   
---    CLK <= 
+  HEXtoNRZI("10000000", BC, DPHS, DMHS);
+  HEXtoNRZI(x"90", BC, DPHS, DMHS);
+  STRINGtoNRZI("This is a long string", 21, BC, DPHS, DMHS);
+  HEXtoNRZI(x"2C", BC, DPHS, DMHS);
+  HEXtoNRZI(x"5E", BC, DPHS, DMHS);
+  sendEOP(0, DPHS, DMHS); 
+  BC := 0;
+  
+  HEXtoNRZI("10000000", BC, DPHS, DMHS);
+  HEXtoNRZI(x"39", BC, DPHS, DMHS);
+  STRINGtoNRZI("Let's see how long can you go with encryption", 45, BC, DPHS, DMHS);
+  HEXtoNRZI(x"9B", BC, DPHS, DMHS);
+  HEXtoNRZI(x"A2", BC, DPHS, DMHS);
+  sendEOP(0, DPHS, DMHS);
+  BC := 0;
+  
+  wait for 12 us;
+  
+  sendUART(x"22", serial_in); -- "
+  sendUART(x"54", serial_in); -- T
+  sendUART(x"45", serial_in); -- E
+  sendUART(x"52", serial_in); -- R
+  sendUART(x"43", serial_in); -- C
+  sendUART(x"45", serial_in); -- E
+  sendUART(x"53", serial_in); -- S
+  sendUART(x"22", serial_in); -- "
+  sendUART("11110101", serial_in); -- parity
+  
+  DPSS <= '1';
+  DMSS <= '0';
+  DPHS <= 'Z';
+  DMHS <= 'Z';
+  wait for 12 us;  
+  
+  HEXtoNRZI("10000000", BC, DPSS, DMSS);
+  HEXtoNRZI(x"90", BC, DPSS, DMSS);
+  STRINGtoNRZI("This is a long string", 21, BC, DPSS, DMSS);
+  HEXtoNRZI(x"2C", BC, DPSS, DMSS);
+  HEXtoNRZI(x"5E", BC, DPSS, DMSS);
+  sendEOP(0, DPSS, DMSS); 
+  wait;
+    --CLK <= 
+--    DMRH <= 
+--    DMRS <= 
+--    DPRH <= 
+--    DPRS <= 
 --    RST <= 
 --    SERIAL_IN <= 
---    D_MINUS_HOSTSIDE <= 
---    D_MINUS_SLAVESIDE <= 
---    D_PLUS_HOSTSIDE <= 
---    D_PLUS_SLAVESIDE <= 
-  wait;
+
   end process;
 end TEST;
