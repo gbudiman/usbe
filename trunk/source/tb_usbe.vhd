@@ -207,6 +207,18 @@ begin
   wait for 8 * period;
 end sendEOP;
 
+procedure sendByteFast (
+    constant data : in std_logic_vector(7 downto 0);
+    signal DP1_RX: OUT STD_LOGIC;
+    signal DM1_RX: OUT STD_LOGIC) is
+begin
+    for i in 7 downto 0 loop
+        DP1_RX <= data(i);
+        DM1_RX <= NOT data(i);
+        wait for 8*period * 1;
+    end loop;
+end sendByteFast;
+
 begin
   DUT: usbe port map(
                 CLK => CLK,
@@ -269,6 +281,7 @@ process
   HEXtoNRZI(x"11", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   report "Sending..." severity note;
   STRINGtoNRZI("This", 4, BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
+  --sendByteFast(x"00", D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   HEXtoNRZI(x"2C", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   HEXtoNRZI(x"5E", BC, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
   sendEOP(0, D_PLUS_HOSTSIDE, D_MINUS_HOSTSIDE);
@@ -282,6 +295,7 @@ process
   HEXtoNRZI(x"11", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
   report "Sending..." severity note;
   STRINGtoNRZI("This", 4, BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
+  --sendByteFast(x"00", D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
   HEXtoNRZI(x"2C", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
   HEXtoNRZI(x"5E", BC, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);
   sendEOP(0, D_PLUS_SLAVESIDE, D_MINUS_SLAVESIDE);

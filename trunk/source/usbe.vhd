@@ -28,10 +28,10 @@ ENTITY USBE IS
       BS_ERROR_SLAVE    : OUT    std_logic;
       R_ERROR_HOST      : OUT    std_logic;
       R_ERROR_SLAVE     : OUT    std_logic;
-      D_MINUS_HOSTSIDE  : INOUT  std_ulogic;
-      D_MINUS_SLAVESIDE : INOUT  std_ulogic;
-      D_PLUS_HOSTSIDE   : INOUT  std_ulogic;
-      D_PLUS_SLAVESIDE  : INOUT  std_ulogic
+      D_MINUS_HOSTSIDE  : INOUT  std_logic;
+      D_MINUS_SLAVESIDE : INOUT  std_logic;
+      D_PLUS_HOSTSIDE   : INOUT  std_logic;
+      D_PLUS_SLAVESIDE  : INOUT  std_logic
    );
 
 -- Declarations
@@ -56,14 +56,14 @@ ARCHITECTURE struct OF USBE IS
    -- Architecture declarations
 
    -- Internal signal declarations
-   SIGNAL D_MINUS_RX_HOST  : std_ulogic;
-   SIGNAL D_MINUS_RX_SLAVE : std_ulogic;
-   SIGNAL D_MINUS_TX_HOST  : std_ulogic;
-   SIGNAL D_MINUS_TX_SLAVE : std_ulogic;
-   SIGNAL D_PLUS_RX_HOST   : std_ulogic;
-   SIGNAL D_PLUS_RX_SLAVE  : std_ulogic;
-   SIGNAL D_PLUS_TX_HOST   : std_ulogic;
-   SIGNAL D_PLUS_TX_SLAVE  : std_ulogic;
+   SIGNAL D_MINUS_RX_HOST  : std_logic;
+   SIGNAL D_MINUS_RX_SLAVE : std_logic;
+   SIGNAL D_MINUS_TX_HOST  : std_logic;
+   SIGNAL D_MINUS_TX_SLAVE : std_logic;
+   SIGNAL D_PLUS_RX_HOST   : std_logic;
+   SIGNAL D_PLUS_RX_SLAVE  : std_logic;
+   SIGNAL D_PLUS_TX_HOST   : std_logic;
+   SIGNAL D_PLUS_TX_SLAVE  : std_logic;
    SIGNAL KEY_ERROR1       : std_logic;
    SIGNAL KEY_ERROR2       : std_logic;
    SIGNAL PARITY_ERROR1    : std_logic;
@@ -73,17 +73,17 @@ ARCHITECTURE struct OF USBE IS
    SIGNAL Host_is_Sending     : std_logic;
    SIGNAL Slave_is_Sending    : std_logic;
    
-   SIGNAL D_PLUS_TX_HOST_ex   : std_ulogic;
-   SIGNAL D_PLUS_TX_SLAVE_ex  : std_ulogic;
-   SIGNAL D_MINUS_TX_HOST_ex  : std_ulogic;
-   SIGNAL D_MINUS_TX_SLAVE_ex : std_ulogic;
+   SIGNAL D_PLUS_TX_HOST_ex   : std_logic;
+   SIGNAL D_PLUS_TX_SLAVE_ex  : std_logic;
+   SIGNAL D_MINUS_TX_HOST_ex  : std_logic;
+   SIGNAL D_MINUS_TX_SLAVE_ex : std_logic;
 
    -- Component Declarations
-   COMPONENT RMEDT
+   COMPONENT rmedt
    PORT (
       CLK          : IN     std_logic;
-      DM1_RX       : IN     std_ulogic;
-      DP1_RX       : IN     std_ulogic;
+      DM1_RX       : IN     std_logic;
+      DP1_RX       : IN     std_logic;
       RST          : IN     std_logic;
       SERIAL_IN    : IN     std_logic;
       CRC_ERROR    : OUT    std_logic;
@@ -96,8 +96,8 @@ ARCHITECTURE struct OF USBE IS
       RBUF_FULL    : OUT    std_logic;
       R_ERROR      : OUT    std_logic;
       SENDING      : OUT    std_logic;
-      dm_tx_out    : OUT    std_ulogic;
-      dp_tx_out    : OUT    std_ulogic
+      dm_tx_out    : OUT    std_logic;
+      dp_tx_out    : OUT    std_logic
    );
    END COMPONENT;
 
