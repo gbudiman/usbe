@@ -46,9 +46,6 @@ architecture moore of rx_rcu is
         count <= "0000";
         R_ERROR <= '0';
       elsif(CLK'event and CLK = '1') then
-        IF (BS_ERROR = '1') THEN
-          state <= BS_ERROR_STATE;
-        END IF;
         state <= nextstate;
         count <= nextcount;
         R_ERROR <= nxtR_ERROR;
@@ -59,8 +56,7 @@ architecture moore of rx_rcu is
       end if;
     end process StateReg;
     
-    Next_State:process(state, EOP, count, D_EDGE, SHIFT_ENABLE, RCV_DATA, BITSTUFF, BS_ERROR,
-                        curR_ERROR, curCRC_ERROR, RX_CRC, RX_CHECK_CRC)
+    Next_State:process(state, EOP, count, D_EDGE, SHIFT_ENABLE, RCV_DATA, BITSTUFF, BS_ERROR, curR_ERROR, curCRC_ERROR, RX_CRC, RX_CHECK_CRC)
           Begin
             case state is
             when IDLE =>
@@ -109,7 +105,11 @@ architecture moore of rx_rcu is
                             end if;
                           else
                             nextstate <= RECEIVING;
-                          end if;                                                  
+                          end if; 
+                          
+                          if (BS_ERROR = '1') THEN
+                            nextState <= BS_ERROR_STATE;
+                          END IF;                                                 
             when CHECK_SYNC =>
                           RCVING <= '1';
                           OPCODE <= "00";
@@ -124,6 +124,9 @@ architecture moore of rx_rcu is
                             nextstate <= NO_SYNC;
                             nxtR_ERROR <= '1';
                           end if;
+                          if (BS_ERROR = '1') THEN
+                            nextState <= BS_ERROR_STATE;
+                          END IF; 
             when RCV_PID =>
                           nextcount <= count;
                           OPCODE <= "10";
@@ -146,7 +149,10 @@ architecture moore of rx_rcu is
                             end if;
                           else
                             nextstate <= RCV_PID;
-                          end if;                                                  
+                          end if; 
+                          if (BS_ERROR = '1') THEN
+                            nextState <= BS_ERROR_STATE;
+                          END IF;                                                  
             when SEND_PID =>
                           RCVING <= '1';
                           OPCODE <= "00";
@@ -155,6 +161,9 @@ architecture moore of rx_rcu is
                           W_ENABLE <= '1';
                           nextcount <= "0000";
                           nextstate <= POST_SYNC;
+                          if (BS_ERROR = '1') THEN
+                            nextState <= BS_ERROR_STATE;
+                          END IF; 
             when BS_ERROR_STATE =>
                           RCVING <= '1';
                           OPCODE <= "10";
@@ -248,7 +257,10 @@ architecture moore of rx_rcu is
                           end if;
                         else
                           nextstate <= POST_SYNC;
-                        end if;                                                 
+                        end if; 
+                        if (BS_ERROR = '1') THEN
+                            nextState <= BS_ERROR_STATE;
+                          END IF;                                                 
             when WRITE_BYTE =>
                           RCVING <= '1';
                           OPCODE <= "01";
