@@ -49,7 +49,7 @@ architecture moore of rx_decode is
       
       D_ORIG <= (DP_hold1 xnor DP_hold2);
       
-    Next_State:process(state, SHIFT_ENABLE, DP1_RX, RST, EOP)
+    Next_State:process(state, SHIFT_ENABLE, DP1_RX, RST, EOP, DP_HOLD1, DP_HOLD2)
           Begin
             BS_ERROR <= '0';
             case state is
