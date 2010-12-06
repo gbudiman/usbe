@@ -47,8 +47,10 @@ architecture TEST of tb_rmedt_rewire is
          EMPTY : OUT STD_LOGIC;
          FULL : OUT STD_LOGIC;
          KEY_ERROR : OUT std_logic;
+         PROG_ERROR : OUT std_logic;
          PARITY_ERROR : OUT std_logic;
          RBUF_FULL : OUT std_logic;
+         SENDING : OUT std_logic;
          R_ERROR : OUT std_logic
     );
   end component;
@@ -67,6 +69,8 @@ architecture TEST of tb_rmedt_rewire is
   signal PARITY_ERROR : std_logic;
   signal RBUF_FULL : std_logic;
   signal R_ERROR : std_logic;
+  signal SENDING : std_logic;
+  signal PROG_ERROR : std_logic;
 
 -- signal <name> : <type>;
 procedure sendUART(
@@ -231,6 +235,8 @@ begin
                 KEY_ERROR => KEY_ERROR,
                 PARITY_ERROR => PARITY_ERROR,
                 RBUF_FULL => RBUF_FULL,
+                PROG_ERROR => PROG_ERROR,
+                SENDING => SENDING,
                 R_ERROR => R_ERROR
                 );
 
@@ -284,11 +290,39 @@ process
   HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"90", BC, DP1_RX, DM1_RX);
   STRINGtoNRZI("This is a long string", 21, BC, DP1_RX, DM1_RX);
-  sendByteFast("00000000", DP1_RX, DM1_RX);
   HEXtoNRZI(x"2C", BC, DP1_RX, DM1_RX);
   HEXtoNRZI(x"5E", BC, DP1_RX, DM1_RX);
   sendEOP(0, DP1_RX, DM1_RX); 
-
+  BC := 0;
+  
+  HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"39", BC, DP1_RX, DM1_RX);
+  STRINGtoNRZI("Let's see how long can you go with encryption", 45, BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"9B", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"A2", BC, DP1_RX, DM1_RX);
+  sendEOP(0, DP1_RX, DM1_RX);
+  BC := 0;
+  
+  wait for 12 us;
+  
+  sendUART(x"22", serial_in); -- "
+  sendUART(x"54", serial_in); -- T
+  sendUART(x"45", serial_in); -- E
+  sendUART(x"52", serial_in); -- R
+  sendUART(x"43", serial_in); -- C
+  sendUART(x"45", serial_in); -- E
+  sendUART(x"53", serial_in); -- S
+  sendUART(x"22", serial_in); -- "
+  sendUART("11110101", serial_in); -- parity
+  
+  wait for 12 us;
+  
+  HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"90", BC, DP1_RX, DM1_RX);
+  STRINGtoNRZI("This is a long string", 21, BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"2C", BC, DP1_RX, DM1_RX);
+  HEXtoNRZI(x"5E", BC, DP1_RX, DM1_RX);
+  sendEOP(0, DP1_RX, DM1_RX); 
   wait;
     --CLK <= 
     --DM1_RX <= 
