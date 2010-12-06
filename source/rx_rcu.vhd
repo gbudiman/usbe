@@ -19,7 +19,7 @@ Entity rx_rcu is
     EOP:in std_logic;
     SHIFT_ENABLE:in std_logic;
     BITSTUFF: in std_logic;
-    BS_ERROR: IN STD_LOGIC;
+    BS_ERROR: in STD_LOGIC;
     RX_CRC: in std_logic_vector(15 downto 0);
     RX_CHECK_CRC: in std_logic_vector(15 downto 0);
     RCV_DATA: in std_logic_vector(7 downto 0);
@@ -59,7 +59,8 @@ architecture moore of rx_rcu is
       end if;
     end process StateReg;
     
-    Next_State:process(state, EOP, count, D_EDGE, SHIFT_ENABLE, RCV_DATA, BITSTUFF, BS_ERROR)
+    Next_State:process(state, EOP, count, D_EDGE, SHIFT_ENABLE, RCV_DATA, BITSTUFF, BS_ERROR,
+                        curR_ERROR, curCRC_ERROR, RX_CRC, RX_CHECK_CRC)
           Begin
             case state is
             when IDLE =>
