@@ -179,6 +179,9 @@ architecture moore of rx_decode is
               ELSE
                 nextState <= BS_ERR;
               END IF;
+              BITSTUFF <= '0';
+              DP_hold1_nxt <= '1';
+              DP_hold2_nxt <= '1';   
               
             when others =>  nextstate <= ZERO;
                             BITSTUFF <= '0';

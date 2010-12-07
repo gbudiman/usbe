@@ -58,15 +58,17 @@ ARCHITECTURE bksa OF KSA IS
   SIGNAL xordata: STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL delaydata: STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL p_ready_flop: STD_LOGIC;
+  SIGNAL currentProcessedData, nextProcessedData: STD_LOGIC_VECTOR(7 DOWNTO 0);
 BEGIN
   TLB: PROCESS(CLK, RST, 
     nextState, nextsi, nextsj, nextinti, nextintj, nextTemp, nextPermuteComplete, nextPrefillComplete, 
-    nextKeyi, nextPermuteTable, p_ready_flop)
+    nextKeyi, nextPermuteTable, p_ready_flop, nextProcessedData)
   BEGIN
     IF (RST = '1') THEN
       state <= IDLE;
       si <= x"00";
       PDATA_READY <= '0';
+      currentProcessedData <= x"00";
     ELSIF (RISING_EDGE(CLK)) THEN
       state <= nextState;
       si <= nextsi;
@@ -79,6 +81,8 @@ BEGIN
       temp <= nextTemp;
       permuteTable <= nextPermuteTable;
       PDATA_READY <= p_ready_flop;
+      PROCESSED_DATA <= nextProcessedData;
+      currentProcessedData <= nextProcessedData;
     END IF;
   END PROCESS TLB;
   
@@ -189,7 +193,7 @@ BEGIN
   
   OL: PROCESS(state, keyTable, permuteTable, 
     si, sj, key, keyi, nextsi, nextsj, temp, inti, intj, 
-    xordata, delaydata, BYTE, prefillComplete, permuteComplete)
+    xordata, delaydata, BYTE, prefillComplete, permuteComplete, currentProcessedData)
   BEGIN         
     nextsi <= si; 
     nextinti <= inti;
@@ -206,6 +210,7 @@ BEGIN
     keyTable <= keyTable;
     nextTemp <= temp;
     nextKeyI <= keyi;
+    nextProcessedData <= currentProcessedData;
     CASE state IS
       WHEN IDLE => -- state 0
         nextPrefillComplete <= '0';
@@ -279,7 +284,7 @@ BEGIN
         nextTemp <= permuteTable(CONV_INTEGER(inti)) + permuteTable(CONV_INTEGER(intj));
       WHEN PSTEPD =>
         xordata <= permuteTable(CONV_INTEGER(temp));
-        PROCESSED_DATA <= permuteTable(CONV_INTEGER(temp)) XOR delaydata;
+        nextProcessedData <= permuteTable(CONV_INTEGER(temp)) XOR delaydata;
         --PDATA_READY <= '1';
         p_ready_flop <= '1';
       WHEN PWAIT =>
@@ -290,7 +295,7 @@ BEGIN
         --PDATA_READY <= '1';
         p_ready_flop <= '1';
       WHEN PTOUT =>
-        PROCESSED_DATA <= delaydata; 
+        nextProcessedData <= delaydata; 
         --PDATA_READY <= '1';
       WHEN PACKETRESET =>
         --nextinti <= x"00";
