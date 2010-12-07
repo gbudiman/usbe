@@ -77,7 +77,7 @@ addFiller -cell FILL
 
 
 # Metal fill
-addMetalFill -layer {1, 2, 3} -nets {gnd vdd}
+#addMetalFill -layer {1, 2, 3} -nets {gnd vdd}
 
 # Connect all new cells to VDD/GND
 globalNetConnect vdd -type tiehi
@@ -100,7 +100,7 @@ sroute
 #setNanoRouteMode -quiet -routeWithSiPostRouteFix true
 #setNanoRouteMode -quiet -drouteAutoStop true
 #setNanoRouteMode -quiet -routeSelectedNetOnly true
-globalDetailRoute
+#globalDetailRoute
 
 # Get final timing results
 setExtractRCMode -engine detail -reduce 0.0
