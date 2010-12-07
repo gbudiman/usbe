@@ -47,7 +47,7 @@ ARCHITECTURE bksa OF KSA IS
   TYPE pArray IS ARRAY(0 TO 255) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL permuteTable, nextPermuteTable: pArray;
   TYPE kArray IS ARRAY(0 TO 7) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
-  SIGNAL keyTable: kArray;
+  SIGNAL keyTable, nextKeyTable: kArray;
   SIGNAL state, nextState: myState;
   SIGNAL prefillComplete, nextPrefillComplete: STD_LOGIC;
   SIGNAL permuteComplete, nextPermuteComplete: STD_LOGIC;
@@ -56,13 +56,13 @@ ARCHITECTURE bksa OF KSA IS
   SIGNAL keyi, nextKeyi: STD_LOGIC_VECTOR(2 DOWNTO 0);
   SIGNAL temp, nextTemp: STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL xordata: STD_LOGIC_VECTOR(7 DOWNTO 0);
-  SIGNAL delaydata: STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL delaydata, nextDelayData: STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL p_ready_flop: STD_LOGIC;
   SIGNAL currentProcessedData, nextProcessedData: STD_LOGIC_VECTOR(7 DOWNTO 0);
 BEGIN
   TLB: PROCESS(CLK, RST, 
     nextState, nextsi, nextsj, nextinti, nextintj, nextTemp, nextPermuteComplete, nextPrefillComplete, 
-    nextKeyi, nextPermuteTable, p_ready_flop, nextProcessedData)
+    nextKeyi, nextPermuteTable, p_ready_flop, nextProcessedData, nextKeyTable, nextDelayData)
   BEGIN
     IF (RST = '1') THEN
       state <= IDLE;
@@ -83,6 +83,8 @@ BEGIN
       PDATA_READY <= p_ready_flop;
       PROCESSED_DATA <= nextProcessedData;
       currentProcessedData <= nextProcessedData;
+      keyTable <= nextKeyTable;
+      delayData <= nextDelayData;
     END IF;
   END PROCESS TLB;
   
@@ -200,14 +202,14 @@ BEGIN
     nextintj <= intj;
     --PDATA_READY <= '0';
     p_ready_flop <= '0';
-    delaydata <= delaydata;
+    nextDelaydata <= delaydata;
     xordata <= xordata;
     nextkeyi <= keyi;
     nextsj <= sj;
     nextPermuteComplete <= permuteComplete;
     nextPrefillComplete <= prefillComplete;
     nextPermuteTable <= permuteTable;
-    keyTable <= keyTable;
+    nextKeyTable <= keyTable;
     nextTemp <= temp;
     nextKeyI <= keyi;
     nextProcessedData <= currentProcessedData;
