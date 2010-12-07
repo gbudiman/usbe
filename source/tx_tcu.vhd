@@ -34,11 +34,11 @@ entity tx_tcu is
     type state_type is (IDLE, SEND, MULTITASK, UPDATEDATA, SENDCRC1, SENDCRC2, PRESEND);
     signal state, nextstate : state_type;
     signal count, nextcount : STD_LOGIC_VECTOR(6 downto 0);
-    signal flop_data : std_logic_vector(7 downto 0);  
+    signal flop_data, next_flop_data, current_send_data, next_send_data : std_logic_vector(7 downto 0);  
     
     begin
       
-    holdReg : process(CLK, RST)
+    holdReg : process(CLK, RST, next_send_data, next_flop_data)
     BEGIN       
       if (RST = '1') then
         state <= IDLE;
@@ -46,20 +46,21 @@ entity tx_tcu is
       elsif(CLK'event and CLK = '1') then
           state <= nextstate;
           count <= nextcount;
-          
-          
+          flop_data <= next_flop_data;
+          send_data <= next_send_data;
+          current_send_data <= next_send_data;
         end if;
       end process holdReg;
       
       
-    Next_State:process(state, p_ready, count, t_bitstuff, prga_opcode, flop_data, t_crc, PRGA_OUT)
+    Next_State:process(state, p_ready, count, t_bitstuff, prga_opcode, flop_data, t_crc, PRGA_OUT, current_send_data, flop_data)
     Begin
       nextcount <= count;
       next_byte <= '0';
       t_strobe <= '0';
       EOP <= '0';
-      send_data <= "00000000";
-      flop_data <= "00000000";
+      next_send_data <= current_send_data;
+      next_flop_data <= flop_data;
       case state is
                   when IDLE =>
                     
@@ -67,11 +68,11 @@ entity tx_tcu is
                     nextcount <= "0000000";
                     sending <= '0';
                     next_byte <= '1';
-                    send_data <= "00000000";
+                    next_send_data <= "00000000";
                     
                     if p_ready = '1' then
                       next_byte <= '0';
-                      flop_data <= PRGA_OUT;
+                      next_flop_data <= PRGA_OUT;
                       nextstate <= PRESEND;
                     end if;
                     
@@ -79,7 +80,7 @@ entity tx_tcu is
                   when SEND =>
                   
                     nextstate <= SEND;
-                    send_data <= flop_data;
+                    next_send_data <= flop_data;
                     nextcount <= count + 1;
                     sending <= '1';
                     
@@ -102,7 +103,7 @@ entity tx_tcu is
                 when MULTITASK =>
                   
                   nextstate <= MULTITASK;
-                  send_data <= flop_data;
+                  next_send_data <= flop_data;
                   nextcount <= count + 1;
                   sending <= '1';
                   next_byte <= '1';
@@ -131,14 +132,14 @@ entity tx_tcu is
                 
                 when PRESEND => -- Custom Updatedata state
                   nextState <= SEND;
-                  send_data <= PRGA_OUT;
+                  next_send_data <= PRGA_OUT;
                   nextCount <= "0000000";
                   sending <= '1';
                   
                 when UPDATEDATA =>
                   
                   nextstate <= UPDATEDATA;
-                  flop_data <= PRGA_OUT;                  
+                  next_flop_data <= PRGA_OUT;                  
                   nextcount <= count + 1;                  
                   sending <= '1';
                   next_byte <= '0';
@@ -163,19 +164,16 @@ entity tx_tcu is
                     nextcount <= "0000000";
                   end if;
                   
-                  send_data <= t_crc(15 downto 8);
+                  next_send_data <= t_crc(15 downto 8);
                   
                 when SENDCRC2 =>
                   
                   nextstate <= SENDCRC2;
                   sending <= '1';
                   nextcount <= count + 1;
-                  --EOP <= '0';
                   
                   if count > "1000011" then
                     EOP <= '1';
-                    --nextstate <= IDLE;
-                    --nextcount <= "0000000";
                   end if;
                   
                   if count = "1001100" then
@@ -184,7 +182,7 @@ entity tx_tcu is
                     nextCount <= "0000000";
                   end if;
 
-                  send_data <= t_crc(7 downto 0);  
+                  next_send_data <= t_crc(7 downto 0);  
                         
                 when others =>
                   
