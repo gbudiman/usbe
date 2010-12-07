@@ -1,0 +1,69 @@
+#/**************************************************
+# * Timing constraint file in PT format
+# **************************************************/
+create_clock  -period 10.4167000 -waveform { 0.0000000 5.2083500}\
+   [get_ports {CLK}] 
+set_input_delay -clock CLK 1.0000 \
+   [get_ports {DMRH}] 
+set_input_delay -clock CLK 1.0000 \
+   [get_ports {DMRS}] 
+set_input_delay -clock CLK 1.0000 \
+   [get_ports {DPRH}] 
+set_input_delay -clock CLK 1.0000 \
+   [get_ports {DPRS}] 
+set_input_delay -clock CLK 1.0000 \
+   [get_ports {RST}] 
+set_input_delay -clock CLK 1.0000 \
+   [get_ports {SERIAL_IN}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {BSE_H}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {BSE_S}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {CRCE_H}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {CRCE_S}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {DMTH}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {DMTS}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {DPTH}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {DPTS}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {EMPTY_H}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {EMPTY_S}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {FULL_H}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {FULL_S}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {RE_H}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {RE_S}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {c_key_error}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {c_parity_error}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {c_prog_error}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {host_is_sending}] 
+set_output_delay -clock CLK 1.0000 \
+   [get_ports {slave_is_sending}] 
+set_driving_cell -lib_cell INVX8\
+   [get_ports {CLK}] 
+set_driving_cell -lib_cell INVX8\
+   [get_ports {DMRH}] 
+set_driving_cell -lib_cell INVX8\
+   [get_ports {DMRS}] 
+set_driving_cell -lib_cell INVX8\
+   [get_ports {DPRH}] 
+set_driving_cell -lib_cell INVX8\
+   [get_ports {DPRS}] 
+set_driving_cell -lib_cell INVX8\
+   [get_ports {RST}] 
+set_driving_cell -lib_cell INVX8\
+   [get_ports {SERIAL_IN}] 
