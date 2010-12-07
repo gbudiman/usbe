@@ -169,11 +169,23 @@ entity tx_tcu is
                 when SENDCRC2 =>
                   
                   nextstate <= SENDCRC2;
-                  sending <= '1';
+                  --sending <= '1';
                   nextcount <= count + 1;
                   
                   if count > "1000011" then
-                    EOP <= '1';
+                    EOP <= '1';                    
+                  end if;
+                  
+                  if count > 62 then
+                    sending <= '0';
+                  else
+                    sending <= '1';
+                  end if;
+                  
+                  if count > 63 then
+                    next_send_data <= x"00";
+                  else
+                    next_send_data <= t_crc(7 downto 0);
                   end if;
                   
                   if count = "1001100" then
@@ -181,8 +193,6 @@ entity tx_tcu is
                     nextstate <= IDLE;
                     nextCount <= "0000000";
                   end if;
-
-                  next_send_data <= t_crc(7 downto 0);  
                         
                 when others =>
                   

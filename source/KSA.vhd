@@ -293,11 +293,11 @@ BEGIN
         --PROCESSED_DATA <= xordata XOR delaydata;
         --PDATA_READY <= '1';
       WHEN PASSTHROUGH =>
-        nextDelaydata <= BYTE;
+        nextProcessedData <= BYTE;
         --PDATA_READY <= '1';
         p_ready_flop <= '1';
       WHEN PTOUT =>
-        nextProcessedData <= delaydata; 
+        --nextProcessedData <= delaydata; 
         --PDATA_READY <= '1';
       WHEN PACKETRESET =>
         --nextinti <= x"00";
