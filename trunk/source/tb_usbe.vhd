@@ -111,13 +111,11 @@ procedure sendUART(
   signal serial_in: OUT STD_LOGIC) is
 begin
   serial_in <= '0';
-  report "Start" severity note;
   wait for 10 * period;
   for i in 0 to 7 loop
     serial_in <= data_in(i);
     wait for 10 * period;
   end loop;
-  report "End" severity note;
   serial_in <= '0';
   wait for 10 * period;
   serial_in <= '1';
@@ -126,10 +124,11 @@ end sendUART;
 
 procedure sendByteFast (
     constant data : in std_logic_vector(7 downto 0);
+    constant length : integer;
     signal DP1_RX: OUT STD_LOGIC;
     signal DM1_RX: OUT STD_LOGIC) is
 begin
-    for i in 7 downto 0 loop
+    for i in 7 downto length loop
         DP1_RX <= data(i);
         DM1_RX <= NOT data(i);
         wait for 8*period * 1;
@@ -238,7 +237,103 @@ procedure STRINGtoNRZI (
     end loop;
     bc_count := count;
   end STRINGtoNRZI;
+
+procedure FSTRINGtoNRZI (
+  constant word: IN string;
+  constant length: IN integer;
+  variable bc_count: inout integer;
+  signal D: inout std_logic;
+  signal D_MIN: out std_logic) is
+  variable count: integer;
+  variable D_Last: std_logic;
+  variable data: std_logic_vector(7 downto 0);
+  begin
+    count := bc_count;
+    for i in 1 to length loop
+      data := CONV_STD_LOGIC_VECTOR(CONV_INTEGER(CHARACTER'POS(word(i))), 8);
+      for i in 0 to 7 loop
+        if (data(i) = '0') then
+          count := 0;
+          D <= not(D);
+          D_MIN <= D;
+        else
+          if (count = 5) then
+            D_Last := D;
+            if (data(i) = '0') then
+              count := 1;
+            else
+              count := 0;
+            end if;
+            D <= not(D);
+            D_MIN <= D;
+            wait for 8*Period * 0.9975;
+            if (data(i) = '0') then
+              D <= not(D_Last);
+              D_MIN <= D_Last;
+            else
+              D <= (D_LAST);
+              D_MIN <= not(D_Last);
+            end if;
+          else
+            count := count + 1;
+            D <= D;
+            D_MIN <= not(D);
+          end if;
+        end if;
+        wait for 8*Period * 0.9975;
+      end loop;
+    end loop;
+    bc_count := count;
+  end FSTRINGtoNRZI;
   
+  procedure SSTRINGtoNRZI (
+    constant word: IN string;
+    constant length: IN integer;
+    variable bc_count: inout integer;
+    signal D: inout std_logic;
+    signal D_MIN: out std_logic) is
+    variable count: integer;
+    variable D_Last: std_logic;
+    variable data: std_logic_vector(7 downto 0);
+    begin
+      count := bc_count;
+      for i in 1 to length loop
+        data := CONV_STD_LOGIC_VECTOR(CONV_INTEGER(CHARACTER'POS(word(i))), 8);
+        for i in 0 to 7 loop
+          if (data(i) = '0') then
+            count := 0;
+            D <= not(D);
+            D_MIN <= D;
+          else
+            if (count = 5) then
+              D_Last := D;
+              if (data(i) = '0') then
+                count := 1;
+              else
+                count := 0;
+              end if;
+              D <= not(D);
+              D_MIN <= D;
+              wait for 8*Period*1.0025;
+              if (data(i) = '0') then
+                D <= not(D_Last);
+                D_MIN <= D_Last;
+              else
+                D <= (D_LAST);
+                D_MIN <= not(D_Last);
+              end if;
+            else
+              count := count + 1;
+              D <= D;
+              D_MIN <= not(D);
+            end if;
+          end if;
+          wait for 8*Period*1.0025;
+        end loop;
+      end loop;
+      bc_count := count;
+    end SSTRINGtoNRZI;
+      
 procedure sendEOP (
     constant repeat: IN integer;
     signal d_plus: OUT STD_LOGIC;
@@ -307,7 +402,7 @@ variable bc: integer;
   wait for 12 ns;
   RST <= '0';
   wait for 12 ns;
-  
+  report "Wrong Parity" severity note;
   sendUART(x"21", serial_in); -- !
   sendUART(x"21", serial_in); -- !
   sendUART(x"54", serial_in); -- T
@@ -317,7 +412,7 @@ variable bc: integer;
   sendUART(x"45", serial_in); -- E
   sendUART(x"53", serial_in); -- S
   sendUART(x"36", serial_in); -- wrong parity
-  
+  report "Correct Parity" severity note;
   sendUART(x"21", serial_in); -- !
   sendUART(x"21", serial_in); -- !
   sendUART(x"54", serial_in); -- T
@@ -330,26 +425,53 @@ variable bc: integer;
   
   wait for 12 us;
   
-  report "Begin normal operation" severity note;
-  
-  HEXtoNRZI("10000000", BC, DPHS, DMHS);
-  HEXtoNRZI(x"90", BC, DPHS, DMHS);
-  STRINGtoNRZI("This is a long string", 21, BC, DPHS, DMHS);
-  HEXtoNRZI(x"2C", BC, DPHS, DMHS);
-  HEXtoNRZI(x"5E", BC, DPHS, DMHS);
-  sendEOP(0, DPHS, DMHS); 
-  BC := 0;
+  report "Send unencrypted input and get encrypted output with wrong CRC" severity note;
   
   HEXtoNRZI("10000000", BC, DPHS, DMHS);
   HEXtoNRZI(x"39", BC, DPHS, DMHS);
-  STRINGtoNRZI("Let's see how long can you go with encryption", 45, BC, DPHS, DMHS);
+  STRINGtoNRZI("Unencrypted input", 17, BC, DPHS, DMHS);
   HEXtoNRZI(x"9B", BC, DPHS, DMHS);
   HEXtoNRZI(x"A2", BC, DPHS, DMHS);
   sendEOP(0, DPHS, DMHS);
   BC := 0;
+  wait for 12 us
   
+  report "Bitstuff error" severity note;
   wait for 12 us;
+  HEXtoNRZI("10000000", BC, DPHS, DMHS);
+  HEXtoNRZI(x"39", BC, DPHS, DMHS);
+  sendByteFast("11111111", 0, DPHS, DMHS);
+  HEXtoNRZI(x"39", BC, DPHS, DMHS);
+  HEXtoNRZI(x"39", BC, DPHS, DMHS);
+  sendEOP(0, DPHS, DMHS);
+  wait for 12 us
   
+  report "improper number of bits" severity note;
+  wait for 12 us;
+  HEXtoNRZI("10000000", BC, DPHS, DMHS);
+  HEXtoNRZI(x"39", BC, DPHS, DMHS);
+  sendByteFast("00000000", 7, DPHS, DMHS);
+  HEXtoNRZI(x"39", BC, DPHS, DMHS);
+  HEXtoNRZI(x"39", BC, DPHS, DMHS);
+  sendEOP(0, DPHS, DMHS);
+  
+  report "Bitstuff 1's example" severity note;
+  wait for 12 us;
+  HEXtoNRZI("10000000", BC, DPHS, DMHS);
+  HEXtoNRZI(x"FF", BC, DPHS, DMHS);
+  HEXtoNRZI(x"AA", BC, DPHS, DMHS);
+  HEXtoNRZI(x"AA", BC, DPHS, DMHS);
+  sendEOP(0, DPHS, DMHS);
+  
+  report "Bitstuff 0's example" severity note;
+  wait for 12 us;
+  HEXtoNRZI("10000000", BC, DPHS, DMHS);
+  HEXtoNRZI(x"00", BC, DPHS, DMHS);
+  HEXtoNRZI(x"AA", BC, DPHS, DMHS);
+  HEXtoNRZI(x"AA", BC, DPHS, DMHS);
+  sendEOP(0, DPHS, DMHS);
+  
+  report "Fresh key to check encrypted input" severity note;
   sendUART(x"22", serial_in); -- "
   sendUART(x"54", serial_in); -- T
   sendUART(x"45", serial_in); -- E
@@ -365,6 +487,8 @@ variable bc: integer;
   DPHS <= 'H';
   DMHS <= 'L';
   wait for 12 us;  
+  
+  report "Send encrypted input and get unencrypted output with correct CRC" severity note;
   
   HEXtoNRZI("10000000", BC, DPSS, DMSS);
   HEXtoNRZI(x"90", BC, DPSS, DMSS);
