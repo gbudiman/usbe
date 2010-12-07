@@ -229,14 +229,14 @@ BEGIN
         end loop;
         
         for i in 0 to 7 loop
-          keyTable(i)(0) <= key(i * 8);
-          keyTable(i)(1) <= key(i * 8 + 1);
-          keyTable(i)(2) <= key(i * 8 + 2);
-          keyTable(i)(3) <= key(i * 8 + 3);
-          keyTable(i)(4) <= key(i * 8 + 4);
-          keyTable(i)(5) <= key(i * 8 + 5);
-          keyTable(i)(6) <= key(i * 8 + 6);
-          keyTable(i)(7) <= key(i * 8 + 7);
+          nextKeyTable(i)(0) <= key(i * 8);
+          nextKeyTable(i)(1) <= key(i * 8 + 1);
+          nextKeyTable(i)(2) <= key(i * 8 + 2);
+          nextKeyTable(i)(3) <= key(i * 8 + 3);
+          nextKeyTable(i)(4) <= key(i * 8 + 4);
+          nextKeyTable(i)(5) <= key(i * 8 + 5);
+          nextKeyTable(i)(6) <= key(i * 8 + 6);
+          nextKeyTable(i)(7) <= key(i * 8 + 7);
         end loop;
         nextsj <= x"00";
         nextPrefillComplete <= '1';
@@ -277,7 +277,7 @@ BEGIN
         nextinti <= inti + 1;
         nextintj <= intj + permuteTable(CONV_INTEGER(inti + 1));
         nextTemp <= permuteTable(CONV_INTEGER(inti + 1));
-        delaydata <= BYTE;
+        nextDelaydata <= BYTE;
       WHEN PSTEPB1 =>
         nextPermuteTable(CONV_INTEGER(inti)) <= permuteTable(CONV_INTEGER(intj));
       WHEN PSTEPB2 =>
@@ -293,7 +293,7 @@ BEGIN
         --PROCESSED_DATA <= xordata XOR delaydata;
         --PDATA_READY <= '1';
       WHEN PASSTHROUGH =>
-        delaydata <= BYTE;
+        nextDelaydata <= BYTE;
         --PDATA_READY <= '1';
         p_ready_flop <= '1';
       WHEN PTOUT =>
