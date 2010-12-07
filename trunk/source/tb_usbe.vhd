@@ -40,41 +40,51 @@ architecture TEST of tb_usbe is
 
   component rmedt_square
     PORT(
-         CLK : IN std_logic;
-         DPHS : INOUT std_logic;
-         DMHS : INOUT std_logic;
-         RST : IN std_logic;
-         SERIAL_IN : IN std_logic;
-         BSE_H : OUT std_logic;
-         BSE_S : OUT std_logic;
-         CRCE_H : OUT std_logic;
-         CRCE_S : OUT std_logic;
-         DPSS : INOUT std_logic;
-         DMSS : INOUT std_logic;
-         EMPTY_H : OUT STD_LOGIC;
-         EMPTY_S : OUT STD_LOGIC;
-         FULL_H : OUT STD_LOGIC;
-         FULL_S : OUT STD_LOGIC;
-         RE_H : OUT std_logic;
-         RE_S : OUT std_logic;
-         c_key_error : OUT std_logic;
-         c_parity_error : OUT std_logic;
-         c_prog_error : OUT std_logic
+      CLK              : IN     std_logic;
+      DMRH             : IN     std_logic;
+      DMRS             : IN     std_logic;
+      DPRH             : IN     std_logic;
+      DPRS             : IN     std_logic;
+      RST              : IN     std_logic;
+      SERIAL_IN        : IN     std_logic;
+      BSE_H            : OUT    std_logic;
+      BSE_S            : OUT    std_logic;
+      CRCE_H           : OUT    std_logic;
+      CRCE_S           : OUT    std_logic;
+      DMTH             : OUT    std_logic;
+      DMTS             : OUT    std_logic;
+      DPTH             : OUT    std_logic;
+      DPTS             : OUT    std_logic;
+      EMPTY_H          : OUT    STD_LOGIC;
+      EMPTY_S          : OUT    STD_LOGIC;
+      FULL_H           : OUT    STD_LOGIC;
+      FULL_S           : OUT    STD_LOGIC;
+      RE_H             : OUT    std_logic;
+      RE_S             : OUT    std_logic;
+      c_key_error      : OUT    std_logic;
+      c_parity_error   : OUT    std_logic;
+      c_prog_error     : OUT    std_logic;
+      host_is_sending  : OUT    std_logic;
+      slave_is_sending : OUT    std_logic
     );
   end component;
 
 -- Insert signals Declarations here
   signal CLK : std_logic;
-  signal DPHS : std_logic;
-  signal DMHS : std_logic;
+  signal DMRH : std_logic;
+  signal DMRS : std_logic;
+  signal DPRH : std_logic;
+  signal DPRS : std_logic;
   signal RST : std_logic;
   signal SERIAL_IN : std_logic;
   signal BSE_H : std_logic;
   signal BSE_S : std_logic;
   signal CRCE_H : std_logic;
   signal CRCE_S : std_logic;
-  signal DPSS : std_logic;
-  signal DMSS : std_logic;
+  signal DMTH : std_logic;
+  signal DMTS : std_logic;
+  signal DPTH : std_logic;
+  signal DPTS : std_logic;
   signal EMPTY_H : STD_LOGIC;
   signal EMPTY_S : STD_LOGIC;
   signal FULL_H : STD_LOGIC;
@@ -84,6 +94,16 @@ architecture TEST of tb_usbe is
   signal c_key_error : std_logic;
   signal c_parity_error : std_logic;
   signal c_prog_error : std_logic;
+  signal DPHS : std_logic;
+  signal DPSS : std_logic;
+  signal DMHS : std_logic;
+  signal DMSS : std_logic;
+  signal DPTS_ex : std_logic;
+  signal DMTS_ex : std_logic;
+  signal DPTH_ex : std_logic;
+  signal DMTH_ex : std_logic;
+  signal host_is_sending : std_logic;
+  signal slave_is_sending : std_logic;
 
 -- signal <name> : <type>;
 procedure sendUART(
@@ -237,16 +257,20 @@ end sendEOP;
 begin
   DUT: rmedt_square port map(
                 CLK => CLK,
-                DPHS => DPHS,
-                DMHS => DMHS,
                 RST => RST,
+                DMRH => DMRH,
+                DMRS => DMRS,
+                DPRH => DPRH,
+                DPRS => DPRS,
+                DMTH => DMTH,
+                DMTS => DMTS,
+                DPTH => DPTH,
+                DPTS => DPTS,
                 SERIAL_IN => SERIAL_IN,
                 BSE_H => BSE_H,
                 BSE_S => BSE_S,
                 CRCE_H => CRCE_H,
                 CRCE_S => CRCE_S,
-                DPSS => DPSS,
-                DMSS => DMSS,
                 EMPTY_H => EMPTY_H,
                 EMPTY_S => EMPTY_S,
                 FULL_H => FULL_H,
@@ -255,7 +279,9 @@ begin
                 RE_S => RE_S,
                 c_key_error => c_key_error,
                 c_parity_error => c_parity_error,
-                c_prog_error => c_prog_error
+                c_prog_error => c_prog_error,
+                host_is_sending => host_is_sending,
+                slave_is_sending => slave_is_sending
                 );
 
 --   GOLD: <GOLD_NAME> port map(<put mappings here>);
@@ -365,4 +391,20 @@ variable bc: integer;
 --    SERIAL_IN <= 
 
   end process;
+  
+  DPTH_ex <= 'Z' WHEN slave_is_sending = '0' ELSE DPTH;
+  DMTH_ex <= 'Z' WHEN slave_is_sending = '0' ELSE DMTH;
+  DPTS_ex <= 'Z' WHEN host_is_sending = '0' ELSE DPTS;
+  DMTS_ex <= 'Z' WHEN host_is_sending = '0' ELSE DMTS;
+  
+  DPHS <= DPTH_ex WHEN slave_is_sending = '1' ELSE 'Z';
+  DMHS <= DMTH_ex WHEN slave_is_sending = '1' ELSE 'Z';
+  DPSS <= DPTS_ex WHEN host_is_sending = '1' ELSE 'Z';
+  DMSS <= DMTS_ex WHEN host_is_sending = '1' ELSE 'Z';
+  
+  DPRH <= DPHS WHEN slave_is_sending = '0' ELSE 'Z';
+  DMRH <= DMHS WHEN slave_is_sending = '0' ELSE 'Z';
+  DPRS <= DPSS WHEN host_is_sending = '0' ELSE 'Z';
+  DMRS <= DMSS WHEN host_is_sending = '0' ELSE 'Z';
+  
 end TEST;
