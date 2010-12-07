@@ -301,8 +301,8 @@ variable bc: integer;
   RST <= '1';
   DPHS <= '1';
   DMHS <= '0';
-  DPSS <= 'Z';
-  DMSS <= 'Z';
+  DPSS <= 'H';
+  DMSS <= 'L';
   SERIAL_IN <= '1';
   wait for 12 ns;
   RST <= '0';
@@ -362,13 +362,13 @@ variable bc: integer;
   
   DPSS <= '1';
   DMSS <= '0';
-  DPHS <= 'Z';
-  DMHS <= 'Z';
+  DPHS <= 'H';
+  DMHS <= 'L';
   wait for 12 us;  
   
   HEXtoNRZI("10000000", BC, DPSS, DMSS);
   HEXtoNRZI(x"90", BC, DPSS, DMSS);
-  STRINGtoNRZI("This is a long string", 21, BC, DPSS, DMSS);
+  STRINGtoNRZI("Hê1¾Ï`z)ùüObt", 21, BC, DPSS, DMSS);
   HEXtoNRZI(x"2C", BC, DPSS, DMSS);
   HEXtoNRZI(x"5E", BC, DPSS, DMSS);
   sendEOP(0, DPSS, DMSS); 
@@ -388,14 +388,14 @@ variable bc: integer;
   DPTS_ex <= 'Z' WHEN host_is_sending = '0' ELSE DPTS;
   DMTS_ex <= 'Z' WHEN host_is_sending = '0' ELSE DMTS;
   
-  DPHS <= DPTH_ex WHEN slave_is_sending = '1' ELSE 'Z';
-  DMHS <= DMTH_ex WHEN slave_is_sending = '1' ELSE 'Z';
-  DPSS <= DPTS_ex WHEN host_is_sending = '1' ELSE 'Z';
-  DMSS <= DMTS_ex WHEN host_is_sending = '1' ELSE 'Z';
+  DPHS <= DPTH_ex WHEN slave_is_sending = '1' ELSE 'H';
+  DMHS <= DMTH_ex WHEN slave_is_sending = '1' ELSE 'L';
+  DPSS <= DPTS_ex WHEN host_is_sending = '1' ELSE 'H';
+  DMSS <= DMTS_ex WHEN host_is_sending = '1' ELSE 'L';
   
-  DPRH <= DPHS WHEN slave_is_sending = '0' ELSE 'Z';
-  DMRH <= DMHS WHEN slave_is_sending = '0' ELSE 'Z';
-  DPRS <= DPSS WHEN host_is_sending = '0' ELSE 'Z';
-  DMRS <= DMSS WHEN host_is_sending = '0' ELSE 'Z';
+  DPRH <= DPHS WHEN slave_is_sending = '0' ELSE 'H';
+  DMRH <= DMHS WHEN slave_is_sending = '0' ELSE 'L';
+  DPRS <= DPSS WHEN host_is_sending = '0' ELSE 'H';
+  DMRS <= DMSS WHEN host_is_sending = '0' ELSE 'L';
   
 end TEST;
