@@ -368,7 +368,7 @@ variable bc: integer;
   
   HEXtoNRZI("10000000", BC, DPSS, DMSS);
   HEXtoNRZI(x"90", BC, DPSS, DMSS);
-  STRINGtoNRZI("Hê1¾Ï`z)ùüObt", 21, BC, DPSS, DMSS);
+  STRINGtoNRZI("This is a long string", 21, BC, DPSS, DMSS);
   HEXtoNRZI(x"2C", BC, DPSS, DMSS);
   HEXtoNRZI(x"5E", BC, DPSS, DMSS);
   sendEOP(0, DPSS, DMSS); 
