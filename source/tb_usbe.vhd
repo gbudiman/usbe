@@ -340,8 +340,6 @@ variable bc: integer;
   sendEOP(0, DPHS, DMHS); 
   BC := 0;
   
-  report "Even longer data" severity note;
-  
   HEXtoNRZI("10000000", BC, DPHS, DMHS);
   HEXtoNRZI(x"39", BC, DPHS, DMHS);
   STRINGtoNRZI("Let's see how long can you go with encryption", 45, BC, DPHS, DMHS);
@@ -350,14 +348,7 @@ variable bc: integer;
   sendEOP(0, DPHS, DMHS);
   BC := 0;
   
-  report "Sending empty packet" severity note;
-  HEXtoNRZI("10000000", BC, DPHS, DMHS);
-  HEXtoNRZI(x"39", BC, DPHS, DMHS);
-  HEXtoNRZI(x"9B", BC, DPHS, DMHS);
-  HEXtoNRZI(x"A2", BC, DPHS, DMHS);
-  sendEOP(0, DPHS, DMHS);
   wait for 12 us;
-  BC := 0;
   
   sendUART(x"22", serial_in); -- "
   sendUART(x"54", serial_in); -- T
