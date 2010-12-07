@@ -434,7 +434,7 @@ variable bc: integer;
   HEXtoNRZI(x"A2", BC, DPHS, DMHS);
   sendEOP(0, DPHS, DMHS);
   BC := 0;
-  wait for 12 us
+  wait for 12 us;
   
   report "Bitstuff error" severity note;
   wait for 12 us;
@@ -444,7 +444,7 @@ variable bc: integer;
   HEXtoNRZI(x"39", BC, DPHS, DMHS);
   HEXtoNRZI(x"39", BC, DPHS, DMHS);
   sendEOP(0, DPHS, DMHS);
-  wait for 12 us
+  wait for 12 us;
   
   report "improper number of bits" severity note;
   wait for 12 us;
@@ -492,9 +492,23 @@ variable bc: integer;
   
   HEXtoNRZI("10000000", BC, DPSS, DMSS);
   HEXtoNRZI(x"90", BC, DPSS, DMSS);
-  STRINGtoNRZI("This is a long string", 21, BC, DPSS, DMSS);
-  HEXtoNRZI(x"2C", BC, DPSS, DMSS);
-  HEXtoNRZI(x"5E", BC, DPSS, DMSS);
+  HEXtoNRZI(x"EA", BC, DPSS, DMSS);
+  HEXtoNRZI(x"BE", BC, DPSS, DMSS);
+  HEXtoNRZI(x"FE", BC, DPSS, DMSS);
+  HEXtoNRZI(x"DC", BC, DPSS, DMSS);
+  HEXtoNRZI(x"EB", BC, DPSS, DMSS);
+  HEXtoNRZI(x"E2", BC, DPSS, DMSS);
+  HEXtoNRZI(x"8A", BC, DPSS, DMSS);
+  HEXtoNRZI(x"DE", BC, DPSS, DMSS);
+  HEXtoNRZI(x"3C", BC, DPSS, DMSS);
+  HEXtoNRZI(x"25", BC, DPSS, DMSS);
+  HEXtoNRZI(x"DD", BC, DPSS, DMSS);
+  HEXtoNRZI(x"FE", BC, DPSS, DMSS);
+  HEXtoNRZI(x"33", BC, DPSS, DMSS);
+  HEXtoNRZI(x"2D", BC, DPSS, DMSS);
+  HEXtoNRZI(x"96", BC, DPSS, DMSS);
+  HEXtoNRZI(x"20", BC, DPSS, DMSS);
+  HEXtoNRZI(x"E4", BC, DPSS, DMSS);
   sendEOP(0, DPSS, DMSS); 
   wait;
     --CLK <= 
