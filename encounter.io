@@ -1,0 +1,122 @@
+Version: 2
+
+Orient: R0
+Pad: c01 NW PADFC
+Orient: R270
+Pad: c02 NE PADFC
+Orient: R180
+Pad: c03 SE PADFC
+Orient: R90
+Pad: c04 SW PADFC
+
+Pad: xu100 N PADNC
+Pad: xu101 N PADNC
+Pad: xu102 N PADNC
+Pad: xu103 N PADNC
+Pad: xu104 N PADNC
+Pad: UOUT11 N
+Pad: xu105 N PADNC
+Pad: xu106 N PADNC
+Pad: xu107 N PADNC
+Pad: UOUT12 N
+Pad: xu108 N PADNC
+Pad: xu109 N PADNC
+Pad: xu110 N PADNC
+Pad: UOUT13 N
+Pad: xu111 N PADNC
+Pad: xu112 N PADNC
+Pad: xu113 N PADNC
+Pad: U1 N
+Pad: xu114 N PADNC
+Pad: xu115 N PADNC
+Pad: xu116 N PADNC
+Pad: U2 N
+Pad: xu117 N PADNC
+Pad: xu118 N PADNC
+Pad: xu119 N PADNC
+Pad: xu120 N PADNC
+Pad: xu121 N PADNC
+
+Pad: xb000 S PADNC
+Pad: UOUT1 S
+Pad: xb001 S PADNC
+Pad: xb002 S PADNC
+Pad: UOUT2 S
+Pad: xb003 S PADNC
+Pad: xb004 S PADNC
+Pad: UOUT3 S
+Pad: xb005 S PADNC
+Pad: xb006 S PADNC
+Pad: UOUT4 S
+Pad: xb007 S PADNC
+Pad: UOUT5 S
+Pad: xb008 S PADNC
+Pad: UOUT6 S
+Pad: xb009 S PADNC
+Pad: UOUT7 S
+Pad: xb010 S PADNC
+Pad: xb011 S PADNC
+Pad: UOUT8 S
+Pad: xb012 S PADNC
+Pad: xb013 S PADNC
+Pad: UOUT9 S
+Pad: xb014 S PADNC
+Pad: xb015 S PADNC
+Pad: UOUT10 S
+Pad: xb016 S PADNC
+
+Pad: xe000 E PADNC
+Pad: xe001 E PADNC
+Pad: xe002 E PADNC
+Pad: xe003 E PADNC
+Pad: xe004 E PADNC
+Pad: xe005 E PADNC
+Pad: xe006 E PADNC
+Pad: U3 E
+Pad: xe007 E PADNC
+Pad: xe008 E PADNC
+Pad: xe009 E PADNC
+Pad: xe010 E PADNC
+Pad: xe011 E PADNC
+Pad: UI01 E
+Pad: xe012 E PADNC
+Pad: xe013 E PADNC
+Pad: xe014 E PADNC
+Pad: xe015 E PADNC
+Pad: xe016 E PADNC
+Pad: UI02 E
+Pad: xe017 E PADNC
+Pad: xe018 E PADNC
+Pad: xe019 E PADNC
+Pad: xe020 E PADNC
+Pad: xe021 E PADNC
+Pad: xe022 E PADNC
+Pad: xe023 E PADNC
+
+Pad: xw000 W PADNC
+Pad: xw001 W PADNC
+Pad: xw002 W PADNC
+Pad: xw003 W PADNC
+Pad: xw004 W PADNC
+Pad: U8 W
+Pad: xw005 W PADNC
+Pad: xw006 W PADNC
+Pad: xw007 W PADNC
+Pad: xw008 W PADNC
+Pad: UI03 W
+Pad: xw009 W PADNC
+Pad: xw010 W PADNC
+Pad: xw011 W PADNC
+Pad: xw012 W PADNC
+Pad: xw013 W PADNC
+Pad: UI04 W
+Pad: xw014 W PADNC
+Pad: xw015 W PADNC
+Pad: xw016 W PADNC
+Pad: xw017 W PADNC
+Pad: U9 W 
+Pad: xw018 W PADNC
+Pad: xw019 W PADNC
+Pad: xw020 W PADNC
+Pad: xw021 W PADNC
+Pad: xw022 W PADNC
