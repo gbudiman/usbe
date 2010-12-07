@@ -166,7 +166,7 @@ procedure HEXtoNRZI (
         end if;
         D <= not(D);
         D_MIN <= D;
-        wait for 8*Period;
+        wait for 8* Period;
         if (data(i) = '0') then
           D <= not(D_Last);
           D_MIN <= D_Last;
@@ -189,6 +189,116 @@ procedure HEXtoNRZI (
       bc_count := count;
     end loop;
   end HEXtoNRZI;
+  
+procedure SHEXtoNRZI (
+  constant data : in std_logic_vector(7 downto 0);
+  variable bc_count : inout integer;
+  signal D    : inout std_logic; 
+  signal D_MIN: out std_logic) is
+  variable count: integer;
+  variable D_Last: std_logic;
+  begin
+    count := bc_count;
+--    case count is
+--      when 0 => report "0";
+--      when 1 => report "1";
+--      when 2 => report "2";
+--      when 3 => report "3";
+--      when 4 => report "4";
+--      when 5 => report "5";
+--      when 6 => report "6";
+--      when 7 => report "7";
+--      when others => report "HUH?";
+--    end case;
+    for i in 0 to 7 loop
+      -- report "IN" severity note;
+      if (count = 6) then
+        D_Last := D;
+        if (data(i) = '0') then
+          count := 1;
+        else
+          count := 0;
+        end if;
+        D <= not(D);
+        D_MIN <= D;
+        wait for 8*1.025 * Period;
+        if (data(i) = '0') then
+          D <= not(D_Last);
+          D_MIN <= D_Last;
+        else
+          D <= (D_LAST);
+          D_MIN <= not(D_Last);
+        end if;
+      else
+        if (data(i) = '0') then
+          count := 0;
+          D <= not(D);
+          D_MIN <= D;
+        else
+          count := count + 1;
+          D <= D;
+          D_MIN <= not(D);
+        end if;
+      end if;
+      wait for 8*1.025*Period;
+      bc_count := count;
+    end loop;
+  end SHEXtoNRZI;
+  
+  procedure FHEXtoNRZI (
+  constant data : in std_logic_vector(7 downto 0);
+  variable bc_count : inout integer;
+  signal D    : inout std_logic; 
+  signal D_MIN: out std_logic) is
+  variable count: integer;
+  variable D_Last: std_logic;
+  begin
+    count := bc_count;
+--    case count is
+--      when 0 => report "0";
+--      when 1 => report "1";
+--      when 2 => report "2";
+--      when 3 => report "3";
+--      when 4 => report "4";
+--      when 5 => report "5";
+--      when 6 => report "6";
+--      when 7 => report "7";
+--      when others => report "HUH?";
+--    end case;
+    for i in 0 to 7 loop
+      -- report "IN" severity note;
+      if (count = 6) then
+        D_Last := D;
+        if (data(i) = '0') then
+          count := 1;
+        else
+          count := 0;
+        end if;
+        D <= not(D);
+        D_MIN <= D;
+        wait for 8 * 0.975 * Period;
+        if (data(i) = '0') then
+          D <= not(D_Last);
+          D_MIN <= D_Last;
+        else
+          D <= (D_LAST);
+          D_MIN <= not(D_Last);
+        end if;
+      else
+        if (data(i) = '0') then
+          count := 0;
+          D <= not(D);
+          D_MIN <= D;
+        else
+          count := count + 1;
+          D <= D;
+          D_MIN <= not(D);
+        end if;
+      end if;
+      wait for 8 * 0.975 * Period;
+      bc_count := count;
+    end loop;
+  end FHEXtoNRZI;
   
 procedure STRINGtoNRZI (
   constant word: IN string;
@@ -238,102 +348,6 @@ procedure STRINGtoNRZI (
     bc_count := count;
   end STRINGtoNRZI;
 
-procedure FSTRINGtoNRZI (
-  constant word: IN string;
-  constant length: IN integer;
-  variable bc_count: inout integer;
-  signal D: inout std_logic;
-  signal D_MIN: out std_logic) is
-  variable count: integer;
-  variable D_Last: std_logic;
-  variable data: std_logic_vector(7 downto 0);
-  begin
-    count := bc_count;
-    for i in 1 to length loop
-      data := CONV_STD_LOGIC_VECTOR(CONV_INTEGER(CHARACTER'POS(word(i))), 8);
-      for i in 0 to 7 loop
-        if (data(i) = '0') then
-          count := 0;
-          D <= not(D);
-          D_MIN <= D;
-        else
-          if (count = 5) then
-            D_Last := D;
-            if (data(i) = '0') then
-              count := 1;
-            else
-              count := 0;
-            end if;
-            D <= not(D);
-            D_MIN <= D;
-            wait for 8*Period * 0.9975;
-            if (data(i) = '0') then
-              D <= not(D_Last);
-              D_MIN <= D_Last;
-            else
-              D <= (D_LAST);
-              D_MIN <= not(D_Last);
-            end if;
-          else
-            count := count + 1;
-            D <= D;
-            D_MIN <= not(D);
-          end if;
-        end if;
-        wait for 8*Period * 0.9975;
-      end loop;
-    end loop;
-    bc_count := count;
-  end FSTRINGtoNRZI;
-  
-  procedure SSTRINGtoNRZI (
-    constant word: IN string;
-    constant length: IN integer;
-    variable bc_count: inout integer;
-    signal D: inout std_logic;
-    signal D_MIN: out std_logic) is
-    variable count: integer;
-    variable D_Last: std_logic;
-    variable data: std_logic_vector(7 downto 0);
-    begin
-      count := bc_count;
-      for i in 1 to length loop
-        data := CONV_STD_LOGIC_VECTOR(CONV_INTEGER(CHARACTER'POS(word(i))), 8);
-        for i in 0 to 7 loop
-          if (data(i) = '0') then
-            count := 0;
-            D <= not(D);
-            D_MIN <= D;
-          else
-            if (count = 5) then
-              D_Last := D;
-              if (data(i) = '0') then
-                count := 1;
-              else
-                count := 0;
-              end if;
-              D <= not(D);
-              D_MIN <= D;
-              wait for 8*Period*1.0025;
-              if (data(i) = '0') then
-                D <= not(D_Last);
-                D_MIN <= D_Last;
-              else
-                D <= (D_LAST);
-                D_MIN <= not(D_Last);
-              end if;
-            else
-              count := count + 1;
-              D <= D;
-              D_MIN <= not(D);
-            end if;
-          end if;
-          wait for 8*Period*1.0025;
-        end loop;
-      end loop;
-      bc_count := count;
-    end SSTRINGtoNRZI;
-      
 procedure sendEOP (
     constant repeat: IN integer;
     signal d_plus: OUT STD_LOGIC;
@@ -436,8 +450,8 @@ variable bc: integer;
   BC := 0;
   wait for 12 us;
   
-  report "Bitstuff error" severity note;
   wait for 12 us;
+  report "Bitstuff error" severity note;
   HEXtoNRZI("10000000", BC, DPHS, DMHS);
   HEXtoNRZI(x"39", BC, DPHS, DMHS);
   sendByteFast("11111111", 0, DPHS, DMHS);
@@ -446,8 +460,8 @@ variable bc: integer;
   sendEOP(0, DPHS, DMHS);
   wait for 12 us;
   
-  report "improper number of bits" severity note;
   wait for 12 us;
+  report "improper number of bits" severity note;
   HEXtoNRZI("10000000", BC, DPHS, DMHS);
   HEXtoNRZI(x"39", BC, DPHS, DMHS);
   sendByteFast("00000000", 7, DPHS, DMHS);
@@ -455,22 +469,26 @@ variable bc: integer;
   HEXtoNRZI(x"39", BC, DPHS, DMHS);
   sendEOP(0, DPHS, DMHS);
   
-  report "Bitstuff 1's example" severity note;
   wait for 12 us;
+  report "Bitstuff 1's example" severity note;
   HEXtoNRZI("10000000", BC, DPHS, DMHS);
   HEXtoNRZI(x"FF", BC, DPHS, DMHS);
   HEXtoNRZI(x"AA", BC, DPHS, DMHS);
   HEXtoNRZI(x"AA", BC, DPHS, DMHS);
   sendEOP(0, DPHS, DMHS);
   
-  report "Bitstuff 0's example" severity note;
   wait for 12 us;
+  report "Bitstuff 0's example" severity note;
   HEXtoNRZI("10000000", BC, DPHS, DMHS);
   HEXtoNRZI(x"00", BC, DPHS, DMHS);
   HEXtoNRZI(x"AA", BC, DPHS, DMHS);
   HEXtoNRZI(x"AA", BC, DPHS, DMHS);
   sendEOP(0, DPHS, DMHS);
-  
+  report "RESET!!!@!@" severity note;
+  rst<='1';
+  wait for 20 ns;
+  rst<='0';
+  wait for 10 us;
   report "Fresh key to check encrypted input" severity note;
   sendUART(x"22", serial_in); -- "
   sendUART(x"54", serial_in); -- T
@@ -509,6 +527,53 @@ variable bc: integer;
   HEXtoNRZI(x"96", BC, DPSS, DMSS);
   HEXtoNRZI(x"20", BC, DPSS, DMSS);
   HEXtoNRZI(x"E4", BC, DPSS, DMSS);
+  sendEOP(0, DPSS, DMSS); 
+  wait for 12 us;
+  report "Send encrypted input FAST and get nonsense output with correct CRC" severity note;
+  
+  FHEXtoNRZI("10000000", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"90", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"EA", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"BE", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"FE", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"DC", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"EB", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"E2", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"8A", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"DE", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"3C", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"25", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"DD", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"FE", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"33", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"2D", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"96", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"20", BC, DPSS, DMSS);
+  FHEXtoNRZI(x"E4", BC, DPSS, DMSS);
+  sendEOP(0, DPSS, DMSS); 
+  wait;
+  
+  report "Immediately Send encrypted input SLOW and get nonsense output with correct CRC" severity note;
+  
+  SHEXtoNRZI("10000000", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"90", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"EA", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"BE", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"FE", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"DC", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"EB", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"E2", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"8A", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"DE", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"3C", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"25", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"DD", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"FE", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"33", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"2D", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"96", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"20", BC, DPSS, DMSS);
+  SHEXtoNRZI(x"E4", BC, DPSS, DMSS);
   sendEOP(0, DPSS, DMSS); 
   wait;
     --CLK <= 
