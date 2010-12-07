@@ -58,7 +58,8 @@ entity tx_tcu is
       next_byte <= '0';
       t_strobe <= '0';
       EOP <= '0';
--- Send_Data/Flop_Data may need to be defined for all states. 
+      send_data <= "00000000";
+      flop_data <= "00000000";
       case state is
                   when IDLE =>
                     
