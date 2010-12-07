@@ -178,28 +178,12 @@ architecture moore of rx_rcu is
                           end if;
             WHEN BS_ERROR_STATE2 =>
                           RCVING <= '0';
-                          OPCODe <= "10";
+                          OPCODE <= "10";
                           nxtR_ERROR <= '0';
                           nxtCRC_ERROR <= '0';
                           W_ENABLE <= '0';
                           nextCount <= "0000";
-                          if (D_EDGE = '1') THEN
-                            nextState <= BS_ERROR_STATE3;
-                          else
-                            nextState <= BS_ERROR_STATE2;
-                          end if;
-            WHEN BS_ERROR_STATE3 =>
-                          RCVING <= '0';
-                          OPCODe <= "10";
-                          nxtR_ERROR <= '0';
-                          nxtCRC_ERROR <= '0';
-                          W_ENABLE <= '0';
-                          nextCount <= "0000";
-                          if (D_EDGE = '1') THEN
-                            nextState <= RECEIVING;
-                          else
-                            nextState <= BS_ERROR_STATE3;
-                          end if;
+                          nextstate <= ERROR;
                           
             when NO_SYNC =>
                           RCVING <= '1';
