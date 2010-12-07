@@ -184,8 +184,6 @@ BEGIN
         ELSE
           nextState <= PACKETRESET;
         END IF;
-      WHEN OTHERS =>
-        nextState <= IDLE;
     END CASE;
   END PROCESS NSL;
   

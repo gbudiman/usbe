@@ -5,13 +5,14 @@
 -- Lab Section: 337-02
 -- Version:     1.0  Initial Test Bench
 
-library ieee;
+library IEEE;
 --library gold_lib;   --UNCOMMENT if you're using a GOLD model
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 library OSU_AMI05;
 use OSU_AMI05.all;
+
 --use gold_lib.all;   --UNCOMMENT if you're using a GOLD model
 
 entity tb_usbe is
