@@ -281,6 +281,7 @@ process
     sendEOP(1, DP1_RX, DM1_RX);
     BC := 0;
     
+    report "Begin normal operation" severity note;
     HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
     HEXtoNRZI(x"39", BC, DP1_RX, DM1_RX);
     STRINGtoNRZI("Another very long string to test transmitter correctness", 56, BC, DP1_RX, DM1_RX);
@@ -304,6 +305,13 @@ process
     HEXtoNRZI(x"6B", BC, DP1_RX, DM1_RX);
     sendEOP(1, DP1_RX, DM1_RX);
     BC := 0;
+    report "Begin normal operation" severity note;
+    HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"39", BC, DP1_RX, DM1_RX);
+    STRINGtoNRZI("Another very long string to test transmitter correctness", 56, BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"DE", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"9F", BC, DP1_RX, DM1_RX);
+    sendEOP(0, DP1_RX, DM1_RX);
     wait;
     --CLK <= 
     --DM1_RX <= 
