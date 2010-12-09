@@ -23,7 +23,7 @@ end rx_shift_reg;
 
 ARCHITECTURE dataflow OF rx_shift_reg IS
        signal present_val : std_logic_vector(7 downto 0);
-       signal next_val : std_logic_vector(7 downto 0);
+       signal next_val, next_RCV_DATA : std_logic_vector(7 downto 0);
 BEGIN
    REG: process (CLK, RST)
    begin  -- process
@@ -31,12 +31,13 @@ BEGIN
       present_val <= "00000000";
     elsif rising_edge(CLK) then
       present_val <= next_val;
+    RCV_DATA <= next_RCV_DATA;
     end if; 
    end process;
 
    next_val <= D_ORIG & present_val(7 downto 1) when (SHIFT_ENABLE='1' AND BITSTUFF = '0')
               else present_val;
 
-   RCV_DATA <= present_val(7 downto 0);
+   next_RCV_DATA <= present_val(7 downto 0);
 
 end dataflow;

@@ -574,13 +574,13 @@ variable bc: integer;
   
   wait for 24 us;
   
-  report "Send unencrypted input and get encrypted output with wrong CRC" severity note;
+  report "Send unencrypted input and get encrypted output with correct CRC" severity note;
   
   HEXtoNRZI("10000000", BC, DPHS, DMHS);
   HEXtoNRZI(x"39", BC, DPHS, DMHS);
   STRINGtoNRZI("Unencrypted input", 17, BC, DPHS, DMHS);
-  HEXtoNRZI(x"9B", BC, DPHS, DMHS);
-  HEXtoNRZI(x"A2", BC, DPHS, DMHS);
+  HEXtoNRZI(x"EC", BC, DPHS, DMHS);
+  HEXtoNRZI(x"A6", BC, DPHS, DMHS);
   sendEOP(0, DPHS, DMHS);
   BC := 0;
   wait for 12 us;
@@ -641,7 +641,7 @@ variable bc: integer;
   DMHS <= 'L';
   wait for 24 us;  
   
-  report "Send encrypted input and get unencrypted output with correct CRC" severity note;
+  report "Send encrypted input and get unencrypted output with incorrect CRC" severity note;
   
   HEXtoNRZI("10000000", BC, DPSS, DMSS);
   HEXtoNRZI(x"90", BC, DPSS, DMSS);
@@ -664,7 +664,7 @@ variable bc: integer;
   HEXtoNRZI(x"E4", BC, DPSS, DMSS);
   sendEOP(0, DPSS, DMSS); 
   wait for 12 us;
-  report "Send encrypted input FAST and get nonsense output with correct CRC" severity note;
+  report "Send encrypted input FAST and get nonsense output with incorrect CRC" severity note;
   
   FHEXtoNRZI("10000000", BC, DPSS, DMSS);
   FHEXtoNRZI(x"90", BC, DPSS, DMSS);
@@ -686,9 +686,8 @@ variable bc: integer;
   FHEXtoNRZI(x"20", BC, DPSS, DMSS);
   FHEXtoNRZI(x"E4", BC, DPSS, DMSS);
   sendEOP(0, DPSS, DMSS); 
-  wait;
   
-  report "Immediately Send encrypted input SLOW and get nonsense output with correct CRC" severity note;
+  report "Immediately Send encrypted input SLOW and get nonsense output with incorrect CRC" severity note;
   
   SHEXtoNRZI("10000000", BC, DPSS, DMSS);
   SHEXtoNRZI(x"90", BC, DPSS, DMSS);
@@ -710,6 +709,7 @@ variable bc: integer;
   SHEXtoNRZI(x"20", BC, DPSS, DMSS);
   SHEXtoNRZI(x"E4", BC, DPSS, DMSS);
   sendEOP(0, DPSS, DMSS); 
+  
   wait;
     --CLK <= 
 --    DMRH <= 
