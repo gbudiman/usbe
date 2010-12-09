@@ -19,33 +19,17 @@ ENTITY KSA IS
     BYTE_READY: IN STD_LOGIC;
     BYTE: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     OPCODE: IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-    --TABLE_READY: OUT STD_LOGIC;
-    --OUT_TABLE: OUT STD_LOGIC_VECTOR(2047 DOWNTO 0));
+    DATA_IN: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     PROCESSED_DATA: OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-    PDATA_READY: OUT STD_LOGIC);
+    PDATA_READY: OUT STD_LOGIC;
+    W_ENABLE, R_ENABLE: OUT STD_LOGIC;
+    ADDR, DATA: OUT STD_LOGIC_VECTOR(7 DOWNTO 0));
 END KSA;
 
 ARCHITECTURE bksa OF KSA IS
---function INT_TO_STD_LOGIC( X: INTEGER; NumBits: INTEGER )
---   return STD_LOGIC_VECTOR is
---  variable RES : STD_LOGIC_VECTOR(NumBits-1 downto 0);
---  variable tmp : INTEGER;
---begin
---  tmp := X;
---  for i in 0 to NumBits-1 loop
---    if (tmp mod 2)=1 then
---      res(i) := '1';
---    else
---      res(i) := '0';
---    end if;
---    tmp := tmp/2;
---  end loop;
---  return res;
---end;
-
-  TYPE myState IS (IDLE, PREFILL, D_SWAP, D_SWAP_J, D_SWAP_X, D_SWAP_Y, DONE, PSTEPA, PSTEPB1, PSTEPB2, PSTEPC, PSTEPD, PWAIT, PASSTHROUGH, PTOUT, PACKETRESET);
-  TYPE pArray IS ARRAY(0 TO 255) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
-  SIGNAL permuteTable, nextPermuteTable: pArray;
+  TYPE myState IS (IDLE, PREFILL, PREFILL_WAIT, D_SWAP, D_SWAP_J, D_SWAP_J_P, D_SWAP_J_Q, D_SWAP_X, D_SWAP_X_P, D_SWAP_X_Q, D_SWAP_Y, D_SWAP_Y_P, DONE, PSTEPA, PSTEPA_P, PSTEPB1, PSTEPB1_P, PSTEPB1_Q, PSTEPB1_R, PSTEPB2, PSTEPB2_P, PSTEPC, PSTEPC_Q, PSTEPC_R, PSTEPD_P, PWAIT, PASSTHROUGH, PTOUT, PACKETRESET);
+  --TYPE pArray IS ARRAY(0 TO 255) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
+  --SIGNAL permuteTable, nextPermuteTable: pArray;
   TYPE kArray IS ARRAY(0 TO 7) OF STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL keyTable, nextKeyTable: kArray;
   SIGNAL state, nextState: myState;
@@ -55,18 +39,24 @@ ARCHITECTURE bksa OF KSA IS
   SIGNAL inti, intj, nextinti, nextintj: STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL keyi, nextKeyi: STD_LOGIC_VECTOR(2 DOWNTO 0);
   SIGNAL temp, nextTemp: STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL extratemp, nextExtraTemp: STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL xordata: STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL delaydata, nextDelayData: STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL p_ready_flop: STD_LOGIC;
   SIGNAL currentProcessedData, nextProcessedData: STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL prefillCounter, nextPrefillCounter: STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL fw_enable, fr_enable, nfw_enable, nfr_enable: STD_LOGIC;
+  SIGNAL faddr, fdata, nfaddr, nfdata: STD_LOGIC_VECTOR(7 DOWNTO 0);
 BEGIN
   TLB: PROCESS(CLK, RST, 
-    nextState, nextsi, nextsj, nextinti, nextintj, nextTemp, nextPermuteComplete, nextPrefillComplete, 
-    nextKeyi, nextPermuteTable, p_ready_flop, nextProcessedData, nextKeyTable, nextDelayData)
+    nextState, nextsi, nextsj, nextinti, nextintj, nextTemp, nextExtraTemp, nextPermuteComplete, nextPrefillComplete, 
+    nextKeyi, p_ready_flop, nextProcessedData, nextKeyTable, nextDelayData, nextPrefillCounter,
+    nfaddr, nfdata, nfw_enable, nfr_enable)
   BEGIN
     IF (RST = '1') THEN
       state <= IDLE;
       si <= x"00";
+      sj <= x"00";
       PDATA_READY <= '0';
       currentProcessedData <= x"00";
     ELSIF (RISING_EDGE(CLK)) THEN
@@ -79,36 +69,64 @@ BEGIN
       permuteComplete <= nextPermuteComplete;
       prefillComplete <= nextPrefillComplete;
       temp <= nextTemp;
-      permuteTable <= nextPermuteTable;
+      extraTemp <= nextExtraTemp;
+      --permuteTable <= nextPermuteTable;
       PDATA_READY <= p_ready_flop;
       PROCESSED_DATA <= nextProcessedData;
       currentProcessedData <= nextProcessedData;
       keyTable <= nextKeyTable;
       delayData <= nextDelayData;
+      prefillCounter <= nextPrefillCounter;
+      faddr <= nfaddr;
+      fdata <= nfdata;
+      fw_enable <= nfw_enable;
+      fr_enable <= nfr_enable;
+      W_ENABLE <= nfw_enable;
+      R_ENABLE <= nfr_enable;
+      DATA <= nfdata;
+      fdata <= nfdata;
+      ADDR <= nfaddr;
+      faddr <= nfaddr;
     END IF;
   END PROCESS TLB;
   
-  NSL: PROCESS(KEY_ERROR, state, permuteComplete, prefillComplete, BYTE_READY, OPCODE)
+  NSL: PROCESS(KEY_ERROR, state, permuteComplete, prefillComplete, prefillCounter, BYTE_READY, OPCODE)
   BEGIN
     nextState <= state;
+    nextPrefillComplete <= prefillComplete;
     CASE state IS
       WHEN IDLE =>
+        nextPrefillComplete <= '0';
         IF (KEY_ERROR = '0') THEN
           nextState <= PREFILL;
         ELSE nextState <= IDLE;
         END IF;
       WHEN PREFILL =>
-        IF (prefillComplete = '1') THEN
+        nextState <= PREFILL_WAIT;
+      WHEN PREFILL_WAIT =>
+        IF (prefillCounter = x"00") THEN
+          nextPrefillComplete <= '1';
           nextState <= D_SWAP;
-        ELSE nextState <= PREFILL;
+        ELSE
+          nextState <= PREFILL;
         END IF;
       WHEN D_SWAP =>
         nextState <= D_SWAP_J;
       WHEN D_SWAP_J =>
+        nextState <= D_SWAP_J_P;
+      WHEN D_SWAP_J_P =>
+        nextState <= D_SWAP_J_Q;
+      WHEN D_SWAP_J_Q =>
         nextState <= D_SWAP_X;
       WHEN D_SWAP_X =>
+        nextState <= D_SWAP_X_P;
+      WHEN D_SWAP_X_P =>
+        nextState <= D_SWAP_X_Q;
+      WHEN D_SWAP_X_Q =>
         nextState <= D_SWAP_Y;
       WHEN D_SWAP_Y =>
+        nextState <= D_SWAP_Y_P;
+      WHEN D_SWAP_Y_P =>
         IF (permuteComplete = '1') THEN
           nextState <= DONE;
         ELSE
@@ -131,14 +149,28 @@ BEGIN
           nextState <= DONE;
         END IF;
       WHEN PSTEPA =>
+        nextState <= PSTEPA_P;
+      WHEN PSTEPA_P =>
         nextState <= PSTEPB1;
       WHEN PSTEPB1 =>
+        nextState <= PSTEPB1_P;
+      WHEN PSTEPB1_P =>
+        nextState <= PSTEPB1_Q;
+      WHEN PSTEPB1_Q =>
+        nextState <= PSTEPB1_R;
+      WHEN PSTEPB1_R =>
         nextState <= PSTEPB2;
       WHEN PSTEPB2 =>
+        nextState <= PSTEPB2_P;
+      WHEN PSTEPB2_P =>
         nextState <= PSTEPC;
       WHEN PSTEPC =>
-        nextState <= PSTEPD;
-      WHEN PSTEPD =>
+        nextState <= PSTEPC_Q;
+      WHEN PSTEPC_Q =>
+        nextState <= PSTEPC_R;
+      WHEN PSTEPC_R =>
+        nextState <= PSTEPD_P;
+      WHEN PSTEPD_P =>
         nextState <= PWAIT;
       WHEN PWAIT =>
         IF (KEY_ERROR = '1') THEN
@@ -193,9 +225,9 @@ BEGIN
     END CASE;
   END PROCESS NSL;
   
-  OL: PROCESS(state, keyTable, permuteTable, 
-    si, sj, key, keyi, nextsi, nextsj, temp, inti, intj, 
-    xordata, delaydata, BYTE, prefillComplete, permuteComplete, currentProcessedData)
+  OL: PROCESS(state, keyTable, prefillCounter, DATA_IN, extraTemp,
+    si, sj, key, keyi, nextsi, nextsj, temp, inti, intj, fr_enable, fw_enable, fdata, faddr,
+    xordata, delaydata, BYTE, permuteComplete, currentProcessedData)
   BEGIN         
     nextsi <= si; 
     nextinti <= inti;
@@ -207,27 +239,32 @@ BEGIN
     nextkeyi <= keyi;
     nextsj <= sj;
     nextPermuteComplete <= permuteComplete;
-    nextPrefillComplete <= prefillComplete;
-    nextPermuteTable <= permuteTable;
+    --nextPermuteTable <= permuteTable;
     nextKeyTable <= keyTable;
     nextTemp <= temp;
+    nextExtraTemp <= extraTemp;
     nextKeyI <= keyi;
     nextProcessedData <= currentProcessedData;
+    nextPrefillCounter <= prefillCounter;
+    nfdata <= fdata;
+    nfaddr <= faddr;
+    nfr_enable <= fr_enable;
+    nfw_enable <= fw_enable;
     CASE state IS
       WHEN IDLE => -- state 0
-        nextPrefillComplete <= '0';
         nextPermuteComplete <= '0';
-        --TABLE_READY <= '0';
-        --PDATA_READY <= '0';
-        --for i in 0 to 2047 loop
-        --  OUT_TABLE(i) <= '0';
-        --end loop;
+        nextPrefillCounter <= x"00";
+        nfr_enable <= '0';
+        nfw_enable <= '0';
       WHEN PREFILL => -- state 1
-        for i in 0 to 255 loop
-          --pArray(i) <= INT_TO_STD_LOGIC_VECTOR(i, 8);
-          nextPermuteTable(i) <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, 8));
-        end loop;
-        
+        nfw_enable <= '1';
+        nfaddr <= prefillCounter;
+        nfdata <= prefillCounter;
+        nextPrefillCounter <= prefillCounter + 1;
+        --for i in 0 to 255 loop
+--          nextPermuteTable(i) <= STD_LOGIC_VECTOR(TO_UNSIGNED(i, 8));
+--        end loop;
+--        
         for i in 0 to 7 loop
           nextKeyTable(i)(0) <= key(i * 8);
           nextKeyTable(i)(1) <= key(i * 8 + 1);
@@ -238,10 +275,14 @@ BEGIN
           nextKeyTable(i)(6) <= key(i * 8 + 6);
           nextKeyTable(i)(7) <= key(i * 8 + 7);
         end loop;
-        nextsj <= x"00";
-        nextPrefillComplete <= '1';
+--        nextsj <= x"00";
+--        nextPrefillComplete <= '1';
+      WHEN PREFILL_WAIT =>
+        nfw_enable <= '0';
+        nfdata <= "ZZZZZZZZ";
+        nfaddr <= "ZZZZZZZZ";
       WHEN D_SWAP => -- state 2
-        IF (si + 1 = x"00") THEN
+        IF (si = x"FF") THEN
           nextsi <= x"00";
           nextPermuteComplete <= '1';
         ELSE
@@ -250,58 +291,108 @@ BEGIN
         nextKeyi(2) <= si(2);
         nextKeyi(1) <= si(1);
         nextKeyi(0) <= si(0);
-      WHEN D_SWAP_J => -- state 3
-        nextTemp <= permuteTable(CONV_INTEGER(si - 1));
-        nextsj <= sj + permuteTable(CONV_INTEGER(si - 1)) + keyTable(CONV_INTEGER(keyi));
-      WHEN D_SWAP_X => -- state 4
-        nextPermuteTable(CONV_INTEGER(si - 1)) <= permuteTable(CONV_INTEGER(sj));
+      WHEN D_SWAP_J =>
+        nfr_enable <= '1';
+        nfaddr <= si - 1;
+      WHEN D_SWAP_J_P => -- state 3
+      WHEN D_SWAP_J_Q =>
+        nfr_enable <= '0';
+        nfaddr <= "ZZZZZZZZ";
+        nextTemp <= DATA_IN;
+        nextSJ <= sj + DATA_IN + keyTable(CONV_INTEGER(keyi));
+        --nextTemp <= permuteTable(CONV_INTEGER(si - 1));
+        --nextsj <= sj + permuteTable(CONV_INTEGER(si - 1)) + keyTable(CONV_INTEGER(keyi));
+      WHEN D_SWAP_X =>
+        nfr_enable <= '1';
+        nfaddr <= sj;
+      WHEN D_SWAP_X_P => -- state 4
+        nfr_enable <= '0';
+        nfw_enable <= '1';
+        nfdata <= DATA_IN;
+        nfaddr <= si - 1;
+        --nextPermuteTable(CONV_INTEGER(si - 1)) <= permuteTable(CONV_INTEGER(sj));
+      WHEN D_SWAP_X_Q =>
+        nfw_enable <= '0';
+        nfaddr <= "ZZZZZZZZ";
       WHEN D_SWAP_Y => -- state 5
-        nextPermuteTable(CONV_INTEGER(sj)) <= temp;
+        nfw_enable <= '1';
+        nfaddr <= sj;
+        nfdata <= temp;
+      WHEN D_SWAP_Y_P =>
+        nfw_enable <= '0';
+        nfaddr <= "ZZZZZZZZ";
+        --nextPermuteTable(CONV_INTEGER(sj)) <= temp;
       WHEN DONE => -- state 6
         nextinti <= x"00";
         nextintj <= x"00";
         nextsi <= x"00";
         nextsj <= x"00";
-        --for i in 0 to 255 loop
---          OUT_TABLE(i * 8) <= permuteTable(i)(0);
---          OUT_TABLE(i * 8 + 1) <= permuteTable(i)(1);
---          OUT_TABLE(i * 8 + 2) <= permuteTable(i)(2);
---          OUT_TABLE(i * 8 + 3) <= permuteTable(i)(3);
---          OUT_TABLE(i * 8 + 4) <= permuteTable(i)(4);
---          OUT_TABLE(i * 8 + 5) <= permuteTable(i)(5);
---          OUT_TABLE(i * 8 + 6) <= permuteTable(i)(6);
---          OUT_TABLE(i * 8 + 7) <= permuteTable(i)(7);
---        end loop;
---        TABLE_READY <= '1';
       WHEN PSTEPA =>
         nextinti <= inti + 1;
-        nextintj <= intj + permuteTable(CONV_INTEGER(inti + 1));
-        nextTemp <= permuteTable(CONV_INTEGER(inti + 1));
+        nfr_enable <= '1';    -- READ!
+        nfaddr <= inti + 1;
+      WHEN PSTEPA_P =>
+        nfr_enable <= '0';
+        nfaddr <= "ZZZZZZZZ";
+        nextintj <= intj + DATA_IN; -- j = j + S(i)
+        nextTemp <= DATA_IN;
+        --nextintj <= intj + permuteTable(CONV_INTEGER(inti + 1));
+        --nextTemp <= permuteTable(CONV_INTEGER(inti + 1));
         nextDelaydata <= BYTE;
       WHEN PSTEPB1 =>
-        nextPermuteTable(CONV_INTEGER(inti)) <= permuteTable(CONV_INTEGER(intj));
+        nfr_enable <= '1';    -- READ!
+        nfaddr <= intj;
+      WHEN PSTEPB1_P =>
+        nfr_enable <= '0';
+        nfaddr <= "ZZZZZZZZ";
+        nextTemp <= DATA_IN;
+        --nfw_enable <= '1';
+        --nfaddr <= inti;
+        --nfdata <= DATA_IN;
+        --nextPermuteTable(CONV_INTEGER(inti)) <= permuteTable(CONV_INTEGER(intj));
+      WHEN PSTEPB1_Q =>
+        nfr_enable <= '1';
+        nfaddr <= inti;
+        --nfw_enable <= '0';
+        --nfr_enable <= '1';
+        --nfaddr <= intj;
+        --nfdata <= temp;
+      WHEN PSTEPB1_R =>
+        nfr_enable <= '0';
+        nfw_enable <= '1';
+        nextExtraTemp <= DATA_IN;
+        nfdata <= temp;
+        nfaddr <= inti;
       WHEN PSTEPB2 =>
-        nextPermuteTable(CONV_INTEGER(intj)) <= temp;
+        nfw_enable <= '0';
+        nfaddr <= "ZZZZZZZZ";
+        --nextPermuteTable(CONV_INTEGER(intj)) <= temp;
+      WHEN PSTEPB2_P =>
+        nfw_enable <= '1';
+        nfaddr <= intj;
+        nfdata <= extratemp;
       WHEN PSTEPC =>
-        nextTemp <= permuteTable(CONV_INTEGER(inti)) + permuteTable(CONV_INTEGER(intj));
-      WHEN PSTEPD =>
-        xordata <= permuteTable(CONV_INTEGER(temp));
-        nextProcessedData <= permuteTable(CONV_INTEGER(temp)) XOR delaydata;
-        --PDATA_READY <= '1';
+        nfw_enable <= '0';
+        nfaddr <= "ZZZZZZZZ";
+        nextTemp <= temp + extraTemp;
+      WHEN PSTEPC_Q =>
+        nfr_enable <= '1';
+        nfaddr <= temp;
+      WHEN PSTEPC_R =>
+        nfr_enable <= '0';
+        nfaddr <= "ZZZZZZZZ";
+        nextTemp <= DATA_IN;
+      WHEN PSTEPD_P =>
+        nextProcessedData <= temp XOR delaydata;
+        --xordata <= permuteTable(CONV_INTEGER(temp));
+        --nextProcessedData <= permuteTable(CONV_INTEGER(temp)) XOR delaydata;
         p_ready_flop <= '1';
       WHEN PWAIT =>
-        --PROCESSED_DATA <= xordata XOR delaydata;
-        --PDATA_READY <= '1';
       WHEN PASSTHROUGH =>
         nextProcessedData <= BYTE;
-        --PDATA_READY <= '1';
         p_ready_flop <= '1';
       WHEN PTOUT =>
-        --nextProcessedData <= delaydata; 
-        --PDATA_READY <= '1';
       WHEN PACKETRESET =>
-        --nextinti <= x"00";
-        --nextintj <= x"00";
     END CASE;
   END PROCESS OL;
 END bksa;

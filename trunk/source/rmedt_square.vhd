@@ -19,6 +19,7 @@ ENTITY rmedt_square IS
       DPRS             : IN     std_logic;
       RST              : IN     std_logic;
       SERIAL_IN        : IN     std_logic;
+      DATA_IN_H, DATA_IN_S: IN  STD_LOGIC_VECTOR(7 DOWNTO 0);
       BSE_H            : OUT    std_logic;
       BSE_S            : OUT    std_logic;
       CRCE_H           : OUT    std_logic;
@@ -37,7 +38,10 @@ ENTITY rmedt_square IS
       c_parity_error   : OUT    std_logic;
       c_prog_error     : OUT    std_logic;
       host_is_sending  : OUT    std_logic;
-      slave_is_sending : OUT    std_logic
+      slave_is_sending : OUT    std_logic;
+      W_ENABLE_H, W_ENABLE_S: OUT STD_LOGIC;
+      R_ENABLE_H, R_ENABLE_S: OUT STD_LOGIC;
+      DATA_H, DATA_S, ADDR_H, ADDR_S: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
    );
 
 -- Declarations
@@ -80,6 +84,7 @@ ARCHITECTURE struct OF rmedt_square IS
       DP1_RX       : IN     std_logic ;
       RST          : IN     std_logic ;
       SERIAL_IN    : IN     std_logic ;
+      DATA_IN      : IN     STD_LOGIC_VECTOR(7 DOWNTO 0);
       BS_ERROR     : OUT    std_logic ;
       CRC_ERROR    : OUT    std_logic ;
       EMPTY        : OUT    STD_LOGIC ;
@@ -91,7 +96,9 @@ ARCHITECTURE struct OF rmedt_square IS
       R_ERROR      : OUT    std_logic ;
       SENDING      : OUT    std_logic ;
       dm_tx_out    : OUT    std_logic ;
-      dp_tx_out    : OUT    std_logic 
+      dp_tx_out    : OUT    std_logic ;
+      W_ENABLE_R, R_ENABLE: OUT std_logic;
+      DATA, ADDR   : OUT    STD_LOGIC_VECTOR(7 DOWNTO 0)
    );
    END COMPONENT;
 
@@ -120,6 +127,7 @@ BEGIN
          DP1_RX       => DPRH,
          RST          => RST,
          SERIAL_IN    => SERIAL_IN,
+         DATA_IN      => DATA_IN_H,
          BS_ERROR     => BSE_H,
          CRC_ERROR    => CRCE_H,
          EMPTY        => EMPTY_H,
@@ -131,7 +139,11 @@ BEGIN
          R_ERROR      => RE_H,
          SENDING      => host_is_sending,
          dm_tx_out    => DMTS,
-         dp_tx_out    => DPTS
+         dp_tx_out    => DPTS,
+         W_ENABLE_R   => W_ENABLE_H,
+         R_ENABLE     => R_ENABLE_H,
+         DATA         => DATA_H,
+         ADDR         => ADDR_H
       );
    U_1 : rmedt_rewire
       PORT MAP (
@@ -140,6 +152,7 @@ BEGIN
          DP1_RX       => DPRS,
          RST          => RST,
          SERIAL_IN    => SERIAL_IN,
+         DATA_IN      => DATA_IN_S,
          BS_ERROR     => BSE_S,
          CRC_ERROR    => CRCE_S,
          EMPTY        => EMPTY_S,
@@ -151,7 +164,11 @@ BEGIN
          R_ERROR      => RE_S,
          SENDING      => slave_is_sending,
          dm_tx_out    => DMTH,
-         dp_tx_out    => DPTH
+         dp_tx_out    => DPTH,
+         W_ENABLE_R   => W_ENABLE_S,
+         R_ENABLE     => R_ENABLE_S,
+         DATA         => DATA_S,
+         ADDR         => ADDR_S
       );
 
 END struct;

@@ -53,7 +53,7 @@ entity tx_tcu is
       end process holdReg;
       
       
-    Next_State:process(state, p_ready, count, t_bitstuff, prga_opcode, flop_data, t_crc, PRGA_OUT, current_send_data, flop_data)
+    Next_State:process(state, p_ready, count, t_bitstuff, prga_opcode, t_crc, PRGA_OUT, current_send_data, flop_data)
     Begin
       nextcount <= count;
       next_byte <= '0';
@@ -176,14 +176,14 @@ entity tx_tcu is
                     EOP <= '1';                    
                   end if;
                   
-                  if count > 62 then
+                  if count > 63 then
                     sending <= '0';
                   else
                     sending <= '1';
                   end if;
                   
                   if count > 63 then
-                    next_send_data <= x"00";
+                    next_send_data <= x"80";
                   else
                     next_send_data <= t_crc(7 downto 0);
                   end if;
