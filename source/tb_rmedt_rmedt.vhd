@@ -278,16 +278,32 @@ process
     STRINGtoNRZI("This is a very long string to test transmitter correctness", 58, BC, DP1_RX, DM1_RX);
     HEXtoNRZI(x"68", BC, DP1_RX, DM1_RX);
     HEXtoNRZI(x"06", BC, DP1_RX, DM1_RX);
-    sendEOP(0, DP1_RX, DM1_RX);
+    sendEOP(1, DP1_RX, DM1_RX);
     BC := 0;
     
-    wait for 1 us;
     HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
     HEXtoNRZI(x"39", BC, DP1_RX, DM1_RX);
     STRINGtoNRZI("Another very long string to test transmitter correctness", 56, BC, DP1_RX, DM1_RX);
     HEXtoNRZI(x"DE", BC, DP1_RX, DM1_RX);
     HEXtoNRZI(x"9F", BC, DP1_RX, DM1_RX);
-    sendEOP(0, DP1_RX, DM1_RX);
+    sendEOP(1, DP1_RX, DM1_RX);
+    BC := 0;
+    
+    HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"39", BC, DP1_RX, DM1_RX);
+    STRINGtoNRZI("Short", 5, BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"93", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"6B", BC, DP1_RX, DM1_RX);
+    sendEOP(1, DP1_RX, DM1_RX);
+    BC := 0;
+    
+    HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"39", BC, DP1_RX, DM1_RX);
+    STRINGtoNRZI("Short", 5, BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"93", BC, DP1_RX, DM1_RX);
+    HEXtoNRZI(x"6B", BC, DP1_RX, DM1_RX);
+    sendEOP(1, DP1_RX, DM1_RX);
+    BC := 0;
     wait;
     --CLK <= 
     --DM1_RX <= 

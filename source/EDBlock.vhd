@@ -18,12 +18,15 @@ ENTITY EDBlock IS
       OPCODE         : IN     STD_LOGIC_VECTOR (1 DOWNTO 0);
       RST            : IN     std_logic;
       SERIAL_IN      : IN     std_logic;
+      DATA_IN        : IN     std_logic_VECTOR (7 DOWNTO 0);
       KEY_ERROR      : OUT    std_logic;
       PARITY_ERROR   : OUT    std_logic;
       PDATA_READY    : OUT    STD_LOGIC;
       PROCESSED_DATA : OUT    STD_LOGIC_VECTOR (7 DOWNTO 0);
       PROG_ERROR     : OUT    std_logic;
-      RBUF_FULL      : OUT    std_logic
+      RBUF_FULL      : OUT    std_logic;
+      W_ENABLE, R_ENABLE: OUT std_logic;
+      DATA, ADDR     : OUT    STD_LOGIC_VECTOR(7 DOWNTO 0)
    );
 
 -- Declarations
@@ -68,8 +71,11 @@ ARCHITECTURE struct OF EDBlock IS
       KEY_ERROR      : IN     STD_LOGIC;
       OPCODE         : IN     STD_LOGIC_VECTOR (1 DOWNTO 0);
       RST            : IN     STD_LOGIC;
+      DATA_IN        : IN     STD_LOGIC_VECTOR (7 DOWNTO 0);
       PDATA_READY    : OUT    STD_LOGIC;
-      PROCESSED_DATA : OUT    STD_LOGIC_VECTOR (7 DOWNTO 0)
+      PROCESSED_DATA : OUT    STD_LOGIC_VECTOR (7 DOWNTO 0);
+      W_ENABLE, R_ENABLE: OUT STD_LOGIC;
+      ADDR, DATA     : OUT    STD_LOGIC_VECTOR (7 DOWNTO 0)
    );
    END COMPONENT;
    COMPONENT uart_rcv_block
@@ -103,9 +109,14 @@ BEGIN
          KEY_ERROR      => KEY_ERROR_internal,
          BYTE_READY     => BYTE_READY,
          BYTE           => BYTE,
+         DATA_IN        => DATA_IN,
          OPCODE         => OPCODE,
          PROCESSED_DATA => PROCESSED_DATA,
-         PDATA_READY    => PDATA_READY
+         PDATA_READY    => PDATA_READY,
+         W_ENABLE       => W_ENABLE,
+         R_ENABLE       => R_ENABLE,
+         ADDR           => ADDR,
+         DATA           => DATA
       );
    U_1 : uart_rcv_block
       PORT MAP (

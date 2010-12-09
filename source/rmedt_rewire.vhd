@@ -17,6 +17,7 @@ ENTITY RMEDT_REWIRE IS
       DP1_RX       : IN     std_logic;
       RST          : IN     std_logic;
       SERIAL_IN    : IN     std_logic;
+      DATA_IN      : IN     STD_LOGIC_VECTOR(7 DOWNTO 0);
       BS_ERROR     : OUT    std_logic;
       CRC_ERROR    : OUT    std_logic;
       EMPTY        : OUT    STD_LOGIC;
@@ -28,7 +29,9 @@ ENTITY RMEDT_REWIRE IS
       R_ERROR      : OUT    std_logic;
       SENDING      : OUT    std_logic;
       dm_tx_out    : OUT    std_logic;
-      dp_tx_out    : OUT    std_logic
+      dp_tx_out    : OUT    std_logic;
+      W_ENABLE_R, R_ENABLE: OUT STD_LOGIC;
+      DATA, ADDR   : OUT    std_logic_vector(7 downto 0)
    );
 
 -- Declarations
@@ -77,12 +80,15 @@ ARCHITECTURE struct OF RMEDT_REWIRE IS
       OPCODE         : IN     STD_LOGIC_VECTOR (1 DOWNTO 0);
       RST            : IN     std_logic;
       SERIAL_IN      : IN     std_logic;
+      DATA_IN        : IN     STD_LOGIC_VECTOR (7 DOWNTO 0);
       KEY_ERROR      : OUT    std_logic;
       PARITY_ERROR   : OUT    std_logic;
       PDATA_READY    : OUT    STD_LOGIC;
       PROCESSED_DATA : OUT    STD_LOGIC_VECTOR (7 DOWNTO 0);
       PROG_ERROR     : OUT    std_logic;
-      RBUF_FULL      : OUT    std_logic
+      RBUF_FULL      : OUT    std_logic;
+      W_ENABLE, R_ENABLE: OUT STD_LOGIC;
+      DATA, ADDR     : OUT    STD_LOGIC_VECTOR (7 DOWNTO 0)
    );
    END COMPONENT;
    COMPONENT memoryblock
@@ -149,13 +155,18 @@ BEGIN
          CLK            => CLK,
          OPCODE         => PRGA_OPCODE,
          RST            => RST,
+         DATA_IN        => DATA_IN,
          SERIAL_IN      => SERIAL_IN,
          KEY_ERROR      => KEY_ERROR,
          PARITY_ERROR   => PARITY_ERROR,
          PDATA_READY    => PDATA_READY,
          PROCESSED_DATA => PROCESSED_DATA,
          PROG_ERROR     => PROG_ERROR,
-         RBUF_FULL      => RBUF_FULL
+         RBUF_FULL      => RBUF_FULL,
+         W_ENABLE       => W_ENABLE_R,
+         R_ENABLE       => R_ENABLE,
+         DATA           => DATA,
+         ADDR           => ADDR
       );
    U_1 : memoryblock
       PORT MAP (

@@ -9,6 +9,8 @@ library ieee;
 --library gold_lib;   --UNCOMMENT if you're using a GOLD model
 use ieee.std_logic_1164.all;
 --use gold_lib.all;   --UNCOMMENT if you're using a GOLD model
+library ECE337_IP;
+use ECE337_IP.all;
 
 entity tb_KSA is
   generic (Period : Time :=  10.4167 ns);
@@ -42,14 +44,49 @@ architecture TEST of tb_KSA is
          OPCODE: IN STD_LOGIC_VECTOR(1 DOWNTO 0);
          BYTE_READY: IN STD_LOGIC;
          KEY_ERROR : IN STD_LOGIC;
+         DATA_IN : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
          PDATA_READY : OUT STD_LOGIC;
-         PROCESSED_DATA : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+         PROCESSED_DATA : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+         W_ENABLE, R_ENABLE: OUT STD_LOGIC;
+         DATA, ADDR : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
   end component;
+  
+  component scalable_off_chip_sram is
+    generic (
+      -- Memory Model parameters
+      ADDR_SIZE_BITS	: natural	:= 8;		-- Address bus size in bits/pins with addresses corresponding to 
+                                          -- the starting word of the accesss
+      WORD_SIZE_BYTES	: natural	:= 1;			-- Word size of the memory in bytes
+      DATA_SIZE_WORDS	: natural	:= 1;			-- Data bus size in "words"
+      READ_DELAY			: time		:= 10 ns;	-- Delay/latency per read access (total time between start of supplying address and when the data read from memory appears on the r_data port)
+                                          -- Keep the 10 ns delay for on-chip SRAM
+      WRITE_DELAY			: time		:= 10 ns		-- Delay/latency per write access (total time between start of supplying address and when the w_data value is written into memory)
+                                          -- Keep the 10 ns delay for on-chip SRAM
+          );
+  port 	(
+    -- Test bench control signals
+    mem_clr				: in	boolean;
+    mem_init			: in	boolean;
+    mem_dump			: in	boolean;
+    verbose				: in	boolean;
+    init_filename	: in 	string;
+    dump_filename	: in 	string;
+    start_address	: in	natural;
+    last_address	: in	natural;
+    
+    -- Memory interface signals
+    r_enable	: in		std_logic;
+    w_enable	: in		std_logic;
+    addr			: in		std_logic_vector((addr_size_bits - 1) downto 0);
+    data			: inout	std_logic_vector(((data_size_words * word_size_bytes * 8) - 1) downto 0)
+      );
+  end component scalable_off_chip_sram;
 
 -- Insert signals Declarations here
   signal KEY : STD_LOGIC_VECTOR(63 DOWNTO 0);
   signal OPCODE: STD_LOGIC_VECTOR(1 DOWNTO 0);
+  signal TB_DATA_IN: STD_LOGIC_VECTOR(7 DOWNTO 0);
   signal BYTE : STD_LOGIC_VECTOR(7 DOWNTO 0);
   signal BYTE_READY : STD_LOGIC;
   signal CLK : STD_LOGIC;
@@ -57,6 +94,11 @@ architecture TEST of tb_KSA is
   signal KEY_ERROR : STD_LOGIC;
   signal PDATA_READY : STD_LOGIC;
   signal PROCESSED_DATA : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  signal TB_W_ENABLE, TB_R_ENABLE: STD_LOGIC;
+  signal TB_SRAM_DATA, TB_DUT_DATA, TB_ADDR: STD_LOGIC_VECTOR(7 DOWNTO 0);
+  signal tb_mem_dump: boolean;
+  signal tb_dump_filename, tb_init_filename: string(1 to 24);
+  signal tb_start_address, tb_last_address: natural;
 
 -- signal <name> : <type>;
 PROCEDURE sendUSB (
@@ -68,7 +110,7 @@ PROCEDURE sendUSB (
 BEGIN
   BYTE <= ASCII;
   OPCODE <= OC;
-  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 8 * period;
+  BYTE_READY <= '1'; wait for period; BYTE_READY <= '0'; wait for 24 * period;
 END sendUSB;
 
 begin
@@ -79,11 +121,42 @@ begin
                 BYTE_READY => BYTE_READY,
                 CLK => CLK,
                 RST => RST,
+                DATA_IN => TB_DATA_IN,
                 KEY_ERROR => KEY_ERROR,
                 PDATA_READY => PDATA_READY,
-                PROCESSED_DATA => PROCESSED_DATA
+                PROCESSED_DATA => PROCESSED_DATA,
+                W_ENABLE => TB_W_ENABLE,
+                R_ENABLE => TB_R_ENABLE,
+                DATA => TB_DUT_DATA,
+                ADDR => TB_ADDR
                 );
+  Memory: scalable_off_chip_sram
+    generic map (
+      -- Memory interface parameters
+      ADDR_SIZE_BITS	=> 8,
+      WORD_SIZE_BYTES	=> 1,
+      DATA_SIZE_WORDS	=> 1,
+      READ_DELAY			=> (Period - 5 ns),	-- CLK is 2 ns longer than access delay for conservative padding for flipflop setup times and propagation delays from the external SRAM chip to the internal flipflops
+      WRITE_DELAY			=> (Period - 5 ns)		-- CLK is 2 ns longer than access delay for conservative padding for Real SRAM hold times and propagation delays from the internal flipflops to the external SRAM chip
+    )
+    port map	(
+      -- Test bench control signals
+      mem_clr				=> false,
+      mem_init			=> false,
+      mem_dump			=> tb_mem_dump,
+      verbose				=> false,
+      init_filename	=> tb_init_filename,
+      dump_filename	=> tb_dump_filename,
+      start_address	=> tb_start_address,
+      last_address	=> tb_last_address,
+      
+      -- Memory interface signalssim:/tb_ksa/dut/prefillcomplete
 
+      r_enable	=> TB_r_enable,
+      w_enable	=> TB_w_enable,
+      addr			=> TB_addr,
+      data			=> TB_sram_data
+    );
 --   GOLD: <GOLD_NAME> port map(<put mappings here>);
 autoClock: process
   BEGIN
@@ -92,6 +165,23 @@ autoClock: process
     clk <= '1';
     wait for period/2;
   END process autoClock;
+
+IO_DATA: process (TB_W_ENABLE, TB_R_ENABLE, TB_sram_DATA, TB_DUT_DATA)
+  begin
+    if (tb_r_enable = '1') then
+      -- Read mode -> the data pins should connect to the r_data bus & the other bus should float
+      TB_DATA_IN	<= tb_sram_data;
+      tb_sram_data				<= (others=>'Z');
+    elsif(tb_w_enable = '1') then
+      -- Write mode -> the data pins should connect to the w_data bus & the other bus should float
+      tb_DATA_IN	<= (others=>'Z');
+      tb_sram_data	<= TB_DUT_DATA;
+    else
+      -- Disconnect both busses
+      tb_DATA_IN	<= (others=>'Z');
+      tb_sram_data				<= (others=>'Z');
+    end if;
+  end process IO_DATA;
   
 process
 
@@ -106,12 +196,39 @@ process
   wait for 20 ns;
   RST <= '0';
   
-  wait for 12 us;
+  wait for 5350 ns;
+  tb_mem_dump				<= TRUE;
+  tb_dump_filename	<=	"source/test_prefilld.txt";
+  tb_start_address	<= 0; -- Can be any address 
+  tb_last_address		<= 255; -- Can be any address larger than the start_address
+  wait for 15 ns; -- Can be as long or as short as you like, as long as it is longer than 1 simulation time-step
+  tb_mem_dump <= FALSE;
+  
+  wait for 28 us;
+  tb_mem_dump				<= TRUE;
+  tb_dump_filename	<=	"source/test_mem_dump.txt";
+  tb_start_address	<= 0; -- Can be any address 
+  tb_last_address		<= 255; -- Can be any address larger than the start_address
+  wait for 2 us; -- Can be as long or as short as you like, as long as it is longer than 1 simulation time-step
+  tb_mem_dump <= FALSE;
+  
   sendUSB(x"FF", "00", OPCODE, BYTE, BYTE_READY); --PID?
   sendUSB(x"54", "01", OPCODE, BYTE, BYTE_READY); --T
   sendUSB(x"68", "01", OPCODE, BYTE, BYTE_READY); --h
+  tb_mem_dump				<= TRUE;
+  tb_dump_filename	<=	"source/test_mem_dum1.txt";
+  tb_start_address	<= 0; -- Can be any address 
+  tb_last_address		<= 255; -- Can be any address larger than the start_address
+  wait for 1 ns; -- Can be as long or as short as you like, as long as it is longer than 1 simulation time-step
+  tb_mem_dump <= FALSE;
   sendUSB(x"69", "01", OPCODE, BYTE, BYTE_READY); --i
   sendUSB(x"73", "01", OPCODE, BYTE, BYTE_READY); --s
+  tb_mem_dump				<= TRUE;
+  tb_dump_filename	<=	"source/test_mem_dum2.txt";
+  tb_start_address	<= 0; -- Can be any address 
+  tb_last_address		<= 255; -- Can be any address larger than the start_address
+  wait for 1 ns; -- Can be as long or as short as you like, as long as it is longer than 1 simulation time-step
+  tb_mem_dump <= FALSE;
   sendUSB(x"20", "01", OPCODE, BYTE, BYTE_READY); --
   sendUSB(x"69", "01", OPCODE, BYTE, BYTE_READY); -- i
   sendUSB(x"73", "01", OPCODE, BYTE, BYTE_READY); -- s
