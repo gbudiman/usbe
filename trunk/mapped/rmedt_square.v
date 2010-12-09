@@ -377,7 +377,7 @@ module rmedt_square_DW01_add_12 ( A, B, CI, SUM, CO );
 endmodule
 
 
-module rmedt_square ( CLK, DMRH, DMRS, DPRH, DPRS, RST, SERIAL_IN, DATA_IN_H, 
+module rmedt_square_t ( CLK, DMRH, DMRS, DPRH, DPRS, RST, SERIAL_IN, DATA_IN_H, 
         DATA_IN_S, BSE_H, BSE_S, CRCE_H, CRCE_S, DMTH, DMTS, DPTH, DPTS, 
         EMPTY_H, EMPTY_S, FULL_H, FULL_S, RE_H, RE_S, c_key_error, 
         c_parity_error, c_prog_error, host_is_sending, slave_is_sending, 
@@ -17457,3 +17457,42 @@ module rmedt_square ( CLK, DMRH, DMRS, DPRH, DPRS, RST, SERIAL_IN, DATA_IN_H,
   INVX2 U12214 ( .A(\U_1/U_3/U_0/DE_holdout_BS ), .Y(n12077) );
 endmodule
 
+module  rmedt_square ( CLK, DPHS, DMHS, DPSS, DMSS, DMRH, DMRS, DPRH, DPRS, RST, SERIAL_IN, BSE_H, BSE_S, CRCE_H, CRCE_S, DMTH, DMTS, DPTH, DPTS, EMPTY_H, EMPTY_S, FULL_H, FULL_S, RE_H, RE_S, c_key_error, c_parity_error, c_prog_error, host_is_sending, slave_is_sending);
+
+input   CLK, DMRH, DMRS, DPRH, DPRS, RST, SERIAL_IN;
+output  BSE_H, BSE_S, CRCE_H, CRCE_S, EMPTY_H, EMPTY_S, FULL_H, FULL_S, RE_H, RE_S, c_key_error, c_parity_error, c_prog_error, host_is_sending, slave_is_sending, DMTH, DMTS, DPTH, DPTS;
+inout   DPHS, DMHS, DPSS, DMSS;
+wire    nCLK, nDMRH, nDMRS, nDPRH, nDPRS, nRST, nSERIAL_IN, nBSE_H, nBSE_S, nCRCE_H, nCRCE_S, nDMTH, nDMTS, nDPTH, nDPTS, nEMPTY_H, nEMPTY_S, nFULL_H, nFULL_S, nRE_H, nRE_S, nc_key_error, nc_parity_error, nc_prog_error, nhost_is_sending, nslave_is_sending;
+
+        rmedt_square_t I0 ( .CLK(nCLK), .DMRH(nDMRH), .DMRS(nDMRS), .DPRH(nDPRH),
+    .DPRS(nDPRS), .RST(nRST), .SERIAL_IN(nSERIAL_IN), .BSE_H(nBSE_H), .BSE_S(nBSE_S),
+    .CRCE_H(nCRCE_H), .CRCE_S(nCRCE_S), .DMTH(nDMTH), .DMTS(nDMTS),
+    .DPTH(nDPTH), .DPTS(nDPTS), .EMPTY_H(nEMPTY_H), .EMPTY_S(nSERIAL_IN),
+    .FULL_H(nFULL_H), .FULL_S(nFULL_S), .RE_H(nRE_H), .RE_S(nRE_S),
+    .c_key_error(nc_key_error), .c_parity_error(nc_parity_error), .c_prog_error(nc_prog_error), .host_is_sending(nhost_is_sending),
+    .slave_is_sending(nslave_is_sending));
+
+PADVDD U1 (  );
+PADGND U2 (  );
+PADINC U3 ( .DI(nCLK), .YPAD(CLK) );
+PADINC U8 ( .DI(nRST), .YPAD(RST) );
+PADINC U9 ( .DI(nSERIAL_IN), .YPAD(SERIAL_IN) );
+PADINOUT UIO1 ( .DI(nDPRH), .DO(nDPTH), .OEN(nslave_is_sending), .YPAD(DPHS));
+PADINOUT UIO2 ( .DI(nDMRH), .DO(nDMTH), .OEN(nslave_is_sending), .YPAD(DMHS));
+PADINOUT UIO3 ( .DI(nDPRS), .DO(nDPTS), .OEN(nhost_is_sending), .YPAD(DPSS));
+PADINOUT UIO4 ( .DI(nDMRS), .DO(nDMTS), .OEN(nhost_is_sending), .YPAD(DMSS));
+PADOUT UOUT1 ( .DO(BSE_H), .YPAD(nBSE_H) );
+PADOUT UOUT2 ( .DO(BSE_S), .YPAD(nBSE_S) );
+PADOUT UOUT3 ( .DO(CRCE_H), .YPAD(nCRCE_H) );
+PADOUT UOUT4 ( .DO(CRCE_S), .YPAD(nCRCE_S) );
+PADOUT UOUT5 ( .DO(EMPTY_H), .YPAD(nEMPTY_H) );
+PADOUT UOUT6 ( .DO(EMPTY_S), .YPAD(nEMPTY_S) );
+PADOUT UOUT7 ( .DO(FULL_H), .YPAD(nFULL_H) );
+PADOUT UOUT8 ( .DO(FULL_S), .YPAD(nFULL_S) );
+PADOUT UOUT9 ( .DO(RE_H), .YPAD(nRE_H) );
+PADOUT UOUT10 ( .DO(RE_S), .YPAD(nRE_S) );
+PADOUT UOUT11 ( .DO(c_key_error), .YPAD(nc_key_error) );
+PADOUT UOUT12 ( .DO(c_parity_error), .YPAD(nc_parity_error) );
+PADOUT UOUT13 ( .DO(c_prog_error), .YPAD(nc_prog_error) );
+
+endmodule
