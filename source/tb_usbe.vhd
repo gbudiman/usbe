@@ -280,7 +280,7 @@ procedure SHEXtoNRZI (
           D_MIN <= not(D);
         end if;
       end if;
-      wait for 8*1.025*Period;
+      wait for 8*1.0025*Period;
       bc_count := count;
     end loop;
   end SHEXtoNRZI;
@@ -316,7 +316,7 @@ procedure SHEXtoNRZI (
         end if;
         D <= not(D);
         D_MIN <= D;
-        wait for 8 * 0.975 * Period;
+        wait for 8 * 0.9975 * Period;
         if (data(i) = '0') then
           D <= not(D_Last);
           D_MIN <= D_Last;
