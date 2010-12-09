@@ -9,166 +9,126 @@ Pad: c03 SE PADFC
 Orient: R90
 Pad: c04 SW PADFC
 
+Pad: xu169 N PADNC
+Pad: xu170 N PADNC
+Pad: xu171 N PADNC
+Pad: xu172 N PADNC
+Pad: xu190 N PADNC
+Pad: xu191 N PADNC
+Pad: xu192 N PADNC
+Pad: U_RE_H N
 Pad: xu112 N PADNC
 Pad: xu113 N PADNC
 Pad: xu114 N PADNC
-Pad: xu115 N PADNC
-Pad: UOUT11 N
-Pad: xu128 N PADNC
 Pad: xu129 N PADNC
 Pad: xu130 N PADNC
 Pad: xu131 N PADNC
 Pad: xu132 N PADNC
+Pad: U_FULL_H N
 Pad: xu133 N PADNC
 Pad: xu134 N PADNC
+Pad: U_EMPTY_H N
 Pad: xu135 N PADNC
-Pad: UOUT12 N
 Pad: xu148 N PADNC
+Pad: U_CRCE_H N
 Pad: xu149 N PADNC
 Pad: xu150 N PADNC
+Pad: U_BSE_H N
 Pad: xu151 N PADNC
 Pad: xu152 N PADNC
 Pad: xu153 N PADNC
 Pad: xu154 N PADNC
 Pad: xu155 N PADNC
-Pad: UOUT13 N
-Pad: xu168 N PADNC
-Pad: xu169 N PADNC
-Pad: xu170 N PADNC
-Pad: xu171 N PADNC
-Pad: xu172 N PADNC
-Pad: xu173 N PADNC
-Pad: xu174 N PADNC
-Pad: xu175 N PADNC
-Pad: U1 N
-Pad: xu188 N PADNC
-Pad: xu189 N PADNC
-Pad: xu190 N PADNC
-Pad: xu191 N PADNC
-Pad: xu192 N PADNC
-Pad: xu193 N PADNC
-Pad: xu194 N PADNC
-Pad: U2 N
 
 Pad: xw114 W PADNC
 Pad: xw115 W PADNC
 Pad: xw116 W PADNC
-Pad: xw117 W PADNC
-Pad: xw118 W PADNC
-Pad: xw119 W PADNC
-Pad: xw120 W PADNC
+Pad: UVDD W
 Pad: xw121 W PADNC
+Pad: UGND W
 Pad: xw122 W PADNC
 Pad: xw123 W PADNC
-Pad: U8 W
 Pad: xw149 W PADNC
 Pad: xw140 W PADNC
 Pad: xw142 W PADNC
 Pad: xw143 W PADNC
+Pad: U_SLAVE_PLUS W
 Pad: xw144 W PADNC
+Pad: U_KEY W
+Pad: xw201 W PADNC
+Pad: U_PARITY W
+Pad: xw202 W PADNC
+Pad: U_PROG W
 Pad: xw145 W PADNC
+Pad: U_SLAVE_MINUS W
 Pad: xw146 W PADNC
 Pad: xw147 W PADNC
 Pad: xw148 W PADNC
-Pad: UIO3 W
 Pad: xw163 W PADNC
 Pad: xw164 W PADNC
 Pad: xw166 W PADNC
 Pad: xw167 W PADNC
 Pad: xw168 W PADNC
 Pad: xw169 W PADNC
-Pad: xw170 W PADNC
-Pad: xw171 W PADNC
-Pad: xw172 W PADNC
-Pad: UIO4 W
-Pad: xw187 W PADNC
-Pad: xw188 W PADNC
-Pad: xw189 W PADNC
-Pad: xw191 W PADNC
-Pad: xw192 W PADNC
-Pad: xw193 W PADNC
-Pad: xw194 W PADNC
-Pad: xw195 W PADNC
-Pad: U9 W
 
-Pad: UOUT1 S
 Pad: xs108 S PADNC
 Pad: xs109 S PADNC
 Pad: xs110 S PADNC
-Pad: UOUT2 S
-Pad: xs118 S PADNC
-Pad: xs119 S PADNC
 Pad: xs120 S PADNC
-Pad: UOUT3 S
+Pad: U_BSE_S S
 Pad: xs128 S PADNC
 Pad: xs129 S PADNC
 Pad: xs130 S PADNC
-Pad: UOUT4 S
 Pad: xs138 S PADNC
 Pad: xs149 S PADNC
+Pad: U_CRCE_S S
 Pad: xs140 S PADNC
-Pad: UOUT5 S
 Pad: xs148 S PADNC
-Pad: xs149 S PADNC
+Pad: U_EMPTY_S S
+Pad: xs249 S PADNC
 Pad: xs150 S PADNC
-Pad: UOUT6 S
+Pad: U_FULL_S S
 Pad: xs158 S PADNC
 Pad: xs159 S PADNC
+Pad: U_RE_S S
 Pad: xs160 S PADNC
-Pad: UOUT7 S
 Pad: xs168 S PADNC
 Pad: xs169 S PADNC
 Pad: xs170 S PADNC
-Pad: UOUT8 S
 Pad: xs178 S PADNC
 Pad: xs179 S PADNC
 Pad: xs180 S PADNC
-Pad: UOUT9 S
 Pad: xs187 S PADNC
 Pad: xs188 S PADNC
 Pad: xs189 S PADNC
-Pad: UOUT10 S
-Pad: xs190 S PADNC
-Pad: xs191 S PADNC
-Pad: xs192 S PADNC
 
-Pad: U3 E
 Pad: xe118 E PADNC
+Pad: URST E
 Pad: xe119 E PADNC
 Pad: xe120 E PADNC
-Pad: xe121 E PADNC
-Pad: xe122 E PADNC
-Pad: xe123 E PADNC
-Pad: xe124 E PADNC
-Pad: xe125 E PADNC
-Pad: xe126 E PADNC
+Pad: UCLK E
 Pad: xe127 E PADNC
 Pad: xe129 E PADNC
 Pad: xe131 E PADNC
 Pad: xe132 E PADNC
 Pad: xe133 E PADNC
-Pad: UIO1 E
 Pad: xe152 E PADNC
 Pad: xe154 E PADNC
 Pad: xe155 E PADNC
 Pad: xe156 E PADNC
 Pad: xe157 E PADNC
 Pad: xe158 E PADNC
+Pad: U_HOST_PLUS E
 Pad: xe160 E PADNC
 Pad: xe161 E PADNC
+Pad: U_SERIAL_IN E
 Pad: xe162 E PADNC
 Pad: xe163 E PADNC
+Pad: U_HOST_MINUS E
 Pad: xe164 E PADNC
 Pad: xe165 E PADNC
 Pad: xe166 E PADNC
-Pad: UIO2 E
 Pad: xe185 E PADNC
 Pad: xe186 E PADNC
 Pad: xe187 E PADNC
-Pad: xe189 E PADNC
-Pad: xe190 E PADNC
-Pad: xe191 E PADNC
-Pad: xe192 E PADNC
-Pad: xe193 E PADNC
-Pad: xe194 E PADNC
-Pad: xe195 E PADNC
+Pad: xe188 E PADNC
