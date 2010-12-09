@@ -7,7 +7,7 @@
 loadConfig ./encounter.conf 
 
 # Create Floorplan
-floorplan -r 1.0 0.5 50 50 50 50
+floorplan -r 1.0 0.75 50 50 50 50
 
 # Add supply rings around core
 addRing -spacing_bottom 9.9 -width_left 9.9 -width_bottom 9.9 -width_top 9.9 -spacing_top 9.9 -layer_bottom metal1 -width_right 9.9 -around core -center 1 -layer_top metal1 -spacing_right 9.9 -spacing_left 9.9 -layer_right metal2 -layer_left metal2 -offset_top 9.9 -offset_bottom 9.9 -offset_left 9.9 -offset_right 9.9 -nets { gnd vdd }
@@ -100,7 +100,7 @@ sroute
 #setNanoRouteMode -quiet -routeWithSiPostRouteFix true
 #setNanoRouteMode -quiet -drouteAutoStop true
 #setNanoRouteMode -quiet -routeSelectedNetOnly true
-#globalDetailRoute
+globalDetailRoute
 
 # Get final timing results
 setExtractRCMode -engine detail -reduce 0.0
