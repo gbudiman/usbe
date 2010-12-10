@@ -7,7 +7,7 @@
 loadConfig ./encounter.conf 
 
 # Create Floorplan
-floorplan -r 1.0 0.95 50 50 50 50
+floorplan -r 1.0 1.0 50 50 50 50
 
 # Add supply rings around core
 addRing -spacing_bottom 9.9 -width_left 9.9 -width_bottom 9.9 -width_top 9.9 -spacing_top 9.9 -layer_bottom metal1 -width_right 9.9 -around core -center 1 -layer_top metal1 -spacing_right 9.9 -spacing_left 9.9 -layer_right metal2 -layer_left metal2 -offset_top 9.9 -offset_bottom 9.9 -offset_left 9.9 -offset_right 9.9 -nets { gnd vdd }
@@ -34,7 +34,7 @@ timeDesign -preCTS
 # Perform pre-CTS optimization
 setOptMode -yieldEffort none
 setOptMode -highEffort
-setOptMode -maxDensity 0.95
+setOptMode -maxDensity 1.0
 setOptMode -drcMargin 0.0
 setOptMode -holdTargetSlack 0.0 -setupTargetSlack 0.0
 setOptMode -noSimplifyNetlist
@@ -62,7 +62,7 @@ extractRC -outfile encounter.cap
 # Perform post-CTS optimization
 setOptMode -yieldEffort none
 setOptMode -highEffort
-setOptMode -maxDensity 0.95
+setOptMode -maxDensity 1.0
 setOptMode -drcMargin 0.0
 setOptMode -holdTargetSlack 0.0 -setupTargetSlack 0.0
 setOptMode -noSimplifyNetlist
@@ -109,7 +109,7 @@ extractRC
 # Post-Route Optimization
 setOptMode -yieldEffort none
 setOptMode -effort high
-setOptMode -maxDensity 0.95
+setOptMode -maxDensity 1.0
 setOptMode -drcMargin 0.0
 setOptMode -holdTargetSlack 0.0 -setupTargetSlack 0.0
 setOptMode -simplifyNetlist false
