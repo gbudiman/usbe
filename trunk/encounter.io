@@ -52,9 +52,9 @@ Pad: xw140 W PADNC
 Pad: xw142 W PADNC
 Pad: xw143 W PADNC
 Pad: U_SLAVE_PLUS W
-Pad: xw144 W PADNC
+Pad: U_SERIAL_IN W
 Pad: U_KEY W
-Pad: xw201 W PADNC
+Pad: xw144 W PADNC
 Pad: U_PARITY W
 Pad: xw202 W PADNC
 Pad: U_PROG W
@@ -96,14 +96,14 @@ Pad: xs179 S PADNC
 Pad: xe116 E PADNC
 Pad: xe117 E PADNC
 Pad: xe118 E PADNC
-Pad: URST E
+Pad: xe200 E PADNC
 Pad: xe119 E PADNC
 Pad: xe120 E PADNC
 Pad: UCLK E
 Pad: xe127 E PADNC
 Pad: xe129 E PADNC
 Pad: xe131 E PADNC
-Pad: xe132 E PADNC
+Pad: URST E
 Pad: xe155 E PADNC
 Pad: xe156 E PADNC
 Pad: xe157 E PADNC
@@ -111,7 +111,7 @@ Pad: xe158 E PADNC
 Pad: U_HOST_PLUS E
 Pad: xe160 E PADNC
 Pad: xe161 E PADNC
-Pad: U_SERIAL_IN E
+Pad: xe261 E PADNC
 Pad: xe162 E PADNC
 Pad: xe163 E PADNC
 Pad: U_HOST_MINUS E
