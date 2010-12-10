@@ -448,8 +448,8 @@ begin
       ADDR_SIZE_BITS	=> 8,
       WORD_SIZE_BYTES	=> 1,
       DATA_SIZE_WORDS	=> 1,
-      READ_DELAY			=> (Period - 5 ns),	-- CLK is 2 ns longer than access delay for conservative padding for flipflop setup times and propagation delays from the external SRAM chip to the internal flipflops
-      WRITE_DELAY			=> (Period - 5 ns)		-- CLK is 2 ns longer than access delay for conservative padding for Real SRAM hold times and propagation delays from the internal flipflops to the external SRAM chip
+      READ_DELAY			=> (Period - 2 ns),	-- CLK is 2 ns longer than access delay for conservative padding for flipflop setup times and propagation delays from the external SRAM chip to the internal flipflops
+      WRITE_DELAY			=> (Period - 2 ns)		-- CLK is 2 ns longer than access delay for conservative padding for Real SRAM hold times and propagation delays from the internal flipflops to the external SRAM chip
     )
     port map	(
       -- Test bench control signals
@@ -476,8 +476,8 @@ begin
       ADDR_SIZE_BITS	=> 8,
       WORD_SIZE_BYTES	=> 1,
       DATA_SIZE_WORDS	=> 1,
-      READ_DELAY			=> (Period - 5 ns),	-- CLK is 2 ns longer than access delay for conservative padding for flipflop setup times and propagation delays from the external SRAM chip to the internal flipflops
-      WRITE_DELAY			=> (Period - 5 ns)		-- CLK is 2 ns longer than access delay for conservative padding for Real SRAM hold times and propagation delays from the internal flipflops to the external SRAM chip
+      READ_DELAY			=> (Period - 2 ns),	-- CLK is 2 ns longer than access delay for conservative padding for flipflop setup times and propagation delays from the external SRAM chip to the internal flipflops
+      WRITE_DELAY			=> (Period - 2 ns)		-- CLK is 2 ns longer than access delay for conservative padding for Real SRAM hold times and propagation delays from the internal flipflops to the external SRAM chip
     )
     port map	(
       -- Test bench control signals
