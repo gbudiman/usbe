@@ -11,6 +11,8 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 --use gold_lib.all;   --UNCOMMENT if you're using a GOLD model
+library ECE337_IP;
+use ECE337_IP.all;
 
 entity tb_rmedt_rmedt is
   generic (Period : Time :=  10.4167 ns);
@@ -42,6 +44,7 @@ architecture TEST of tb_rmedt_rmedt is
          DP1_RX : IN std_logic;
          RST : IN std_logic;
          SERIAL_IN : IN std_logic;
+         DATA_IN_H, DATA_IN_S: IN STD_LOGIC_VECTOR(7 DOWNTO 0);
          BS_ERROR : OUT std_logic;
          BS_ERROR1 : OUT std_logic;
          CRC_ERROR : OUT std_logic;
@@ -51,16 +54,49 @@ architecture TEST of tb_rmedt_rmedt is
          FULL : OUT STD_LOGIC;
          FULL1 : OUT STD_LOGIC;
          R_ERROR : OUT std_logic;
-         R_ERROR1 : OUT std_logic
+         R_ERROR1 : OUT std_logic;
+         W_ENABLE_H, W_ENABLE_S, R_ENABLE_H, R_ENABLE_S: OUT STD_LOGIC;
+         DATA_H, DATA_S, ADDR_H, ADDR_S: OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
     );
   end component;
-
+  
+  component scalable_off_chip_sram is
+    generic (
+      -- Memory Model parameters
+      ADDR_SIZE_BITS	: natural	:= 8;		-- Address bus size in bits/pins with addresses corresponding to 
+                                          -- the starting word of the accesss
+      WORD_SIZE_BYTES	: natural	:= 1;			-- Word size of the memory in bytes
+      DATA_SIZE_WORDS	: natural	:= 1;			-- Data bus size in "words"
+      READ_DELAY			: time		:= 10 ns;	-- Delay/latency per read access (total time between start of supplying address and when the data read from memory appears on the r_data port)
+                                          -- Keep the 10 ns delay for on-chip SRAM
+      WRITE_DELAY			: time		:= 10 ns		-- Delay/latency per write access (total time between start of supplying address and when the w_data value is written into memory)
+                                          -- Keep the 10 ns delay for on-chip SRAM
+          );
+  port 	(
+    -- Test bench control signals
+    mem_clr				: in	boolean;
+    mem_init			: in	boolean;
+    mem_dump			: in	boolean;
+    verbose				: in	boolean;
+    init_filename	: in 	string;
+    dump_filename	: in 	string;
+    start_address	: in	natural;
+    last_address	: in	natural;
+    
+    -- Memory interface signals
+    r_enable	: in		std_logic;
+    w_enable	: in		std_logic;
+    addr			: in		std_logic_vector((addr_size_bits - 1) downto 0);
+    data			: inout	std_logic_vector(((data_size_words * word_size_bytes * 8) - 1) downto 0)
+      );
+  end component scalable_off_chip_sram;
 -- Insert signals Declarations here
   signal CLK : std_logic;
   signal DM1_RX : std_logic;
   signal DP1_RX : std_logic;
   signal RST : std_logic;
   signal SERIAL_IN : std_logic;
+  signal DATA_IN_H, DATA_IN_S: STD_LOGIC_VECTOR(7 DOWNTO 0);
   signal BS_ERROR : std_logic;
   signal BS_ERROR1 : std_logic;
   signal CRC_ERROR : std_logic;
@@ -71,6 +107,12 @@ architecture TEST of tb_rmedt_rmedt is
   signal FULL1 : STD_LOGIC;
   signal R_ERROR : std_logic;
   signal R_ERROR1 : std_logic;
+  signal W_ENABLE_H, W_ENABLE_S, R_ENABLE_H, R_ENABLE_S: STD_LOGIC;
+  signal DATA_H, DATA_S, ADDR_H, ADDR_S: STD_LOGIC_VECTOR(7 DOWNTO 0);
+  signal tb_mem_dump: boolean;
+  signal tb_dump_filename, tb_init_filename: string(1 to 24);
+  signal tb_start_address, tb_last_address: natural;
+  signal SRAM_DATA_H, SRAM_DATA_S: STD_LOGIC_VECTOR(7 DOWNTO 0);
 
 -- signal <name> : <type>;
 procedure sendUART(
@@ -227,6 +269,8 @@ begin
                 DP1_RX => DP1_RX,
                 RST => RST,
                 SERIAL_IN => SERIAL_IN,
+                DATA_IN_H => DATA_IN_H,
+                DATA_IN_S => DATA_IN_S,
                 BS_ERROR => BS_ERROR,
                 BS_ERROR1 => BS_ERROR1,
                 CRC_ERROR => CRC_ERROR,
@@ -236,9 +280,70 @@ begin
                 FULL => FULL,
                 FULL1 => FULL1,
                 R_ERROR => R_ERROR,
-                R_ERROR1 => R_ERROR1
+                R_ERROR1 => R_ERROR1,
+                W_ENABLE_H => W_ENABLE_H,
+                R_ENABLE_H => R_ENABLE_H,
+                W_ENABLE_S => W_ENABLE_S,
+                R_ENABLE_S => R_ENABLE_S,
+                DATA_H => DATA_H,
+                DATA_S => DATA_S,
+                ADDR_H => ADDR_H,
+                ADDR_S => ADDR_S
                 );
+Memory_H: scalable_off_chip_sram
+    generic map (
+      -- Memory interface parameters
+      ADDR_SIZE_BITS	=> 8,
+      WORD_SIZE_BYTES	=> 1,
+      DATA_SIZE_WORDS	=> 1,
+      READ_DELAY			=> (Period - 2 ns),	-- CLK is 2 ns longer than access delay for conservative padding for flipflop setup times and propagation delays from the external SRAM chip to the internal flipflops
+      WRITE_DELAY			=> (Period - 2 ns)		-- CLK is 2 ns longer than access delay for conservative padding for Real SRAM hold times and propagation delays from the internal flipflops to the external SRAM chip
+    )
+    port map	(
+      -- Test bench control signals
+      mem_clr				=> false,
+      mem_init			=> false,
+      mem_dump			=> tb_mem_dump,
+      verbose				=> false,
+      init_filename	=> tb_init_filename,
+      dump_filename	=> tb_dump_filename,
+      start_address	=> tb_start_address,
+      last_address	=> tb_last_address,
+      
+      -- Memory interface signalssim:/tb_ksa/dut/prefillcomplete
 
+      r_enable	=> r_enable_H,
+      w_enable	=> w_enable_H,
+      addr			=> addr_H,
+      data			=> sram_data_H
+    );
+    
+  Memory_S: scalable_off_chip_sram
+    generic map (
+      -- Memory interface parameters
+      ADDR_SIZE_BITS	=> 8,
+      WORD_SIZE_BYTES	=> 1,
+      DATA_SIZE_WORDS	=> 1,
+      READ_DELAY			=> (Period - 2 ns),	-- CLK is 2 ns longer than access delay for conservative padding for flipflop setup times and propagation delays from the external SRAM chip to the internal flipflops
+      WRITE_DELAY			=> (Period - 2 ns)		-- CLK is 2 ns longer than access delay for conservative padding for Real SRAM hold times and propagation delays from the internal flipflops to the external SRAM chip
+    )
+    port map	(
+      -- Test bench control signals
+      mem_clr				=> false,
+      mem_init			=> false,
+      mem_dump			=> tb_mem_dump,
+      verbose				=> false,
+      init_filename	=> tb_init_filename,
+      dump_filename	=> tb_dump_filename,
+      start_address	=> tb_start_address,
+      last_address	=> tb_last_address,
+      
+      -- Memory interface signa
+      r_enable	=> r_enable_S,
+      w_enable	=> w_enable_S,
+      addr			=> addr_S,
+      data			=> sram_data_s
+    );
 --   GOLD: <GOLD_NAME> port map(<put mappings here>);
 autoClock: process
   BEGIN
@@ -248,6 +353,36 @@ autoClock: process
     wait for period/2;
   END process autoClock;
   
+IO_DATA: process (W_ENABLE_H, W_ENABLE_S, R_ENABLE_H, R_ENABLE_S, sram_DATA_H, sram_DATA_S, DATA_H, DATA_S)
+  begin
+    if (r_enable_h = '1') then
+      -- Read mode -> the data pins should connect to the r_data bus & the other bus should float
+      DATA_IN_H	<= sram_data_H;
+      sram_data_H				<= (others=>'Z');
+    elsif(w_enable_h = '1') then
+      -- Write mode -> the data pins should connect to the w_data bus & the other bus should float
+      DATA_IN_H	<= (others=>'Z');
+      sram_data_H	<= DATA_H;
+    else
+      -- Disconnect both busses
+      DATA_IN_H	<= (others=>'Z');
+      sram_data_H				<= (others=>'Z');
+    end if;
+    
+    if (r_enable_s = '1') then
+      -- Read mode -> the data pins should connect to the r_data bus & the other bus should float
+      DATA_IN_S	<= sram_data_S;
+      sram_data_S				<= (others=>'Z');
+    elsif(w_enable_s = '1') then
+      -- Write mode -> the data pins should connect to the w_data bus & the other bus should float
+      DATA_IN_S	<= (others=>'Z');
+      sram_data_S	<= DATA_S;
+    else
+      -- Disconnect both busses
+      DATA_IN_S	<= (others=>'Z');
+      sram_data_S				<= (others=>'Z');
+    end if;
+  end process IO_DATA;  
 process
   variable bc: integer;
     begin
@@ -271,7 +406,7 @@ process
     sendUART(x"53", serial_in); -- S
     sendUART("11110111", serial_in); -- correct parity
     
-    wait for 12 us;
+    wait for 30 us;
     
     HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
     HEXtoNRZI(x"39", BC, DP1_RX, DM1_RX);
@@ -305,13 +440,7 @@ process
     HEXtoNRZI(x"6B", BC, DP1_RX, DM1_RX);
     sendEOP(1, DP1_RX, DM1_RX);
     BC := 0;
-    report "Begin normal operation" severity note;
-    HEXtoNRZI("10000000", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"39", BC, DP1_RX, DM1_RX);
-    STRINGtoNRZI("Another very long string to test transmitter correctness", 56, BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"DE", BC, DP1_RX, DM1_RX);
-    HEXtoNRZI(x"9F", BC, DP1_RX, DM1_RX);
-    sendEOP(0, DP1_RX, DM1_RX);
+    
     wait;
     --CLK <= 
     --DM1_RX <= 
