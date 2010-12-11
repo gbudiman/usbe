@@ -551,16 +551,16 @@ variable bc: integer;
   wait for 12 ns;
   RST <= '0';
   wait for 12 ns;
-  report "Wrong Parity" severity note;
-  sendUART(x"21", serial_in); -- !
-  sendUART(x"21", serial_in); -- !
-  sendUART(x"54", serial_in); -- T
-  sendUART(x"45", serial_in); -- E
-  sendUART(x"52", serial_in); -- R
-  sendUART(x"43", serial_in); -- C
-  sendUART(x"45", serial_in); -- E
-  sendUART(x"53", serial_in); -- S
-  sendUART(x"36", serial_in); -- wrong parity
+--  report "Wrong Parity" severity note;
+--  sendUART(x"21", serial_in); -- !
+--  sendUART(x"21", serial_in); -- !
+--  sendUART(x"54", serial_in); -- T
+--  sendUART(x"45", serial_in); -- E
+--  sendUART(x"52", serial_in); -- R
+--  sendUART(x"43", serial_in); -- C
+--  sendUART(x"45", serial_in); -- E
+--  sendUART(x"53", serial_in); -- S
+--  sendUART(x"36", serial_in); -- wrong parity
   report "Correct Parity" severity note;
   sendUART(x"21", serial_in); -- !
   sendUART(x"21", serial_in); -- !
@@ -572,13 +572,13 @@ variable bc: integer;
   sendUART(x"53", serial_in); -- S
   sendUART("11110111", serial_in); -- correct parity
   
-  wait for 24 us;
+  wait for 32 us;
   
   report "Send unencrypted input and get encrypted output with correct CRC" severity note;
   
   HEXtoNRZI("10000000", BC, DPHS, DMHS);
   HEXtoNRZI(x"39", BC, DPHS, DMHS);
-  STRINGtoNRZI("Unencrypted input", 17, BC, DPHS, DMHS);
+  STRINGtoNRZI("Unencrypted input.Unencrypted input.Unencrypted input.", 54, BC, DPHS, DMHS);
   HEXtoNRZI(x"EC", BC, DPHS, DMHS);
   HEXtoNRZI(x"A6", BC, DPHS, DMHS);
   sendEOP(0, DPHS, DMHS);
